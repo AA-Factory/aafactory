@@ -5,10 +5,10 @@ import { ChevronDown, ChevronUp, Eye, EyeOff, Save } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const [formData, setFormData] = useState({
-    comfyServerUrl: 'https://61xStv0emos20q-8188.proxy.runpod.net',
+    comfyServerUrl: '',
     comfyServerPort: '',
-    elevenLabsApiKey: 'sk_aad178415a500544bd312a78d67b251716da70e49ddfe982',
-    openaiApiKey: 'sk-proj-TCREg0wOZ7IfaZG_RcKww35U_BnNIlxRuVQtukVDks_gi1D808L83wQrOxcyr-3Lk1GKPTm60XT3blbkFJXmtAhyG-mP__AzGPCKnrdlbQCQmBGZ2sVzkmH3Jt9_dFPbbVD_adhS8KZBTT59B_lOBEupg6xA'
+    elevenLabsApiKey: '',
+    openaiApiKey: ''
   });
 
   const [expandedSections, setExpandedSections] = useState({
@@ -48,7 +48,7 @@ const SettingsPage: React.FC = () => {
 
   const handleSubmit = () => {
     setSaveStatus('Saving...');
-    
+
     // Simulate API call
     setTimeout(() => {
       setSaveStatus('Settings saved successfully!');
@@ -82,7 +82,7 @@ const SettingsPage: React.FC = () => {
                 <ChevronDown className="h-5 w-5" />
               )}
             </button>
-            
+
             {expandedSections.comfyui && (
               <div className="px-6 pb-6 space-y-4">
                 <div>
@@ -97,7 +97,7 @@ const SettingsPage: React.FC = () => {
                     placeholder="https://example.proxy.runpod.net"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-blue-400 mb-2">
                     ComfyUI Server Port
@@ -127,7 +127,7 @@ const SettingsPage: React.FC = () => {
                 <ChevronDown className="h-5 w-5" />
               )}
             </button>
-            
+
             {expandedSections.elevenlabs && (
               <div className="px-6 pb-6">
                 <div>
@@ -171,7 +171,7 @@ const SettingsPage: React.FC = () => {
                 <ChevronDown className="h-5 w-5" />
               )}
             </button>
-            
+
             {expandedSections.llm && (
               <div className="px-6 pb-6">
                 <div>
@@ -216,9 +216,8 @@ const SettingsPage: React.FC = () => {
           {/* Save Status */}
           {saveStatus && (
             <div className="text-center">
-              <p className={`text-sm ${
-                saveStatus.includes('successfully') ? 'text-green-400' : 'text-blue-400'
-              }`}>
+              <p className={`text-sm ${saveStatus.includes('successfully') ? 'text-green-400' : 'text-blue-400'
+                }`}>
                 {saveStatus}
               </p>
             </div>
