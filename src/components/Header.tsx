@@ -39,10 +39,8 @@ const HeaderNav: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
-              <span className="ml-2 text-xl font-semibold text-gray-900">NextApp</span>
+              <img src="/aa-fac-logo.png" alt="Logo" className="h-6 w-6" />
+              <span className="ml-2 text-xl font-semibold text-gray-900">AA Factory</span>
             </div>
           </div>
 
