@@ -34,7 +34,7 @@ export const SeekPlayer = observer((_props: SeekPlayerProps) => {
     <div className="seek-player flex flex-col">
       <div className="flex flex-row items-center px-2">
         <button
-          className="w-[80px] rounded  px-2 py-2"
+          className="w-[80px] rounded-sm  px-2 py-2"
           onClick={() => {
             store.setPlaying(!store.playing);
           }}
@@ -42,7 +42,7 @@ export const SeekPlayer = observer((_props: SeekPlayerProps) => {
           <Icon size="40"></Icon>
         </button>
         <span className="font-mono">{formattedTime}</span>
-        <div className="w-[1px] h-[25px] bg-slate-300 mx-[10px]"></div>
+        <div className="w-px h-[25px] bg-slate-300 mx-[10px]"></div>
         <span className="font-mono">{formattedMaxTime}</span>
       </div>
       <ScaleRangeInput

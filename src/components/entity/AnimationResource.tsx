@@ -33,7 +33,7 @@ export const AnimationResource = observer((props: AnimationResourceProps) => {
           {ANIMATION_TYPE_TO_LABEL[props.animation.type]}
         </div>
         <button
-          className="hover:bg-[#00a0f5] bg-[rgba(0,0,0,.25)] rounded z-10 text-white font-bold py-1 text-lg"
+          className="hover:bg-[#00a0f5] bg-[rgba(0,0,0,.25)] rounded-sm z-10 text-white font-bold py-1 text-lg"
           onClick={() => store.removeAnimation(props.animation.id)}
         >
           <MdDelete size="25" />
