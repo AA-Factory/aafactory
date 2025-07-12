@@ -1,21 +1,9 @@
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <a
-        href="/editor"
-        className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 dark:hover:border-neutral-700 dark:hover:bg-neutral-800/30"
-        rel="noopener noreferrer"
-      >
-        <h2 className={`mb-3 text-2xl font-semibold`}>
-          Go To Editor{" "}
-          <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-            -&gt;
-          </span>
-        </h2>
-        <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-          Created By Amit Digga
-        </p>
-      </a>
+      <h1 className="text-4xl font-bold">Welcome to My Website</h1>
+      <p className="mt-4 text-lg">This is a placeholder for the homepage content.</p>
+      <p className="mt-2 text-sm text-gray-500">Feel free to explore!</p>
     </main>
   );
 }
