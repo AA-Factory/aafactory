@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { HiMenu, HiX, HiUser, HiChatAlt2, HiCode, HiLightningBolt, HiCog, HiAdjustments } from 'react-icons/hi';
 import { IconType } from 'react-icons';
+import Link from 'next/link';
 
 interface NavLink {
   name: string;
@@ -38,12 +39,12 @@ const HeaderNav: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <div className="flex items-center">
+            <Link href="/" className="flex items-center">
               <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
+                <span className="text-white font-bold text-sm">A</span>
               </div>
-              <span className="ml-2 text-xl font-semibold text-gray-900">NextApp</span>
-            </div>
+              <span className="ml-2 text-xl font-semibold text-gray-900">AAFactory</span>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
