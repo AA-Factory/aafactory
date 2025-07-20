@@ -24,6 +24,21 @@ export const Editor = observer(() => {
   const store = React.useContext(StoreContext);
 
   useEffect(() => {
+    const loadTimelineFromDatabase = async () => {
+      try {
+        const response = await fetch('/api/timeline');
+        const result = await response.json();
+
+        if (result.elements) {
+          store.setEditorElements([]);
+          result.elements.forEach(item => {
+            store.addEditorElement(item.elementData);
+          });
+        }
+      } catch (error) {
+        console.error('Load failed:', error);
+      }
+    }
     const canvas = new fabric.Canvas("canvas", {
       height: 500,
       width: 800,
@@ -46,6 +61,7 @@ export const Editor = observer(() => {
       canvas.renderAll();
       fabric.util.requestAnimFrame(render);
     });
+    loadTimelineFromDatabase();
   }, []);
   return (
     <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh">

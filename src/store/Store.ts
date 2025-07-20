@@ -14,8 +14,8 @@ export class Store {
 
   selectedMenuOption: MenuOption;
   audios: string[]
-  videos: string[]
-  images: string[]
+  videos: { id: string, src: string }[]
+  images: { id: string, src: string }[]
   editorElements: EditorElement[]
   selectedElement: EditorElement | null;
 
@@ -53,6 +53,21 @@ export class Store {
     return this.currentKeyFrame * 1000 / this.fps;
   }
 
+  async updateElementInDatabase(element: EditorElement) {
+    try {
+      await fetch('/api/timeline', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          elementId: element.id,
+          elementData: element
+        })
+      });
+    } catch (error) {
+      console.error('Update failed:', error);
+    }
+  }
+
   setCurrentTimeInMs(time: number) {
     this.currentKeyFrame = Math.floor(time / 1000 * this.fps);
   }
@@ -84,20 +99,41 @@ export class Store {
     this.refreshElements();
   }
 
-  setVideos(videos: string[]) {
+  setVideos(videos: { id: string, src: string }[]) {
     this.videos = videos;
   }
 
-  addVideoResource(video: string) {
+  addVideoResource(video: { id: string, src: string }) {
     this.videos = [...this.videos, video];
+  }
+  async removeVideoResource(id: string) {
+    this.videos = this.videos.filter(v => v.id !== id);
+    try {
+      await fetch(`/api/video/${id}`, {
+        method: 'DELETE',
+      });
+      console.log('✅ Video removed from database');
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
   }
   addAudioResource(audio: string) {
     this.audios = [...this.audios, audio];
   }
-  addImageResource(image: string) {
+  addImageResource(image: { id: string, src: string }) {
     this.images = [...this.images, image];
   }
-
+  async removeImageResource(id: string) {
+    this.images = this.images.filter(i => i.id !== id);
+    try {
+      await fetch(`/api/image/${id}`, {
+        method: 'DELETE',
+      });
+      console.log('✅ Image removed from database');
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
+  }
   addAnimation(animation: Animation) {
     this.animations = [...this.animations, animation];
     this.refreshAnimations();
@@ -304,6 +340,7 @@ export class Store {
   }
 
   updateEditorElement(editorElement: EditorElement) {
+    this.updateElementInDatabase(editorElement);
     this.setEditorElements(this.editorElements.map((element) =>
       element.id === editorElement.id ? editorElement : element
     ));
@@ -333,13 +370,25 @@ export class Store {
   addEditorElement(editorElement: EditorElement) {
     this.setEditorElements([...this.editorElements, editorElement]);
     this.refreshElements();
-    this.setSelectedElement(this.editorElements[this.editorElements.length - 1]);
+    // this.setSelectedElement(this.editorElements[this.editorElements.length - 1]);
+    this.updateElementInDatabase(editorElement);
   }
 
-  removeEditorElement(id: string) {
+  async removeEditorElement(id: string) {
     this.setEditorElements(this.editorElements.filter(
       (editorElement) => editorElement.id !== id
     ));
+    //vall /api/timeline with id in url 
+    try {
+      await fetch(`/api/timeline?elementId=${id}`, {
+        method: 'DELETE',
+      });
+
+      console.log('✅ Element removed from database');
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
+
     this.refreshElements();
   }
 
@@ -404,45 +453,63 @@ export class Store {
     this.updateAudioElements();
   }
 
-  addVideo(index: number) {
-    const videoElement = document.getElementById(`video-${index}`)
+  // In your store
+  async addVideo(index: number, video_id: string) {
+    const videoElement = document.getElementById(`${video_id}`)
     if (!isHtmlVideoElement(videoElement)) {
       return;
     }
+
     const videoDurationMs = videoElement.duration * 1000;
     const aspectRatio = videoElement.videoWidth / videoElement.videoHeight;
     const id = getUid();
-    this.addEditorElement(
-      {
-        id,
-        name: `Media(video) ${index + 1}`,
-        type: "video",
-        placement: {
-          x: 0,
-          y: 0,
-          width: 100 * aspectRatio,
-          height: 100,
-          rotation: 0,
-          scaleX: 1,
-          scaleY: 1,
-        },
-        timeFrame: {
-          start: 0,
-          end: videoDurationMs,
-        },
-        properties: {
-          elementId: `video-${id}`,
-          src: videoElement.src,
-          effect: {
-            type: "none",
-          }
-        },
+
+    const editorElement = {
+      id,
+      name: `Media(video) ${index + 1}`,
+      type: "video",
+      placement: {
+        x: 0,
+        y: 0,
+        width: 100 * aspectRatio,
+        height: 100,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
       },
-    );
+      timeFrame: {
+        start: 0,
+        end: videoDurationMs,
+      },
+      properties: {
+        elementId: `video-${id}`,
+        src: videoElement.src,
+        effect: {
+          type: "none",
+        }
+      },
+    };
+
+
+    // Save to database and if response is ok, add to store
+    try {
+      await fetch('/api/timeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ elementData: editorElement })
+      });
+      this.addEditorElement(editorElement);
+      console.log('✅ Video added to database');
+    } catch (error) {
+      console.error('Add failed:', error);
+      window.alert(`Error adding video: ${error}`);
+    }
   }
 
-  addImage(index: number) {
-    const imageElement = document.getElementById(`image-${index}`)
+
+
+  addImage(index: number, image_id: string) {
+    const imageElement = document.getElementById(`${image_id}`)
     if (!isHtmlImageElement(imageElement)) {
       return;
     }
@@ -475,6 +542,20 @@ export class Store {
         },
       },
     );
+
+
+    // Save to database and if response is ok, add to store
+    try {
+      fetch('/api/timeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ elementData: this.editorElements[this.editorElements.length - 1] })
+      });
+      console.log('✅ Image added to database');
+    } catch (error) {
+      console.error('Add failed:', error);
+      window.alert(`Error adding image: ${error}`);
+    }
   }
 
   addAudio(index: number) {
@@ -696,21 +777,19 @@ export class Store {
     if (!store.canvas) return;
     const canvas = store.canvas;
     store.canvas.remove(...store.canvas.getObjects());
+
     for (let index = 0; index < store.editorElements.length; index++) {
       const element = store.editorElements[index];
+
       switch (element.type) {
         case "video": {
-          console.log("elementid", element.properties.elementId);
           if (document.getElementById(element.properties.elementId) == null)
             continue;
           const videoElement = document.getElementById(
             element.properties.elementId
           );
           if (!isHtmlVideoElement(videoElement)) continue;
-          // const filters = [];
-          // if (element.properties.effect?.type === "blackAndWhite") {
-          //   filters.push(new fabric.Image.filters.Grayscale());
-          // }
+
           const videoObject = new fabric.CoverVideo(videoElement, {
             name: element.id,
             left: element.placement.x,
@@ -723,7 +802,6 @@ export class Store {
             objectCaching: false,
             selectable: true,
             lockUniScaling: true,
-            // filters: filters,
             // @ts-ignore
             customFilter: element.properties.effect.type,
           });
@@ -734,10 +812,13 @@ export class Store {
           videoElement.height =
             (videoElement.videoHeight * 100) / videoElement.videoWidth;
           canvas.add(videoObject);
+
+          // Updated object:modified handler with database sync
           canvas.on("object:modified", function (e) {
             if (!e.target) return;
             const target = e.target;
             if (target != videoObject) return;
+
             const placement = element.placement;
             const newPlacement: Placement = {
               ...placement,
@@ -755,14 +836,18 @@ export class Store {
               scaleX: 1,
               scaleY: 1,
             };
+
             const newElement = {
               ...element,
               placement: newPlacement,
             };
-            store.updateEditorElement(newElement);
+
+            // Update element locally and sync to database
+            store.updateEditorElement(newElement, true);
           });
           break;
         }
+
         case "image": {
           if (document.getElementById(element.properties.elementId) == null)
             continue;
@@ -770,10 +855,7 @@ export class Store {
             element.properties.elementId
           );
           if (!isHtmlImageElement(imageElement)) continue;
-          // const filters = [];
-          // if (element.properties.effect?.type === "blackAndWhite") {
-          //   filters.push(new fabric.Image.filters.Grayscale());
-          // }
+
           const imageObject = new fabric.CoverImage(imageElement, {
             name: element.id,
             left: element.placement.x,
@@ -782,11 +864,10 @@ export class Store {
             objectCaching: false,
             selectable: true,
             lockUniScaling: true,
-            // filters
             // @ts-ignore
             customFilter: element.properties.effect.type,
           });
-          // imageObject.applyFilters();
+
           element.fabricObject = imageObject;
           element.properties.imageObject = imageObject;
           const image = {
@@ -807,34 +888,43 @@ export class Store {
           imageObject.scaleX = toScale.x * element.placement.scaleX;
           imageObject.scaleY = toScale.y * element.placement.scaleY;
           canvas.add(imageObject);
+
+          // Updated object:modified handler with database sync
           canvas.on("object:modified", function (e) {
             if (!e.target) return;
             const target = e.target;
             if (target != imageObject) return;
+
             const placement = element.placement;
-            let fianlScale = 1;
+            let finalScale = 1;
             if (target.scaleX && target.scaleX > 0) {
-              fianlScale = target.scaleX / toScale.x;
+              finalScale = target.scaleX / toScale.x;
             }
+
             const newPlacement: Placement = {
               ...placement,
               x: target.left ?? placement.x,
               y: target.top ?? placement.y,
               rotation: target.angle ?? placement.rotation,
-              scaleX: fianlScale,
-              scaleY: fianlScale,
+              scaleX: finalScale,
+              scaleY: finalScale,
             };
+
             const newElement = {
               ...element,
               placement: newPlacement,
             };
-            store.updateEditorElement(newElement);
+
+            // Update element locally and sync to database
+            store.updateEditorElement(newElement, true);
           });
           break;
         }
+
         case "audio": {
           break;
         }
+
         case "text": {
           const textObject = new fabric.Textbox(element.properties.text, {
             name: element.id,
@@ -852,12 +942,16 @@ export class Store {
             lockUniScaling: true,
             fill: "#ffffff",
           });
+
           element.fabricObject = textObject;
           canvas.add(textObject);
+
+          // Updated object:modified handler with database sync
           canvas.on("object:modified", function (e) {
             if (!e.target) return;
             const target = e.target;
             if (target != textObject) return;
+
             const placement = element.placement;
             const newPlacement: Placement = {
               ...placement,
@@ -869,6 +963,7 @@ export class Store {
               scaleX: target.scaleX ?? placement.scaleX,
               scaleY: target.scaleY ?? placement.scaleY,
             };
+
             const newElement = {
               ...element,
               placement: newPlacement,
@@ -878,28 +973,46 @@ export class Store {
                 text: target?.text,
               },
             };
-            store.updateEditorElement(newElement);
+
+            // Update element locally and sync to database
+            store.updateEditorElement(newElement, true);
           });
           break;
         }
+
         default: {
           throw new Error("Not implemented");
         }
       }
+
       if (element.fabricObject) {
         element.fabricObject.on("selected", function (e) {
           store.setSelectedElement(element);
         });
       }
     }
+
     const selectedEditorElement = store.selectedElement;
     if (selectedEditorElement && selectedEditorElement.fabricObject) {
       canvas.setActiveObject(selectedEditorElement.fabricObject);
     }
+
     this.refreshAnimations();
     this.updateTimeTo(this.currentTimeInMs);
     store.canvas.renderAll();
   }
+
+  // Optional: Add method to manually sync all visible elements
+
+  //   async syncVisibleElementsToDatabase() {
+  //     try {
+  //       const visibleElements = this.editorElements.filter(el => el.fabricObject);
+  //       await this.batchUpdateElements(visibleElements);
+  //       console.log(`Synced ${visibleElements.length} visible elements to database`);
+  //     } catch (error) {
+  //       console.error('Error syncing visible elements:', error);
+  //     }
+  //   }
 
 }
 
