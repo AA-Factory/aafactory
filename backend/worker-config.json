@@ -1,0 +1,121 @@
+{
+  "versions": {
+    "1.0.0": {
+      "imageName": "aafactory/runpod-worker-comfy:3.4.0-flux1-schnell",
+      "minimumCudaVersion": "11.8",
+      "categories": [
+        {
+          "title": "ComfyUI Settings",
+          "settings": [
+            "COMFY_HOST",
+            "COMFY_OUTPUT_PATH",
+            "COMFY_POLLING_INTERVAL_MS",
+            "COMFY_POLLING_MAX_RETRIES",
+            "COMFY_API_AVAILABLE_INTERVAL_MS",
+            "COMFY_API_AVAILABLE_MAX_RETRIES",
+            "REFRESH_WORKER"
+          ]
+        },
+        {
+          "title": "Storage Settings",
+          "settings": [
+            "BUCKET_ENDPOINT_URL",
+            "BUCKET_ACCESS_KEY_ID",
+            "BUCKET_SECRET_ACCESS_KEY",
+            "BUCKET_REGION"
+          ]
+        }
+      ]
+    }
+  },
+  "schema": {
+    "COMFY_HOST": {
+      "env_var_name": "COMFY_HOST",
+      "value": "127.0.0.1:8188",
+      "title": "ComfyUI Host",
+      "description": "Host where ComfyUI is running",
+      "required": false,
+      "type": "text"
+    },
+    "COMFY_OUTPUT_PATH": {
+      "env_var_name": "COMFY_OUTPUT_PATH",
+      "value": "/comfyui/output",
+      "title": "ComfyUI Output Path",
+      "description": "Directory where ComfyUI stores generated images",
+      "required": false,
+      "type": "text"
+    },
+    "COMFY_POLLING_INTERVAL_MS": {
+      "env_var_name": "COMFY_POLLING_INTERVAL_MS",
+      "value": "250",
+      "title": "Polling Interval (ms)",
+      "description": "Time to wait between poll attempts in milliseconds",
+      "required": false,
+      "type": "number"
+    },
+    "COMFY_POLLING_MAX_RETRIES": {
+      "env_var_name": "COMFY_POLLING_MAX_RETRIES",
+      "value": "500",
+      "title": "Max Polling Retries",
+      "description": "Maximum number of poll attempts",
+      "required": false,
+      "type": "number"
+    },
+    "COMFY_API_AVAILABLE_INTERVAL_MS": {
+      "env_var_name": "COMFY_API_AVAILABLE_INTERVAL_MS",
+      "value": "50",
+      "title": "API Check Interval (ms)",
+      "description": "Time to wait between API check attempts in milliseconds",
+      "required": false,
+      "type": "number"
+    },
+    "COMFY_API_AVAILABLE_MAX_RETRIES": {
+      "env_var_name": "COMFY_API_AVAILABLE_MAX_RETRIES",
+      "value": "500",
+      "title": "Max API Check Retries",
+      "description": "Maximum number of API check attempts",
+      "required": false,
+      "type": "number"
+    },
+    "REFRESH_WORKER": {
+      "env_var_name": "REFRESH_WORKER",
+      "value": false,
+      "title": "Refresh Worker",
+      "description": "Enforce a clean state after each job is done",
+      "required": false,
+      "type": "toggle"
+    },
+    "BUCKET_ENDPOINT_URL": {
+      "env_var_name": "BUCKET_ENDPOINT_URL",
+      "value": "",
+      "title": "S3 Bucket Endpoint URL",
+      "description": "URL for S3-compatible storage service. If set, images will be uploaded here instead of returned as base64",
+      "required": false,
+      "type": "text"
+    },
+    "BUCKET_ACCESS_KEY_ID": {
+      "env_var_name": "BUCKET_ACCESS_KEY_ID",
+      "value": "",
+      "title": "S3 Access Key ID",
+      "description": "Access key ID for S3-compatible storage service",
+      "required": false,
+      "type": "text"
+    },
+    "BUCKET_SECRET_ACCESS_KEY": {
+      "env_var_name": "BUCKET_SECRET_ACCESS_KEY",
+      "value": "",
+      "title": "S3 Secret Access Key",
+      "description": "Secret access key for S3-compatible storage service",
+      "required": false,
+      "type": "text"
+    },
+    "BUCKET_REGION": {
+      "env_var_name": "BUCKET_REGION",
+      "value": "us-east-1",
+      "title": "S3 Bucket Region",
+      "description": "Region for S3-compatible storage service",
+      "required": false,
+      "type": "text"
+    }
+  }
+} 
