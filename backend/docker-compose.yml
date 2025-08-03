@@ -1,0 +1,15 @@
+services:
+  comfyui-worker:
+    build:
+      context: .
+      platforms:
+        - linux/amd64
+    environment:
+      - SERVE_API_LOCALLY=true
+      - CIVITAI_API_KEY=${CIVITAI_API_KEY}
+    ports:
+      - "8000:8000"
+      - "8188:8188"
+    volumes:
+      - ./data/comfyui/output:/comfyui/output
+      - ./data/runpod-volume:/runpod-volume
