@@ -66,7 +66,8 @@ RUN pip3 install civitdl && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure civitdl with API key
-COPY models /comfyui/models
+# Commented out until models are added
+# COPY models /comfyui/models
 
 WORKDIR /
 
