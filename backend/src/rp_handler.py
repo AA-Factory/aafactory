@@ -9,6 +9,26 @@ import requests
 import base64
 from io import BytesIO
 
+from fastapi.middleware.cors import CORSMiddleware
+
+class WorkerAPIWithCORS(runpod.serverless.rp_fastapi.WorkerAPI):
+    def __init__(self, config):
+        super().__init__(config)  # call original constructor
+
+        origins = [
+            "http://localhost:3000",
+            "https://your-frontend-domain.com",
+        ]
+
+        # Add CORS middleware to the FastAPI app instance
+        self.rp_app.add_middleware(
+            CORSMiddleware,
+            allow_origins=origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = 50
 # Maximum number of API check attempts
@@ -347,4 +367,5 @@ def handler(job):
 
 # Start the handler only if this script is run directly
 if __name__ == "__main__":
+    runpod.serverless.rp_fastapi.WorkerAPI = WorkerAPIWithCORS
     runpod.serverless.start({"handler": handler})
