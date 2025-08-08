@@ -12,6 +12,11 @@ services:
     networks:
       - app-network
     command: mongod --quiet --logpath /dev/null
+    healthcheck:
+      test: ["CMD", "mongosh", "--username", "admin", "--password", "password", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   nextjs:
     build:
