@@ -2,11 +2,17 @@
 
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import AvatarPage from '@/components/AvatarPage';
+import AvatarPage from '@/components/avatar/AvatarPage';
 
-const AvatarEdit: React.FC = () => {
-  const searchParams = useSearchParams();
-  const avatarId = searchParams.get('id');
+
+interface AvatarEditProps {
+  params: {
+    id: string;
+  };
+}
+
+const AvatarEdit: React.FC<AvatarEditProps> = ({ params }) => {
+  const avatarId = params.id;
 
   useEffect(() => {
     // Redirect to avatars page if no ID provided
