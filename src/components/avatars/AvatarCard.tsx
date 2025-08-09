@@ -1,54 +1,83 @@
 // components/AvatarCard/AvatarCard.tsx
 import React, { useState } from 'react';
-import { HiPencil, HiTrash, HiMicrophone, HiCheck, HiX } from 'react-icons/hi';
+import { HiPencil, HiTrash, HiMicrophone, HiCheck, HiX, HiPlus, HiMinus } from 'react-icons/hi';
 import { Avatar } from '../../types/avatar';
 import { AVATAR_CONSTANTS } from '../../constants/avatar';
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import Link from 'next/link';
 
 interface AvatarCardProps {
   avatar: Avatar;
-  avatarToDeleteId: string | null;
-  isActive: boolean;
+  avatarToDeleteId?: string | null;
   onDelete: (e: React.MouseEvent, avatarId: string) => void;
-  onUse: (avatarId: string) => void;
   onConfirm: () => void;
 }
 
 export const AvatarCard: React.FC<AvatarCardProps> = ({
   avatar,
-  isActive,
+  avatarToDeleteId,
   onDelete,
-  onUse,
   onConfirm
 }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { isAvatarActive, toggleActiveAvatar } = useActiveAvatars();
+
+  const isActive = isAvatarActive(avatar.id);
+  const isInDeleteMode = avatarToDeleteId === avatar.id;
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).src = AVATAR_CONSTANTS.FALLBACK_IMAGE;
   };
 
+  const handleToggleActive = () => {
+    toggleActiveAvatar(avatar.id);
+  };
 
   const handleCancelDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirmation(false);
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(e, avatar.id);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDeleting(true);
+    onConfirm();
+  };
+
+  // Use delete confirmation from props if available, otherwise use local state
+  const showDeleteConfirm = isInDeleteMode || showDeleteConfirmation;
+
   return (
     <div
       className={`bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 group relative h-full flex flex-col
     ${isActive
-          ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
+          ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
           : 'border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600'
         }`}
     >
       <div className="text-center relative">
+        {/* Active Avatar Badge - Top Left */}
+        {isActive && (
+          <div className="absolute -top-2 -left-2 z-10">
+            <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+              <HiCheck className="w-3 h-3" />
+            </div>
+          </div>
+        )}
+
         {/* Action buttons */}
         <div className="absolute -top-1 -right-1 flex items-center space-x-1">
           {/* Edit button - slides left when delete confirmation shows */}
           <Link
             href={`/avatar/${avatar.id}`}
-            className={`w-7 h-7 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${showDeleteConfirmation ? 'transform -translate-x-2 opacity-40' : 'transform translate-x-0 opacity-100'
+            className={`w-7 h-7 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${showDeleteConfirm ? 'transform -translate-x-2 opacity-40' : 'transform translate-x-0 opacity-100'
               }`}
             title="Edit Avatar"
           >
@@ -57,19 +86,15 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
           {/* Delete button that stretches */}
           <div
-            className={`bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden ${showDeleteConfirmation
+            className={`bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden ${showDeleteConfirm
               ? 'w-36 h-7'
               : 'w-7 h-7'
               }`}
           >
-            {!showDeleteConfirmation ? (
+            {!showDeleteConfirm ? (
               // Initial delete icon
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(e, avatar.id);
-                  setShowDeleteConfirmation(true);
-                }}
+                onClick={handleDeleteClick}
                 className="w-full h-full flex items-center justify-center transition-colors"
                 title="Delete Avatar"
               >
@@ -90,7 +115,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
                     <HiX className="w-2 h-2 text-amber-950 dark:text-amber-300" />
                   </button>
                   <button
-                    onClick={onConfirm}
+                    onClick={handleConfirmDelete}
                     className="w-4 h-4 bg-white text-amber-800 bg-opacity-20 hover:bg-opacity-30 dark:bg-black dark:bg-opacity-20 dark:hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
                     title="Confirm Delete"
                   >
@@ -132,24 +157,35 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
           </div>
         </div>
 
-        {/* Use This Avatar Button */}
-        {!isActive && (
-          <button
-            onClick={() => onUse(avatar.id)}
-            className="mt-3 w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
-            disabled={isDeleting}
-          >
-            Use This Avatar
-          </button>
-        )}
+        {/* Toggle Active Avatar Button */}
+        <button
+          onClick={handleToggleActive}
+          className={`mt-3 w-full py-1 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isActive
+            ? 'bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 text-white'
+            : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white'
+            }`}
+          disabled={isDeleting}
+        >
+          {isActive ? (
+            <>
+              <HiMinus className="w-4 h-4" />
+              Remove from Active
+            </>
+          ) : (
+            <>
+              <HiPlus className="w-4 h-4" />
+              Add to Active
+            </>
+          )}
+        </button>
 
-        {/* Currently Selected Badge */}
-        {isActive && (
-          <div className="mt-2 inline-flex items-center bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium px-3 py-1 rounded-full">
+        {/* Active Status Badge */}
+        {/* {isActive && (
+          <div className="mt-2 inline-flex items-center bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-3 py-1 rounded-full">
             <HiCheck className="w-3 h-3 mr-1" />
-            Currently Selected
+            Active Avatar
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

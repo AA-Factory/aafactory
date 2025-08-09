@@ -7,15 +7,22 @@ import { AvatarCard } from '@/components/avatars/AvatarCard';
 import { CreateAvatarCard } from '@/components/avatars/CreateAvatarCard';
 import EmptyState from '@/components/avatars/EmptyState';
 import LoadingState from '@/components/avatars/LoadingState';
+import { ActiveAvatarsDisplay } from '@/components/avatars/ActiveAvatarsDisplay';
 import { Avatar } from '../../types/avatar';
 import { useModal } from '@/hooks/useModal';
 import { useNotification } from '@/contexts/NotificationContext';
-import { useAvatars, useDeleteAvatar, useActiveAvatar } from '@/hooks/useAvatars';
+import { useAvatars, useDeleteAvatar } from '@/hooks/useAvatars';
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 
 const Avatars: React.FC = () => {
   // ====== Hooks & Context ======
   const { showNotification, hideNotification, notification } = useNotification();
-  const { activeAvatarId, setActiveAvatarId } = useActiveAvatar();
+  const {
+    activeAvatarIds,
+    toggleActiveAvatar,
+    removeActiveAvatar,
+    isAvatarActive
+  } = useActiveAvatars();
   const useConfirmModal = useModal();
   const useDeleteConfirmModal = useModal();
 
@@ -23,28 +30,43 @@ const Avatars: React.FC = () => {
   const { data: avatars = [], isLoading, error, refetch } = useAvatars();
   const deleteAvatarMutation = useDeleteAvatar();
 
-  // Load active avatar from localStorage
-  useEffect(() => {
-    const savedActiveAvatar = localStorage.getItem('activeAvatarId');
-    if (savedActiveAvatar) {
-      setActiveAvatarId(savedActiveAvatar);
-    }
-  }, []);
-
   const handleUseAvatarClick = (avatarId: string) => {
-    useConfirmModal.openModal(avatarId);
+    const isCurrentlyActive = isAvatarActive(avatarId);
+
+    if (isCurrentlyActive) {
+      // If avatar is already active, ask for confirmation to remove it
+      useConfirmModal.openModal({
+        avatarId,
+        action: 'remove',
+        message: 'Remove this avatar from your active selection?'
+      });
+    } else {
+      // If avatar is not active, ask for confirmation to add it
+      useConfirmModal.openModal({
+        avatarId,
+        action: 'add',
+        message: 'Add this avatar to your active selection?'
+      });
+    }
   };
 
-  const confirmUseAvatar = () => {
-    if (useConfirmModal.data) {
-      localStorage.setItem('activeAvatarId', useConfirmModal.data);
+  const confirmToggleAvatar = () => {
+    if (useConfirmModal.data?.avatarId) {
+      toggleActiveAvatar(useConfirmModal.data.avatarId);
+
+      const action = useConfirmModal.data.action;
+      const message = action === 'add'
+        ? 'Avatar added to active selection'
+        : 'Avatar removed from active selection';
+
+      showNotification(message, 'success');
     }
     useConfirmModal.closeModal();
   };
 
   const handleDeleteAvatar = (e: React.MouseEvent, avatarId: string) => {
     e.stopPropagation();
-    useDeleteConfirmModal.data = avatarId;
+    useDeleteConfirmModal.openModal(avatarId);
   };
 
   const confirmDelete = async () => {
@@ -53,8 +75,9 @@ const Avatars: React.FC = () => {
     try {
       await deleteAvatarMutation.mutateAsync(useDeleteConfirmModal.data);
 
-      if (activeAvatarId === useDeleteConfirmModal.data) {
-        setActiveAvatarId(null);
+      // Remove from active avatars if it was active
+      if (isAvatarActive(useDeleteConfirmModal.data)) {
+        removeActiveAvatar(useDeleteConfirmModal.data);
       }
 
       useDeleteConfirmModal.closeModal();
@@ -71,17 +94,28 @@ const Avatars: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
+        {/* Header Section with Active Avatars Display */}
         <div className="text-center mb-8">
-          {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 rounded-full mb-4 shadow-lg">
-            <HiUser className="w-8 h-8 text-white" />
-          </div> */}
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
-            Choose Your Avatar
+            Choose Your Avatars
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Select from your existing avatars or create a new one to begin your journey
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6">
+            Select multiple avatars to be active at once. Click on avatars to add or remove them from your active selection.
           </p>
+
+          {/* Active Avatars Display */}
+          {/* {activeAvatarIds.length > 0 && (
+            <div className="flex justify-center mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg px-6 py-4 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-4">
+                    Active Avatars:
+                  </span>
+                  <ActiveAvatarsDisplay size="md" maxDisplay={8} />
+                </div>
+              </div>
+            </div>
+          )} */}
         </div>
 
         {/* Grid Section */}
@@ -97,10 +131,11 @@ const Avatars: React.FC = () => {
                   key={avatar.id}
                   avatar={avatar}
                   avatarToDeleteId={useDeleteConfirmModal.data}
-                  isActive={activeAvatarId === avatar.id}
+                  isActive={isAvatarActive(avatar.id)}
                   onDelete={handleDeleteAvatar}
                   onUse={handleUseAvatarClick}
                   onConfirm={confirmDelete}
+                  multiSelect={true} // New prop to indicate multi-select mode
                 />
               ))}
 
@@ -112,14 +147,28 @@ const Avatars: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Active Avatars Summary */}
+        {/* {activeAvatarIds.length > 0 && (
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <span className="text-blue-700 dark:text-blue-300 font-medium">
+                {activeAvatarIds.length} avatar{activeAvatarIds.length !== 1 ? 's' : ''} selected
+              </span>
+            </div>
+          </div>
+        )} */}
       </div>
 
-      {/* Use Avatar Confirmation Modal */}
-      {useConfirmModal.isOpen && (
+      {/* Toggle Avatar Confirmation Modal */}
+      {useConfirmModal.isOpen && useConfirmModal.data && (
         <ConfirmationModal
           isOpen={useConfirmModal.isOpen}
-          avatarToConfirm={useConfirmModal.data}
-          onConfirm={confirmUseAvatar}
+          title={useConfirmModal.data.action === 'add' ? 'Add Avatar' : 'Remove Avatar'}
+          message={useConfirmModal.data.message}
+          confirmText={useConfirmModal.data.action === 'add' ? 'Add' : 'Remove'}
+          cancelText="Cancel"
+          onConfirm={confirmToggleAvatar}
           onCancel={useConfirmModal.closeModal}
         />
       )}

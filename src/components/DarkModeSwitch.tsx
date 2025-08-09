@@ -67,11 +67,11 @@ const DarkModeSwitch: React.FC = () => {
           </div>
 
           {/* Switch Label */}
-          <div className="mt-2 text-center">
+          {/* <div className="mt-2 text-center">
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-300">
               {isDark ? '🌙 Dark' : '☀️ Light'}
             </span>
-          </div>
+          </div> */}
         </div>
       </div>
 
