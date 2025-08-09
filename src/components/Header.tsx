@@ -18,6 +18,7 @@ const HeaderNav: React.FC = () => {
   const navLinks: NavLink[] = [
     { name: 'Act', href: '/act', icon: HiLightningBolt },
     { name: 'Avatar', href: '/avatar/create', icon: HiUser },
+    { name: 'Avatars', href: '/avatars', icon: HiUser }, //
     { name: 'Chat', href: '/chat', icon: HiChatAlt2 },
     { name: 'Editor', href: '/editor', icon: HiCode },
     { name: 'React', href: '/react', icon: HiCode },
