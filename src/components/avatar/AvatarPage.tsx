@@ -3,16 +3,30 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { HiChevronDown, HiChevronUp, HiUpload, HiDownload, HiSave, HiTrash, HiExclamationCircle, HiArrowLeft } from 'react-icons/hi';
 import { validateField, validateFile, avatarSchema } from '@/utils/validation';
 import { generateFakeFormData } from '@/utils/fakeData';
+import DeleteModal from '../DeleteModal';
+import { ImageUploadSection } from './ImageUploadSection';
+import { useModal } from '@/hooks/useModal';
+import { useNotification } from '@/contexts/NotificationContext';
+
+import Link from 'next/link'
+import { encodeFormDataIntoImage, decodeFormDataFromImage, loadImageToCanvas, decodeDataFromImage } from '@/utils/steganography';
+import { useRouter } from 'next/navigation' // NOT 'next/router'
+
+
 interface AvatarPageProps {
   editMode?: boolean;
   avatarId?: string;
 }
+interface TouchedFields {
+  [key: string]: boolean;
+}
 
 const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) => {
+  const { showNotification, hideNotification, notification } = useNotification();
 
   //use fake data
-  const [formData, setFormData] = useState(generateFakeFormData());
-
+  const [formData, setFormData] = useState<{ [key: string]: string }>(generateFakeFormData());
+  const router = useRouter();
   const [expandedSections, setExpandedSections] = useState({
     avatarInfos: true,
     voiceSettings: true
@@ -21,20 +35,20 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
   const [selectedImage, setSelectedImage] = useState(null);
   const [encodedImage, setEncodedImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [savedAvatarId, setSavedAvatarId] = useState(null);
+  const [savedAvatarId, setSavedAvatarId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Validation states
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isFormValid, setIsFormValid] = useState(false);
 
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
+  const useDeleteConfirmModal = useModal();
   // Validate form on data changes
   useEffect(() => {
     const errors = {};
@@ -68,81 +82,10 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     }
   }, [editMode, avatarId]);
 
-  // Handle back navigation
-  const handleBackToAvatars = () => {
-    window.location.href = '/avatars';
+  const handleFieldBlur = (fieldName: string): void => {
+    setTouched((prev: TouchedFields) => ({ ...prev, [fieldName]: true }));
   };
 
-  // Handle field blur for validation
-  const handleFieldBlur = (fieldName) => {
-    setTouched(prev => ({ ...prev, [fieldName]: true }));
-  };
-
-  // Encode text data into image using LSB steganography
-  const encodeDataInImage = (imageData, text) => {
-    const data = imageData.data;
-    const textBinary = text.split('').map(char =>
-      char.charCodeAt(0).toString(2).padStart(8, '0')
-    ).join('') + '1111111111111110'; // End marker
-
-    let textIndex = 0;
-
-    for (let i = 0; i < data.length && textIndex < textBinary.length; i += 4) {
-      // Modify LSB of red channel
-      if (textIndex < textBinary.length) {
-        data[i] = (data[i] & 0xFE) | parseInt(textBinary[textIndex]);
-        textIndex++;
-      }
-    }
-
-    return imageData;
-  };
-
-  // Decode text data from image
-  const decodeDataFromImage = (imageData) => {
-    const data = imageData.data;
-    let binaryString = '';
-
-    for (let i = 0; i < data.length; i += 4) {
-      binaryString += (data[i] & 1).toString();
-    }
-
-    // Find end marker
-    const endMarker = '1111111111111110';
-    const endIndex = binaryString.indexOf(endMarker);
-
-    if (endIndex === -1) return null;
-
-    const textBinary = binaryString.substring(0, endIndex);
-    let text = '';
-
-    for (let i = 0; i < textBinary.length; i += 8) {
-      const byte = textBinary.substr(i, 8);
-      if (byte.length === 8) {
-        text += String.fromCharCode(parseInt(byte, 2));
-      }
-    }
-
-    return text;
-  };
-
-  // Load and display image on canvas
-  const loadImageToCanvas = (file) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
-      };
-      img.src = URL.createObjectURL(file);
-    });
-  };
 
   // Save avatar data to database (with optional file upload)
   const saveAvatarToDatabase = async (avatarData, file = null, fileName = null) => {
@@ -157,19 +100,18 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
       formData.append('voiceModel', avatarData.voiceModel);
       formData.append('hasEncodedData', avatarData.hasEncodedData?.toString() || 'false');
       formData.append('file', file);
-      formData.append('fileName', fileName);
+      formData.append('fileName', fileName ?? '');
 
-      response = await fetch('/api/avatars', {
+      response = await fetch('/api/avatars/create-avatar', {
         method: 'POST',
         body: formData,
       });
     } else {
       // Use JSON for data-only
-      response = await fetch('/api/avatars', {
+      console.log('avatarData --->', avatarData);
+      response = await fetch('/api/avatars/create-avatar', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(avatarData),
       });
     }
@@ -187,15 +129,15 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     return await response.json();
   };
 
+
   // Update existing avatar
   const updateAvatarInDatabase = async (avatarId, avatarData) => {
-    const response = await fetch(`/api/avatars/${avatarId}`, {
+    const response = await fetch('/api/avatars/update-avatar', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(avatarData),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: avatarId, ...avatarData }),
     });
+
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -212,8 +154,8 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   // Get avatar by ID
   const getAvatarById = async (avatarId) => {
-    const response = await fetch(`/api/avatars/${avatarId}`, {
-      method: 'GET',
+    const response = await fetch('/api/avatars/get-avatar?id=' + avatarId, {
+      method: 'GET'
     });
 
     if (!response.ok) {
@@ -226,9 +168,11 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   // Delete avatar by ID (automatically handles file cleanup)
   const deleteAvatarById = async (avatarId) => {
-    const response = await fetch(`/api/avatars/${avatarId}`, {
+    const response = await fetch('/api/avatars/delete-avatar', {
       method: 'DELETE',
-    });
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: avatarId })
+    })
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -262,42 +206,40 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     }));
   };
 
+
   const handleImageUpload = async (file) => {
     // Validate file first
     const fileValidation = validateFile(file);
     if (!fileValidation.isValid) {
-      setError(fileValidation.error);
+      showNotification(fileValidation.error, 'error');
       return;
     }
 
     try {
-      setError('');
-      setSaveStatus('Processing image...');
-
+      showNotification('Processing image...', 'info');
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
 
       // Try to decode form data from the image
-      const imageData = await loadImageToCanvas(file);
+      const imageData = await loadImageToCanvas(file, canvasRef);
       const decodedText = decodeDataFromImage(imageData);
 
       if (decodedText) {
         try {
           const decodedData = JSON.parse(decodedText);
           setFormData(decodedData);
-          setSaveStatus('Form data successfully decoded from image!');
+          showNotification('Form data successfully decoded from image!', 'success');
+
         } catch {
-          setSaveStatus('Image loaded but no valid form data found');
+          showNotification('Image loaded but no valid form data found', 'warning');
         }
       } else {
-        setSaveStatus('Image loaded - ready for encoding');
+        showNotification('Image loaded - ready for encoding', 'info');
       }
     } catch (err) {
-      setError('Failed to process image: ' + err.message);
-      setSaveStatus('');
+      showNotification('Failed to process image: ' + err.message, 'error');
     }
   };
-
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -327,38 +269,32 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   const handleSaveAndEncode = async () => {
     if (!selectedImage) {
-      setError('Please select an image first');
+      showNotification('Please select an image first', 'warning');
       return;
     }
+    console.log('✌️selectedImage --->', selectedImage);
 
     if (!isFormValid) {
-      setError('Please fix all validation errors before saving');
+      showNotification('Please fix all validation errors before saving', 'warning');
       // Mark all fields as touched to show errors
       setTouched(Object.keys(avatarSchema).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
       return;
     }
 
     try {
-      setError('');
+
       setIsSaving(true);
-      setSaveStatus('Encoding avatar data into image...');
+      showNotification('Encoding avatar data into image...', 'info');
 
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const response = await fetch(selectedImage);
+      const imageFile = new File([await response.blob()], 'image.png');
 
-      const dataToEncode = JSON.stringify(formData);
-      const encodedImageData = encodeDataInImage(imageData, dataToEncode);
+      // Encode form data into image - THIS IS THE SIMPLE PART!
+      const { blob, downloadUrl } = await encodeFormDataIntoImage(formData, imageFile);
 
-      ctx.putImageData(encodedImageData, 0, 0);
-
-      // Convert canvas to blob
-      const blob = await new Promise(resolve => {
-        canvas.toBlob(resolve, 'image/png');
-      });
-
+      setEncodedImage(downloadUrl);
       // Save avatar with encoded image in one call
-      setSaveStatus('Saving avatar and uploading encoded image...');
+      showNotification('Saving avatar and uploading encoded image...', 'info');
       const fileName = `${formData.name || 'avatar'}-encoded.png`;
 
       const avatarData = {
@@ -376,15 +312,15 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
         setSavedAvatarId(saveResult.id);
       }
 
-      // Create download URL for immediate download
-      const url = URL.createObjectURL(blob);
-      setEncodedImage(url);
+      // // Create download URL for immediate download
+      // const url = URL.createObjectURL(blob);
+      // setEncodedImage(url);
 
-      setSaveStatus('Avatar successfully saved with encoded image!');
+      showNotification('Avatar successfully saved and encoded!', 'success');
 
     } catch (err) {
-      setError('Failed to save avatar: ' + err.message);
-      setSaveStatus('');
+      showNotification('Failed to save avatar: ' + err.message, 'error');
+
     } finally {
       setIsSaving(false);
     }
@@ -401,16 +337,14 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   const handleSaveOnly = async () => {
     if (!isFormValid) {
-      setError('Please fix all validation errors before saving');
+      showNotification('Please fix all validation errors before saving', 'warning');
       // Mark all fields as touched to show errors
       setTouched(Object.keys(avatarSchema).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
       return;
     }
-
     try {
-      setError('');
       setIsSaving(true);
-      setSaveStatus('Saving avatar data...');
+      showNotification('Saving avatar data...', 'info');
 
       let avatarData = { ...formData };
       let file = null;
@@ -418,7 +352,6 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
       // If there's a selected image but no encoded image, include the original image
       if (selectedImage && !encodedImage) {
-        setSaveStatus('Preparing to save with original image...');
         const canvas = canvasRef.current;
         const blob = await new Promise(resolve => {
           canvas.toBlob(resolve, 'image/png');
@@ -433,17 +366,17 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
       if (savedAvatarId) {
         // Update existing avatar
         saveResult = await updateAvatarInDatabase(savedAvatarId, avatarData);
-        setSaveStatus('Avatar data successfully updated!');
+        showNotification('Avatar data successfully updated!', 'success');
       } else {
         // Create new avatar
         saveResult = await saveAvatarToDatabase(avatarData, file, fileName);
         setSavedAvatarId(saveResult.id);
-        setSaveStatus('Avatar successfully saved!');
+        showNotification('Avatar successfully saved!', 'success');
       }
 
     } catch (err) {
-      setError('Failed to save avatar: ' + err.message);
-      setSaveStatus('');
+      showNotification('Failed to save avatar: ' + err.message, 'error');
+
     } finally {
       setIsSaving(false);
     }
@@ -451,8 +384,8 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   const handleLoadAvatar = async (avatarId) => {
     try {
-      setError('');
-      setSaveStatus('Loading avatar...');
+
+      showNotification('Loading avatar...', 'info');
 
       const result = await getAvatarById(avatarId);
       const avatar = result.avatar;
@@ -476,22 +409,21 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
       }
 
       setSavedAvatarId(avatarId);
-      setSaveStatus('Avatar loaded successfully!');
+      showNotification('Avatar loaded successfully!', 'success');
 
     } catch (err) {
-      setError('Failed to load avatar: ' + err.message);
-      setSaveStatus('');
+      showNotification('Failed to load avatar: ' + err.message, 'error');
+
     }
   };
 
   const handleDeleteAvatar = async () => {
     if (!savedAvatarId) return;
 
-    if (!confirm('Are you sure you want to delete this avatar?')) return;
 
     try {
-      setError('');
-      setSaveStatus('Deleting avatar...');
+
+      showNotification('Deleting avatar...', 'info');
 
       // Delete avatar (automatically handles file cleanup)
       await deleteAvatarById(savedAvatarId);
@@ -509,11 +441,14 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
       setFieldErrors({});
       setTouched({});
 
-      setSaveStatus('Avatar and associated files deleted successfully!');
+      showNotification('Avatar and associated files deleted successfully!', 'success');
 
     } catch (err) {
-      setError('Failed to delete avatar: ' + err.message);
-      setSaveStatus('');
+      showNotification('Failed to delete avatar: ' + err.message, 'error');
+    } finally {
+      useDeleteConfirmModal.closeModal();
+      //navigate back to avatars list
+      router.push('/avatars');
     }
   };
 
@@ -544,18 +479,20 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
+
       <div className="max-w-4xl mx-auto p-6">
+
         <div className="space-y-6">
           {/* Header */}
           <div className="text-center">
             {/* Back Button */}
-            <button
-              onClick={handleBackToAvatars}
+            <Link
+              href="/avatars"
               className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors mb-6"
             >
               <HiArrowLeft className="w-4 h-4" />
               <span>Back to Avatars</span>
-            </button>
+            </Link>
 
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {editMode ? 'Edit Avatar' : 'Avatar Creator'}
@@ -566,31 +503,11 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
                 : 'Create and save your avatar with steganography encoding'
               }
             </p>
-            {editMode && savedAvatarId && (
-              <p className="text-sm text-blue-600 mt-2">
-                Editing Avatar ID: {savedAvatarId}
-              </p>
-            )}
+
           </div>
 
-          {/* Status and Error Messages */}
-          {saveStatus && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-blue-800">{saveStatus}</p>
-              {savedAvatarId && (
-                <p className="text-sm text-blue-600 mt-1">Avatar ID: {savedAvatarId}</p>
-              )}
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800">{error}</p>
-            </div>
-          )}
-
           {/* Avatar Infos Section */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm shit">
             <button
               onClick={() => toggleSection('avatarInfos')}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -664,8 +581,22 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
                   </div>
                 ))}
 
-                {/* Avatar Image Upload */}
                 <div>
+
+                  {/* Avatar Image Upload */}
+                  <ImageUploadSection
+                    selectedImage={selectedImage}
+                    isDragging={isDragging}
+                    fileInputRef={fileInputRef}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onFileSelect={handleFileSelect}
+                  />
+
+                </div>
+                {/* Avatar Image Upload */}
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-4">
                     Avatar Image
                   </label>
@@ -706,9 +637,10 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
                       className="hidden"
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
+
           </div>
 
           {/* Voice Settings Section */}
@@ -841,7 +773,7 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
             {/* Delete Button */}
             {savedAvatarId && (
               <button
-                onClick={handleDeleteAvatar}
+                onClick={() => useDeleteConfirmModal.openModal(savedAvatarId)}
                 className="w-full bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
               >
                 <HiTrash className="h-5 w-5" />
@@ -849,6 +781,17 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
               </button>
             )}
           </div>
+
+          {/* Delete Confirmation Modal */}
+          {useDeleteConfirmModal.isOpen && (
+            <DeleteModal
+              avatars={[{ id: savedAvatarId, name: formData.name || 'Avatar' }]}
+              avatarToDeleteId={useDeleteConfirmModal.data}
+              isDeleting={isDeleting}
+              onCancel={useDeleteConfirmModal.closeModal}
+              onConfirm={handleDeleteAvatar}
+            />
+          )}
 
           {/* Canvas for image processing */}
           <canvas ref={canvasRef} className="hidden" />
