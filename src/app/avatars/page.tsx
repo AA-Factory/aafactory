@@ -115,10 +115,8 @@ const Avatars: React.FC = () => {
           </button> */}
         </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {/* Create New Avatar Card */}
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
           <CreateAvatarCard />
-          {/* Loading State */}
           {isLoading && <LoadingState />}
           {!isLoading &&
             avatars.map((avatar) => (

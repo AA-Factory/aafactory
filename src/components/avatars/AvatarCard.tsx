@@ -23,9 +23,10 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 group relative ${isActive
-        ? 'border-green-500 bg-green-50'
-        : 'border-gray-100 hover:border-blue-200'
+      className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 group relative h-full flex flex-col
+    ${isActive
+          ? 'border-green-500 bg-green-50'
+          : 'border-gray-100 hover:border-blue-200'
         }`}
     >
       <div className="text-center relative">

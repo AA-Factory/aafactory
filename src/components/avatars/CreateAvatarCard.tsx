@@ -8,7 +8,7 @@ export const CreateAvatarCard: React.FC = () => {
     <Link href="/avatar/create" className="group" >
       <div
 
-        className="group cursor-pointer bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200"
+        className="group cursor-pointer bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 h-full flex flex-col"
       >
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4 group-hover:bg-purple-200 transition-colors">
