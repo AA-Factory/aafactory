@@ -7,7 +7,6 @@ interface Avatar {
 }
 
 interface DeleteModalProps {
-  avatars: Avatar[];
   avatarToDeleteId: string | null;
   isDeleting: boolean;
   onCancel: () => void;
@@ -15,7 +14,6 @@ interface DeleteModalProps {
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({
-  avatars = [],
   avatarToDeleteId,
   isDeleting,
   onCancel,
@@ -23,17 +21,30 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
 }) => {
   if (!avatarToDeleteId) return null;
 
-  const avatarToDelete = avatars.find(a => a.id === avatarToDeleteId);
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      onConfirm();
+    } else if (event.key === 'Escape') {
+      onCancel();
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
         <div className="text-center">
+          <input
+            onKeyDown={handleKeyDown}
+            autoFocus
+            className="sr-only"
+            readOnly
+            aria-label="Keyboard navigation for modal"
+          />
           <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
             <HiTrash className="w-8 h-8 text-red-600" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Delete {avatarToDelete?.name}?
+            Delete Avatar
           </h3>
           <p className="text-gray-600 mb-8">
             This action cannot be undone. The avatar and its associated files will be permanently removed from the database.

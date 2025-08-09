@@ -14,3 +14,11 @@ export interface Avatar {
 export interface AvatarResponse {
   avatars: any[];
 }
+
+export interface AvatarPageProps {
+  editMode?: boolean;
+  avatarId?: string;
+}
+export interface TouchedFields {
+  [key: string]: boolean;
+}

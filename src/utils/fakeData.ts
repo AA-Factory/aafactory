@@ -19,7 +19,7 @@ export const generateFakeFormData = () => {
     'Background in educational technology, curriculum design, and online learning platforms.'
   ];
 
-  const voiceModels = ['elevenlabs', 'google', 'azure', 'amazon', 'coqui'];
+  const voiceModels = ['elevenlabs', 'google', 'azure'];
 
   return {
     name: names[Math.floor(Math.random() * names.length)],

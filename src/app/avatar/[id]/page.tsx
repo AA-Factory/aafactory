@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import AvatarPage from '@/components/avatar/AvatarPage';
+import { useRouter } from 'next/navigation' // NOT 'next/router'
 
 
 interface AvatarEditProps {
@@ -13,11 +14,11 @@ interface AvatarEditProps {
 
 const AvatarEdit: React.FC<AvatarEditProps> = ({ params }) => {
   const avatarId = params.id;
-
+  const router = useRouter();
   useEffect(() => {
     // Redirect to avatars page if no ID provided
     if (!avatarId) {
-      window.location.href = '/avatars';
+      router.push('/avatars');
     }
   }, [avatarId]);
 

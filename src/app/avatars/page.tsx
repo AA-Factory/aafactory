@@ -15,24 +15,19 @@ import { useAvatars, useDeleteAvatar, useActiveAvatar } from '@/hooks/useAvatars
 
 
 const Avatars: React.FC = () => {
-  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
-  // const [activeAvatarId, setActiveAvatarId] = useState<string | null>(null);
-  // const [avatars, setAvatars] = useState<Avatar[]>([]);
-  const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
+  // ====== Hooks & Context ======
   const { showNotification, hideNotification, notification } = useNotification();
-
-  // Modal states
-  const [avatarToConfirmUseId, setAvatarToConfirmUseId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { data: avatars = [], isLoading, error, refetch } = useAvatars();
-  const deleteAvatarMutation = useDeleteAvatar();
   const { activeAvatarId, setActiveAvatarId } = useActiveAvatar();
-
-
   const useConfirmModal = useModal();
   const useDeleteConfirmModal = useModal();
 
+  // ====== Data Fetching (TanStack Query) ======
+  const { data: avatars = [], isLoading, error, refetch } = useAvatars();
+  const deleteAvatarMutation = useDeleteAvatar();
+
+  // ====== Modal & UI State ======
+  const [avatarToConfirmUseId, setAvatarToConfirmUseId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Load active avatar from localStorage
   useEffect(() => {
@@ -50,7 +45,7 @@ const Avatars: React.FC = () => {
   const confirmUseAvatar = () => {
     if (avatarToConfirmUseId) {
       setActiveAvatarId(avatarToConfirmUseId);
-      setSelectedAvatar(null);
+
 
       // Save to localStorage for persistence
       localStorage.setItem('activeAvatarId', avatarToConfirmUseId);
@@ -65,7 +60,7 @@ const Avatars: React.FC = () => {
   const cancelUseAvatar = () => {
     useConfirmModal.closeModal();
     setAvatarToConfirmUseId(null);
-    setSelectedAvatar(null);
+
   };
 
   const handleDeleteAvatar = (e: React.MouseEvent, avatarId: string) => {

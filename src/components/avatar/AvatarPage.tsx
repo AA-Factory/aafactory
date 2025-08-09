@@ -7,6 +7,7 @@ import DeleteModal from '../DeleteModal';
 import { ImageUploadSection } from './ImageUploadSection';
 import { useModal } from '@/hooks/useModal';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useAvatar, useCreateAvatar, useUpdateAvatar, useDeleteAvatar, useRefreshAvatars } from '@/hooks/useAvatars';
 
 import Link from 'next/link'
 import { encodeFormDataIntoImage, decodeFormDataFromImage, loadImageToCanvas, decodeDataFromImage } from '@/utils/steganography';
@@ -22,34 +23,43 @@ interface TouchedFields {
 }
 
 const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) => {
+  // ====== Hooks & Context ======
   const { showNotification, hideNotification, notification } = useNotification();
-
-  //use fake data
-  const [formData, setFormData] = useState<{ [key: string]: string }>(generateFakeFormData());
   const router = useRouter();
-  const [expandedSections, setExpandedSections] = useState({
-    avatarInfos: true,
-    voiceSettings: true
-  });
+  const useDeleteConfirmModal = useModal();
 
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [encodedImage, setEncodedImage] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [savedAvatarId, setSavedAvatarId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // ====== Data Fetching (TanStack Query) ======
+  const { data: existingAvatar, isLoading: isLoadingAvatar, error: avatarError } = useAvatar(editMode ? avatarId : undefined);
+  const createAvatarMutation = useCreateAvatar();
+  const updateAvatarMutation = useUpdateAvatar();
+  const deleteAvatarMutation = useDeleteAvatar();
+  const { refreshAll } = useRefreshAvatars();
 
-  // Validation states
+  // ====== Form State ======
+  const [formData, setFormData] = useState<{ [key: string]: string }>(generateFakeFormData());
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const fileInputRef = useRef(null);
-  const canvasRef = useRef(null);
+  // ====== UI State ======
+  const [expandedSections, setExpandedSections] = useState({
+    avatarInfos: true,
+    voiceSettings: true,
+  });
+  const [isDragging, setIsDragging] = useState(false);
 
-  const useDeleteConfirmModal = useModal();
-  // Validate form on data changes
+  // ====== Avatar State ======
+  const [selectedImage, setSelectedImage] = useState<null | string>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null); // Store the actual file
+  const [encodedImage, setEncodedImage] = useState<null | string>(null);
+  const [savedAvatarId, setSavedAvatarId] = useState<string | null>(null);
+  const [hasNewImage, setHasNewImage] = useState(false); // Track if user uploaded a new image
+
+  // ====== Refs ======
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const decodingCanvasRef = useRef<HTMLCanvasElement | null>(null); // Separate canvas for decoding
+
   useEffect(() => {
     const errors = {};
     let hasErrors = false;
@@ -70,10 +80,24 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   // Auto-load avatar in edit mode
   useEffect(() => {
-    if (editMode && avatarId && avatarId !== savedAvatarId) {
-      handleLoadAvatar(avatarId);
+    if (editMode && existingAvatar && !isLoadingAvatar) {
+      setFormData({
+        name: existingAvatar.name || '',
+        personality: existingAvatar.personality || '',
+        backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
+        voiceModel: existingAvatar.voiceModel || 'elevenlabs'
+      });
+
+      if (existingAvatar.imageUrl && existingAvatar.imageUrl !== '/placeholder-avatar.png') {
+        setSelectedImage(existingAvatar.imageUrl);
+        setHasNewImage(false); // This is the existing image, not a new one
+      }
+
+      // Clear validation states when loading existing data
+      setFieldErrors({});
+      setTouched({});
     }
-  }, [editMode, avatarId]);
+  }, [editMode, existingAvatar]);
 
   // Auto-save avatarId when in edit mode
   useEffect(() => {
@@ -84,102 +108,6 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   const handleFieldBlur = (fieldName: string): void => {
     setTouched((prev: TouchedFields) => ({ ...prev, [fieldName]: true }));
-  };
-
-
-  // Save avatar data to database (with optional file upload)
-  const saveAvatarToDatabase = async (avatarData, file = null, fileName = null) => {
-    let response;
-
-    if (file) {
-      // Use FormData for file upload
-      const formData = new FormData();
-      formData.append('name', avatarData.name);
-      formData.append('personality', avatarData.personality);
-      formData.append('backgroundKnowledge', avatarData.backgroundKnowledge);
-      formData.append('voiceModel', avatarData.voiceModel);
-      formData.append('hasEncodedData', avatarData.hasEncodedData?.toString() || 'false');
-      formData.append('file', file);
-      formData.append('fileName', fileName ?? '');
-
-      response = await fetch('/api/avatars/create-avatar', {
-        method: 'POST',
-        body: formData,
-      });
-    } else {
-      // Use JSON for data-only
-      console.log('avatarData --->', avatarData);
-      response = await fetch('/api/avatars/create-avatar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(avatarData),
-      });
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      if (errorData.validationErrors) {
-        // Handle server-side validation errors
-        setFieldErrors(errorData.validationErrors);
-        throw new Error('Please fix the validation errors');
-      }
-      throw new Error(errorData.error || 'Failed to save avatar');
-    }
-
-    return await response.json();
-  };
-
-
-  // Update existing avatar
-  const updateAvatarInDatabase = async (avatarId, avatarData) => {
-    const response = await fetch('/api/avatars/update-avatar', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: avatarId, ...avatarData }),
-    });
-
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      if (errorData.validationErrors) {
-        // Handle server-side validation errors
-        setFieldErrors(errorData.validationErrors);
-        throw new Error('Please fix the validation errors');
-      }
-      throw new Error(errorData.error || 'Failed to update avatar');
-    }
-
-    return await response.json();
-  };
-
-  // Get avatar by ID
-  const getAvatarById = async (avatarId) => {
-    const response = await fetch('/api/avatars/get-avatar?id=' + avatarId, {
-      method: 'GET'
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch avatar');
-    }
-
-    return await response.json();
-  };
-
-  // Delete avatar by ID (automatically handles file cleanup)
-  const deleteAvatarById = async (avatarId) => {
-    const response = await fetch('/api/avatars/delete-avatar', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: avatarId })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete avatar');
-    }
-
-    return await response.json();
   };
 
   const handleInputChange = (e) => {
@@ -206,6 +134,24 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     }));
   };
 
+  // Helper function to draw image to canvas
+  const drawImageToCanvas = (file: File, canvas: HTMLCanvasElement): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const ctx = canvas.getContext('2d');
+
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        ctx?.drawImage(img, 0, 0);
+        resolve();
+      };
+
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleImageUpload = async (file) => {
     // Validate file first
@@ -218,28 +164,39 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     try {
       showNotification('Processing image...', 'info');
       const imageUrl = URL.createObjectURL(file);
+
+      // Store both the URL and the file object
       setSelectedImage(imageUrl);
+      setSelectedImageFile(file);
+      setHasNewImage(true); // Mark that user uploaded a new image
 
-      // Try to decode form data from the image
-      const imageData = await loadImageToCanvas(file, canvasRef);
-      const decodedText = decodeDataFromImage(imageData);
+      // Draw image to main canvas for potential upload
+      if (canvasRef.current) {
+        await loadImageToCanvas(file, canvasRef);
+      }
 
-      if (decodedText) {
-        try {
-          const decodedData = JSON.parse(decodedText);
-          setFormData(decodedData);
-          showNotification('Form data successfully decoded from image!', 'success');
+      // Try to decode form data from the image using separate canvas
+      if (decodingCanvasRef.current) {
+        const imageData = await loadImageToCanvas(file, decodingCanvasRef);
+        const decodedText = decodeDataFromImage(imageData);
 
-        } catch {
-          showNotification('Image loaded but no valid form data found', 'warning');
+        if (decodedText) {
+          try {
+            const decodedData = JSON.parse(decodedText);
+            setFormData(decodedData);
+            showNotification('Form data successfully decoded from image!', 'success');
+          } catch {
+            showNotification('Image loaded but no valid form data found', 'warning');
+          }
+        } else {
+          showNotification('Image loaded - ready for encoding', 'info');
         }
-      } else {
-        showNotification('Image loaded - ready for encoding', 'info');
       }
     } catch (err) {
       showNotification('Failed to process image: ' + err.message, 'error');
     }
   };
+
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -272,7 +229,6 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
       showNotification('Please select an image first', 'warning');
       return;
     }
-    console.log('✌️selectedImage --->', selectedImage);
 
     if (!isFormValid) {
       showNotification('Please fix all validation errors before saving', 'warning');
@@ -282,47 +238,66 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     }
 
     try {
-
-      setIsSaving(true);
       showNotification('Encoding avatar data into image...', 'info');
 
-      const response = await fetch(selectedImage);
-      const imageFile = new File([await response.blob()], 'image.png');
+      let imageFile = selectedImageFile;
 
-      // Encode form data into image - THIS IS THE SIMPLE PART!
+      // If no file object (e.g., editing existing avatar), fetch the image
+      if (!imageFile && selectedImage) {
+        const response = await fetch(selectedImage);
+        imageFile = new File([await response.blob()], 'image.png');
+      }
+
+      if (!imageFile) {
+        throw new Error('No image file available for encoding');
+      }
+
+      // Encode form data into image
       const { blob, downloadUrl } = await encodeFormDataIntoImage(formData, imageFile);
-
       setEncodedImage(downloadUrl);
-      // Save avatar with encoded image in one call
       showNotification('Saving avatar and uploading encoded image...', 'info');
-      const fileName = `${formData.name || 'avatar'}-encoded.png`;
 
+      const fileName = `${formData.name || 'avatar'}-encoded.png`;
       const avatarData = {
         ...formData,
         hasEncodedData: true
       };
 
-      let saveResult;
-      if (savedAvatarId) {
-        // For updates, we need to handle file upload separately since PUT doesn't support FormData easily
-        // You might want to create a separate endpoint for file updates or modify the PUT endpoint
-        saveResult = await updateAvatarInDatabase(savedAvatarId, avatarData);
+      if (editMode && avatarId) {
+        // Update existing avatar
+        await updateAvatarMutation.mutateAsync({
+          id: avatarId,
+          ...avatarData,
+          file: blob,
+          fileName
+        });
+        showNotification('Avatar successfully updated and encoded!', 'success');
       } else {
-        saveResult = await saveAvatarToDatabase(avatarData, blob, fileName);
-        setSavedAvatarId(saveResult.id);
+        // Create new avatar
+        await createAvatarMutation.mutateAsync({
+          formData: avatarData,
+          file: blob,
+          fileName
+        });
+        showNotification('Avatar successfully saved and encoded!', 'success');
       }
 
-      // // Create download URL for immediate download
-      // const url = URL.createObjectURL(blob);
-      // setEncodedImage(url);
-
-      showNotification('Avatar successfully saved and encoded!', 'success');
+      // Reset the new image flag after successful save
+      setHasNewImage(false);
 
     } catch (err) {
-      showNotification('Failed to save avatar: ' + err.message, 'error');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save avatar';
+      showNotification(errorMessage, 'error');
 
-    } finally {
-      setIsSaving(false);
+      // Handle validation errors
+      if (errorMessage.includes('Validation errors:')) {
+        try {
+          const validationErrors = JSON.parse(errorMessage.replace('Validation errors: ', ''));
+          setFieldErrors(validationErrors);
+        } catch {
+          // If parsing fails, just show the general error
+        }
+      }
     }
   };
 
@@ -338,23 +313,26 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
   const handleSaveOnly = async () => {
     if (!isFormValid) {
       showNotification('Please fix all validation errors before saving', 'warning');
-      // Mark all fields as touched to show errors
       setTouched(Object.keys(avatarSchema).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
       return;
     }
+
     try {
-      setIsSaving(true);
-      showNotification('Saving avatar data...', 'info');
+      showNotification('Saving avatar...', 'info');
 
       let avatarData = { ...formData };
       let file = null;
       let fileName = null;
 
-      // If there's a selected image but no encoded image, include the original image
-      if (selectedImage && !encodedImage) {
-        const canvas = canvasRef.current;
-        const blob = await new Promise(resolve => {
-          canvas.toBlob(resolve, 'image/png');
+      // If user uploaded a new image, include it in the save
+      if (hasNewImage && selectedImageFile) {
+        file = selectedImageFile;
+        fileName = `${formData.name || 'avatar'}-original.png`;
+        avatarData.hasEncodedData = false;
+      } else if (hasNewImage && selectedImage && canvasRef.current) {
+        // Fallback: if we have a canvas with the image drawn
+        const blob = await new Promise<Blob>((resolve) => {
+          canvasRef.current!.toBlob((blob) => resolve(blob!), 'image/png');
         });
 
         file = blob;
@@ -362,92 +340,64 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
         avatarData.hasEncodedData = false;
       }
 
-      let saveResult;
-      if (savedAvatarId) {
+      if (editMode && avatarId) {
         // Update existing avatar
-        saveResult = await updateAvatarInDatabase(savedAvatarId, avatarData);
+        const updateData: any = { id: avatarId, ...avatarData };
+        if (file && fileName) {
+          updateData.file = file;
+          updateData.fileName = fileName;
+        }
+
+        await updateAvatarMutation.mutateAsync(updateData);
         showNotification('Avatar data successfully updated!', 'success');
       } else {
         // Create new avatar
-        saveResult = await saveAvatarToDatabase(avatarData, file, fileName);
-        setSavedAvatarId(saveResult.id);
+        if (file) {
+          await createAvatarMutation.mutateAsync({
+            formData: avatarData,
+            file,
+            fileName
+          });
+        } else {
+          await createAvatarMutation.mutateAsync({
+            jsonData: avatarData
+          });
+        }
         showNotification('Avatar successfully saved!', 'success');
       }
 
+      // Reset the new image flag after successful save
+      setHasNewImage(false);
+
+      // Refresh avatars list
+      refreshAll();
+      router.push('/avatars');
     } catch (err) {
-      showNotification('Failed to save avatar: ' + err.message, 'error');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save avatar';
+      showNotification(errorMessage, 'error');
 
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleLoadAvatar = async (avatarId) => {
-    try {
-
-      showNotification('Loading avatar...', 'info');
-
-      const result = await getAvatarById(avatarId);
-      const avatar = result.avatar;
-
-      // Update form data
-      setFormData({
-        name: avatar.name || '',
-        personality: avatar.personality || '',
-        backgroundKnowledge: avatar.backgroundKnowledge || '',
-        voiceModel: avatar.voiceModel || 'elevenlabs'
-      });
-
-      // Clear validation states
-      setFieldErrors({});
-      setTouched({});
-
-      // If avatar has an image, load it
-      if (avatar.src) {
-        setSelectedImage(avatar.src);
-        // You might want to load the image to canvas here as well
+      // Handle validation errors
+      if (errorMessage.includes('Validation errors:')) {
+        try {
+          const validationErrors = JSON.parse(errorMessage.replace('Validation errors: ', ''));
+          setFieldErrors(validationErrors);
+        } catch {
+          // If parsing fails, just show the general error
+        }
       }
-
-      setSavedAvatarId(avatarId);
-      showNotification('Avatar loaded successfully!', 'success');
-
-    } catch (err) {
-      showNotification('Failed to load avatar: ' + err.message, 'error');
-
     }
   };
 
   const handleDeleteAvatar = async () => {
-    if (!savedAvatarId) return;
-
+    if (!avatarId) return;
 
     try {
-
-      showNotification('Deleting avatar...', 'info');
-
-      // Delete avatar (automatically handles file cleanup)
-      await deleteAvatarById(savedAvatarId);
-
-      // Reset form
-      setFormData({
-        name: '',
-        personality: '',
-        backgroundKnowledge: '',
-        voiceModel: 'elevenlabs'
-      });
-      setSelectedImage(null);
-      setEncodedImage(null);
-      setSavedAvatarId(null);
-      setFieldErrors({});
-      setTouched({});
-
+      await deleteAvatarMutation.mutateAsync(avatarId);
       showNotification('Avatar and associated files deleted successfully!', 'success');
-
     } catch (err) {
-      showNotification('Failed to delete avatar: ' + err.message, 'error');
+      showNotification('Failed to delete avatar: ' + (err instanceof Error ? err.message : 'Unknown error'), 'error');
     } finally {
       useDeleteConfirmModal.closeModal();
-      //navigate back to avatars list
       router.push('/avatars');
     }
   };
@@ -479,9 +429,7 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-
       <div className="max-w-4xl mx-auto p-6">
-
         <div className="space-y-6">
           {/* Header */}
           <div className="text-center">
@@ -503,11 +451,10 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
                 : 'Create and save your avatar with steganography encoding'
               }
             </p>
-
           </div>
 
           {/* Avatar Infos Section */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm shit">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
               onClick={() => toggleSection('avatarInfos')}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -582,7 +529,6 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
                 ))}
 
                 <div>
-
                   {/* Avatar Image Upload */}
                   <ImageUploadSection
                     selectedImage={selectedImage}
@@ -593,54 +539,9 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
                     onDrop={handleDrop}
                     onFileSelect={handleFileSelect}
                   />
-
                 </div>
-                {/* Avatar Image Upload */}
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">
-                    Avatar Image
-                  </label>
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${isDragging
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400 bg-gray-50'
-                      }`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {selectedImage ? (
-                      <div className="space-y-4">
-                        <img
-                          src={selectedImage}
-                          alt="Avatar"
-                          className="mx-auto h-32 w-32 object-cover rounded-lg"
-                        />
-                        <p className="text-gray-600">Click to change image or drop new image to decode data</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <HiUpload className="mx-auto h-12 w-12 text-gray-400" />
-                        <div>
-                          <p className="text-lg text-gray-600 mb-1">Drop Image Here</p>
-                          <p className="text-sm text-gray-500">or</p>
-                          <p className="text-sm text-blue-600 font-medium">Click to Upload</p>
-                        </div>
-                      </div>
-                    )}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </div>
-                </div> */}
               </div>
             )}
-
           </div>
 
           {/* Voice Settings Section */}
@@ -689,59 +590,23 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            {/* Load Avatar Section - Only show in create mode */}
-            {!editMode && !savedAvatarId && (
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 className="text-lg font-medium mb-4">Load Existing Avatar</h3>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    placeholder="Enter Avatar ID"
-                    className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        const avatarId = e.target.value.trim();
-                        if (avatarId) {
-                          handleLoadAvatar(avatarId);
-                          e.target.value = '';
-                        }
-                      }
-                    }}
-                  />
-                  <button
-                    onClick={(e) => {
-                      const input = e.target.previousElementSibling;
-                      const avatarId = input.value.trim();
-                      if (avatarId) {
-                        handleLoadAvatar(avatarId);
-                        input.value = '';
-                      }
-                    }}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
-                  >
-                    Load
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Save Only Button */}
             <button
               onClick={handleSaveOnly}
-              disabled={isSaving || !isFormValid}
+              disabled={isLoadingAvatar || !isFormValid}
               className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
             >
               <HiSave className="h-5 w-5" />
-              <span>{isSaving ? 'Saving...' : savedAvatarId ? 'Update Avatar Data' : 'Save Avatar Data Only'}</span>
+              <span>{isLoadingAvatar ? 'Saving...' : savedAvatarId ? 'Update Avatar Data' : 'Save Avatar Data Only'}</span>
             </button>
 
             {/* Save and Encode Button */}
             <button
               onClick={handleSaveAndEncode}
-              disabled={!selectedImage || isSaving || !isFormValid}
+              disabled={!selectedImage || isLoadingAvatar || !isFormValid}
               className="w-full bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg transition-colors font-medium"
             >
-              {isSaving ? 'Processing...' : savedAvatarId ? 'Update & Encode to Image + Upload' : 'Save & Encode to Image + Upload'}
+              {isLoadingAvatar ? 'Processing...' : savedAvatarId ? 'Update & Encode to Image + Upload' : 'Save & Encode to Image + Upload'}
             </button>
 
             {/* Validation Status */}
@@ -785,9 +650,8 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
           {/* Delete Confirmation Modal */}
           {useDeleteConfirmModal.isOpen && (
             <DeleteModal
-              avatars={[{ id: savedAvatarId, name: formData.name || 'Avatar' }]}
               avatarToDeleteId={useDeleteConfirmModal.data}
-              isDeleting={isDeleting}
+              isDeleting={isLoadingAvatar}
               onCancel={useDeleteConfirmModal.closeModal}
               onConfirm={handleDeleteAvatar}
             />
@@ -795,6 +659,7 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
 
           {/* Canvas for image processing */}
           <canvas ref={canvasRef} className="hidden" />
+          <canvas ref={decodingCanvasRef} className="hidden" />
         </div>
       </div>
     </div>
