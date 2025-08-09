@@ -24,7 +24,6 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  console.log('✌️sDeleting, --->', isDeleting,);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).src = AVATAR_CONSTANTS.FALLBACK_IMAGE;
