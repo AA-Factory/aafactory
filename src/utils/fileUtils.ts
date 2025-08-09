@@ -1,35 +1,54 @@
-// utils/fileUtils.js
-import { writeFile, mkdir, unlink } from 'fs/promises';
+// utils/fileUtils.ts
+import { writeFile, mkdir, unlink, stat } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
+export interface UploadResult {
+  success: boolean;
+  filePath: string; // relative path for serving
+  fileName: string; // unique generated file name
+  fullPath: string; // absolute file path
+}
+
+export interface DeleteResult {
+  success: boolean;
+  message: string;
+}
+
+export interface FileInfo {
+  exists: boolean;
+  size?: number;
+  created?: Date;
+  modified?: Date;
+}
+
 /**
  * Upload a file to the uploads/avatars directory
- * @param {Blob|File} blob - The file blob to upload
- * @param {string} fileName - The desired filename
- * @returns {Promise<{success: boolean, filePath: string, fileName: string}>}
+ * @param blob - The file Blob or Buffer to upload
+ * @param fileName - The original file name
  */
-export async function uploadFile(blob, fileName) {
+export async function uploadFile(
+  blob: Blob | Buffer,
+  fileName: string
+): Promise<UploadResult> {
   try {
-    // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars');
     await mkdir(uploadsDir, { recursive: true });
 
-    // Generate unique filename
     const timestamp = Date.now();
     const extension = path.extname(fileName);
     const baseName = path.basename(fileName, extension);
-    const uniqueFileName = `${timestamp}-${Math.random().toString(36).substring(7)}-${baseName}${extension}`;
+    const uniqueFileName = `${timestamp}-${Math.random()
+      .toString(36)
+      .substring(7)}-${baseName}${extension}`;
 
     const filePath = path.join(uploadsDir, uniqueFileName);
     const relativePath = `/uploads/avatars/${uniqueFileName}`;
 
-    // Convert blob to buffer and save
-    let buffer;
+    let buffer: Buffer;
     if (blob instanceof Blob) {
-      const arrayBuffer = await blob.arrayBuffer();
-      buffer = Buffer.from(arrayBuffer);
-    } else if (blob instanceof Buffer) {
+      buffer = Buffer.from(await blob.arrayBuffer());
+    } else if (Buffer.isBuffer(blob)) {
       buffer = blob;
     } else {
       throw new Error('Invalid file type. Expected Blob or Buffer.');
@@ -41,10 +60,9 @@ export async function uploadFile(blob, fileName) {
       success: true,
       filePath: relativePath,
       fileName: uniqueFileName,
-      fullPath: filePath
+      fullPath: filePath,
     };
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading file:', error);
     throw new Error(`Failed to upload file: ${error.message}`);
   }
@@ -52,31 +70,26 @@ export async function uploadFile(blob, fileName) {
 
 /**
  * Delete a file from the uploads/avatars directory
- * @param {string} filePath - The relative file path (e.g., "/uploads/avatars/filename.png")
- * @returns {Promise<{success: boolean, message: string}>}
+ * @param filePath - The relative file path (e.g., "/uploads/avatars/filename.png")
  */
-export async function deleteFile(filePath) {
+export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
-    // Convert relative path to absolute path
     const absolutePath = path.join(process.cwd(), 'public', filePath);
 
-    // Check if file exists
     if (!existsSync(absolutePath)) {
       return {
         success: true,
-        message: 'File does not exist (already deleted)'
+        message: 'File does not exist (already deleted)',
       };
     }
 
-    // Delete the file
     await unlink(absolutePath);
 
     return {
       success: true,
-      message: 'File deleted successfully'
+      message: 'File deleted successfully',
     };
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting file:', error);
     throw new Error(`Failed to delete file: ${error.message}`);
   }
@@ -84,30 +97,27 @@ export async function deleteFile(filePath) {
 
 /**
  * Delete a file by filename from the uploads/avatars directory
- * @param {string} fileName - The filename to delete
- * @returns {Promise<{success: boolean, message: string}>}
+ * @param fileName - The filename to delete
  */
-export async function deleteFileByName(fileName) {
+export function deleteFileByName(fileName: string): Promise<DeleteResult> {
   const relativePath = `/uploads/avatars/${fileName}`;
   return deleteFile(relativePath);
 }
 
 /**
  * Check if a file exists
- * @param {string} filePath - The relative file path
- * @returns {boolean}
+ * @param filePath - The relative file path
  */
-export function fileExists(filePath) {
+export function fileExists(filePath: string): boolean {
   const absolutePath = path.join(process.cwd(), 'public', filePath);
   return existsSync(absolutePath);
 }
 
 /**
  * Get file info
- * @param {string} filePath - The relative file path
- * @returns {Promise<{exists: boolean, size?: number, created?: Date}>}
+ * @param filePath - The relative file path
  */
-export async function getFileInfo(filePath) {
+export async function getFileInfo(filePath: string): Promise<FileInfo> {
   try {
     const absolutePath = path.join(process.cwd(), 'public', filePath);
 
@@ -115,16 +125,14 @@ export async function getFileInfo(filePath) {
       return { exists: false };
     }
 
-    const { stat } = await import('fs/promises');
     const stats = await stat(absolutePath);
 
     return {
       exists: true,
       size: stats.size,
       created: stats.birthtime,
-      modified: stats.mtime
+      modified: stats.mtime,
     };
-
   } catch (error) {
     console.error('Error getting file info:', error);
     return { exists: false };
