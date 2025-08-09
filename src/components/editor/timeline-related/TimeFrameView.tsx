@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { EditorElement } from "@/types";
+import { EditorElement } from "@/types/editor";
 import { StoreContext } from "@/store";
 import { observer } from "mobx-react";
 import DragableView from "./DragableView";
@@ -19,9 +19,8 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
         store.setSelectedElement(element);
       }}
       key={element.id}
-      className={`relative width-full h-[25px] my-2 ${
-        isSelected ? "border-2 border-indigo-600 bg-slate-200" : ""
-      }`}
+      className={`relative width-full h-[25px] my-2 ${isSelected ? "border-2 border-indigo-600 bg-slate-200" : ""
+        }`}
     >
       <DragableView
         className="z-10"
@@ -44,11 +43,10 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
         value={element.timeFrame.start}
         disabled={disabled}
         style={{
-          width: `${
-            ((element.timeFrame.end - element.timeFrame.start) /
-              store.maxTime) *
+          width: `${((element.timeFrame.end - element.timeFrame.start) /
+            store.maxTime) *
             100
-          }%`,
+            }%`,
         }}
         total={store.maxTime}
         onChange={(value) => {
