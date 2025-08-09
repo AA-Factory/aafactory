@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { HiUser } from 'react-icons/hi';
-import DeleteModal from '@/components/DeleteModal';
 import ConfirmationModal from '@/components/ConformationModal';
 import { AvatarCard } from '@/components/avatars/AvatarCard';
 import { CreateAvatarCard } from '@/components/avatars/CreateAvatarCard';
@@ -25,10 +24,6 @@ const Avatars: React.FC = () => {
   const { data: avatars = [], isLoading, error, refetch } = useAvatars();
   const deleteAvatarMutation = useDeleteAvatar();
 
-  // ====== Modal & UI State ======
-  const [avatarToConfirmUseId, setAvatarToConfirmUseId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
   // Load active avatar from localStorage
   useEffect(() => {
     const savedActiveAvatar = localStorage.getItem('activeAvatarId');
@@ -38,34 +33,19 @@ const Avatars: React.FC = () => {
   }, []);
 
   const handleUseAvatarClick = (avatarId: string) => {
-    setAvatarToConfirmUseId(avatarId);
     useConfirmModal.openModal(avatarId);
   };
 
   const confirmUseAvatar = () => {
-    if (avatarToConfirmUseId) {
-      setActiveAvatarId(avatarToConfirmUseId);
-
-
-      // Save to localStorage for persistence
-      localStorage.setItem('activeAvatarId', avatarToConfirmUseId);
-
-      // You might want to also save this to a user preferences API
-      // saveUserPreference('activeAvatarId', avatarToConfirmUseId);
+    if (useConfirmModal.data) {
+      localStorage.setItem('activeAvatarId', useConfirmModal.data);
     }
     useConfirmModal.closeModal();
-    setAvatarToConfirmUseId(null);
-  };
-
-  const cancelUseAvatar = () => {
-    useConfirmModal.closeModal();
-    setAvatarToConfirmUseId(null);
-
   };
 
   const handleDeleteAvatar = (e: React.MouseEvent, avatarId: string) => {
     e.stopPropagation();
-    useDeleteConfirmModal.openModal(avatarId);
+    useDeleteConfirmModal.data = avatarId;
   };
   const confirmDelete = async () => {
     if (!useDeleteConfirmModal.data) return;
@@ -73,11 +53,11 @@ const Avatars: React.FC = () => {
     try {
       await deleteAvatarMutation.mutateAsync(useDeleteConfirmModal.data);
 
-      // Clear active avatar if it was the deleted one
       if (activeAvatarId === useDeleteConfirmModal.data) {
         setActiveAvatarId(null);
       }
 
+      useDeleteConfirmModal.closeModal();
       showNotification('Avatar deleted successfully', 'success');
     } catch (err) {
       console.error('Error deleting avatar:', err);
@@ -85,8 +65,6 @@ const Avatars: React.FC = () => {
         err instanceof Error ? err.message : 'Failed to delete avatar. Please try again.',
         'error'
       );
-    } finally {
-      useDeleteConfirmModal.closeModal();
     }
   };
 
@@ -103,16 +81,6 @@ const Avatars: React.FC = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
             Select from your existing avatars or create a new one to begin your journey
           </p>
-
-          {/* Refresh Button */}
-          {/* <button
-            onClick={handleRefresh}
-            disabled={loading}
-            className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
-          >
-            <HiRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button> */}
         </div>
 
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
@@ -123,9 +91,11 @@ const Avatars: React.FC = () => {
               <AvatarCard
                 key={avatar.id}
                 avatar={avatar}
+                avatarToDeleteId={useDeleteConfirmModal.data}
                 isActive={activeAvatarId === avatar.id}
                 onDelete={handleDeleteAvatar}
                 onUse={handleUseAvatarClick}
+                onConfirm={confirmDelete}
               />
             ))}
 
@@ -141,19 +111,9 @@ const Avatars: React.FC = () => {
       {useConfirmModal.isOpen && (
         <ConfirmationModal
           isOpen={useConfirmModal.isOpen}
-          avatarToConfirm={avatars.find(a => a.id === avatarToConfirmUseId)}
+          avatarToConfirm={useConfirmModal.data}
           onConfirm={confirmUseAvatar}
-          onCancel={cancelUseAvatar}
-        />
-      )}
-      {/* Delete Confirmation Modal */}
-      {useDeleteConfirmModal.isOpen && (
-        <DeleteModal
-          avatars={avatars}
-          avatarToDeleteId={useDeleteConfirmModal.data}
-          isDeleting={isDeleting}
-          onCancel={useDeleteConfirmModal.closeModal}
-          onConfirm={confirmDelete}
+          onCancel={useConfirmModal.closeModal}
         />
       )}
     </div>

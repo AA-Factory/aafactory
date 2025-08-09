@@ -3,7 +3,6 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { HiChevronDown, HiChevronUp, HiUpload, HiDownload, HiSave, HiTrash, HiExclamationCircle, HiArrowLeft } from 'react-icons/hi';
 import { validateField, validateFile, avatarSchema } from '@/utils/validation';
 import { generateFakeFormData } from '@/utils/fakeData';
-import DeleteModal from '../DeleteModal';
 import { ImageUploadSection } from './ImageUploadSection';
 import { useModal } from '@/hooks/useModal';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -25,6 +24,8 @@ interface TouchedFields {
 const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) => {
   // ====== Hooks & Context ======
   const { showNotification, hideNotification, notification } = useNotification();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
   const router = useRouter();
   const useDeleteConfirmModal = useModal();
 
@@ -388,7 +389,7 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     }
   };
 
-  const handleDeleteAvatar = async () => {
+  const handleDeleteAvatar = async (avatarId) => {
     if (!avatarId) return;
 
     try {
@@ -397,7 +398,6 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
     } catch (err) {
       showNotification('Failed to delete avatar: ' + (err instanceof Error ? err.message : 'Unknown error'), 'error');
     } finally {
-      useDeleteConfirmModal.closeModal();
       router.push('/avatars');
     }
   };
@@ -635,27 +635,36 @@ const AvatarPage: React.FC<AvatarPageProps> = ({ editMode = false, avatarId }) =
               </button>
             )}
 
-            {/* Delete Button */}
             {savedAvatarId && (
               <button
-                onClick={() => useDeleteConfirmModal.openModal(savedAvatarId)}
+                onClick={() => {
+                  if (showConfirmation) {
+                    handleDeleteAvatar(avatarId);
+                    // setShowConfirmation(false);
+                  } else {
+                    setShowConfirmation(true);
+                  }
+                }}
                 className="w-full bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
+                disabled={isLoadingAvatar}
               >
                 <HiTrash className="h-5 w-5" />
-                <span>Delete Avatar</span>
+                <span>
+                  {isLoadingAvatar ? 'Deleting...' : showConfirmation ? 'Are you sure?' : 'Delete Avatar'}
+                </span>
               </button>
             )}
           </div>
 
           {/* Delete Confirmation Modal */}
-          {useDeleteConfirmModal.isOpen && (
+          {/* {useDeleteConfirmModal.isOpen && (
             <DeleteModal
               avatarToDeleteId={useDeleteConfirmModal.data}
               isDeleting={isLoadingAvatar}
               onCancel={useDeleteConfirmModal.closeModal}
               onConfirm={handleDeleteAvatar}
             />
-          )}
+          )} */}
 
           {/* Canvas for image processing */}
           <canvas ref={canvasRef} className="hidden" />
