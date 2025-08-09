@@ -1,5 +1,4 @@
-// app/api/avatars/update-avatar/route.js
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/utils/mongodb';
 import { uploadFile } from '@/utils/fileUtils';
@@ -8,26 +7,20 @@ const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 async function connectToDatabase() {
   const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
+  return client.db(MONGODB_DB);
 }
 
-// PUT - Update avatar by ID
 export async function PUT(req) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await connectToDatabase();
     const contentType = req.headers.get('content-type');
 
-    let requestData;
-    let fileData = null;
-    let fileName = null;
+    let data;
     let uploadResult = null;
-    if (contentType && contentType.includes('multipart/form-data')) {
-      // Handle FormData (with file upload)
-      const formData = await req.formData();
 
-      // Extract form fields
-      requestData = {
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      data = {
         id: formData.get('id'),
         name: formData.get('name'),
         personality: formData.get('personality'),
@@ -36,47 +29,30 @@ export async function PUT(req) {
         hasEncodedData: formData.get('hasEncodedData') === 'true',
       };
 
-      // Extract file if present
       const file = formData.get('file');
-      fileName = formData.get('fileName');
+      const fileName = formData.get('fileName') || `avatar-${Date.now()}.png`;
 
-      if (file && file.size > 0) {
+      if (file?.size) {
         uploadResult = await uploadFile(file, fileName);
+        data.fileName = uploadResult.fileName || fileName;
+        data.src = `/uploads/avatars/${data.fileName}`;
+        data.hasFileUpload = true;
       }
-
     } else {
-      requestData = await req.json();
+      data = await req.json();
     }
 
-    const { id, ...updateData } = requestData;
-    if (!id) {
-      return NextResponse.json({ error: 'Avatar ID is required' }, { status: 400 });
+    if (!data.id || !ObjectId.isValid(data.id)) {
+      return NextResponse.json({ error: 'Valid avatar ID is required' }, { status: 400 });
     }
 
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid avatar ID' }, { status: 400 });
-    }
-
-    // Remove _id from updateData if it exists
-    const { _id, ...dataToUpdate } = updateData;
-
-    // Save file to filesystem if provided
-    if (uploadResult) {
-      const uniqueFileName = uploadResult.fileName || fileName || `avatar-${Date.now()}.png`;
-      dataToUpdate.fileName = uniqueFileName;
-      dataToUpdate.src = `/uploads/avatars/${uniqueFileName}`;
-      dataToUpdate.hasFileUpload = true;
-
-    }
+    // Prevent overwriting _id
+    delete data._id;
+    const { id, ...updateFields } = data;
 
     const result = await db.collection('avatars').updateOne(
       { _id: new ObjectId(id) },
-      {
-        $set: {
-          ...dataToUpdate,
-          updatedAt: new Date()
-        }
-      }
+      { $set: { ...updateFields, updatedAt: new Date() } }
     );
 
     if (result.matchedCount === 0) {
@@ -89,18 +65,12 @@ export async function PUT(req) {
       success: true,
       modifiedCount: result.modifiedCount,
       avatar: updatedAvatar,
-      uploadResult: uploadResult ? {
-        filePath: uploadResult.filePath,
-        fileName: uploadResult.fileName
-      } : null
+      uploadResult: uploadResult
+        ? { filePath: uploadResult.filePath, fileName: uploadResult.fileName }
+        : null,
     });
-
   } catch (error) {
     console.error('Error updating avatar:', error);
-    console.error('Error stack:', error.stack);
-    return NextResponse.json({
-      error: 'Failed to update avatar',
-      details: error.message
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update avatar', details: error.message }, { status: 500 });
   }
 }

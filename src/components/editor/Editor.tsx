@@ -9,7 +9,7 @@ import { ElementsPanel } from "./panels/ElementsPanel";
 import { Menu } from "./Menu";
 import { TimeLine } from "./TimeLine";
 import { Store } from "@/store/Store";
-import "@/utils/fabric-utils";
+import "@/utils/fabricUtils";
 
 export const EditorWithStore = () => {
   const [store] = useState(new Store());

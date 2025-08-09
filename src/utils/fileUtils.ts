@@ -14,14 +14,6 @@ export interface DeleteResult {
   success: boolean;
   message: string;
 }
-
-export interface FileInfo {
-  exists: boolean;
-  size?: number;
-  created?: Date;
-  modified?: Date;
-}
-
 /**
  * Upload a file to the uploads/avatars directory
  * @param blob - The file Blob or Buffer to upload
@@ -92,49 +84,5 @@ export async function deleteFile(filePath: string): Promise<DeleteResult> {
   } catch (error: any) {
     console.error('Error deleting file:', error);
     throw new Error(`Failed to delete file: ${error.message}`);
-  }
-}
-
-/**
- * Delete a file by filename from the uploads/avatars directory
- * @param fileName - The filename to delete
- */
-export function deleteFileByName(fileName: string): Promise<DeleteResult> {
-  const relativePath = `/uploads/avatars/${fileName}`;
-  return deleteFile(relativePath);
-}
-
-/**
- * Check if a file exists
- * @param filePath - The relative file path
- */
-export function fileExists(filePath: string): boolean {
-  const absolutePath = path.join(process.cwd(), 'public', filePath);
-  return existsSync(absolutePath);
-}
-
-/**
- * Get file info
- * @param filePath - The relative file path
- */
-export async function getFileInfo(filePath: string): Promise<FileInfo> {
-  try {
-    const absolutePath = path.join(process.cwd(), 'public', filePath);
-
-    if (!existsSync(absolutePath)) {
-      return { exists: false };
-    }
-
-    const stats = await stat(absolutePath);
-
-    return {
-      exists: true,
-      size: stats.size,
-      created: stats.birthtime,
-      modified: stats.mtime,
-    };
-  } catch (error) {
-    console.error('Error getting file info:', error);
-    return { exists: false };
   }
 }

@@ -1,3 +1,4 @@
+// src/utils/fabric-utils.ts
 import { EditorElement, EffecType } from "@/types/editor";
 import { fabric } from "fabric";
 // https://jsfiddle.net/i_prikot/pw7yhaLf/

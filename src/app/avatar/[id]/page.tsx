@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import AvatarPage from '@/components/avatar/AvatarPage';
 import { useRouter } from 'next/navigation' // NOT 'next/router'
-
 
 interface AvatarEditProps {
   params: {

@@ -1,5 +1,4 @@
-// lib/api/client.ts
-
+// src/utils/apiClient.ts
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 class ApiClient {

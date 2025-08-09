@@ -6,7 +6,7 @@ import HeaderNav from '@/components/Header'
 import Providers from '@/providers/react-query-provider'
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import Notification from '@/components/Notification';
-
+import DarkModeSwitch from '@/components/DarkModeSwitch'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" >
       <body className={inter.className}>
         {/* {process.env.NODE_ENV === 'development' && (
           <Script
@@ -33,7 +33,7 @@ export default function RootLayout({
             <HeaderNav />
             {children}
             <Notification />
-
+            <DarkModeSwitch />
           </Providers>
         </NotificationProvider>
       </body>

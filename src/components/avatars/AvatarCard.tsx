@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { HiPencil, HiTrash, HiMicrophone, HiCheck, HiX } from 'react-icons/hi';
 import { Avatar } from '../../types/avatar';
 import { AVATAR_CONSTANTS } from '../../constants/avatar';
-import Link from 'next/link'
+import Link from 'next/link';
 
 interface AvatarCardProps {
   avatar: Avatar;
@@ -16,7 +16,6 @@ interface AvatarCardProps {
 
 export const AvatarCard: React.FC<AvatarCardProps> = ({
   avatar,
-  avatarToDeleteId,
   isActive,
   onDelete,
   onUse,
@@ -29,21 +28,6 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
     (e.target as HTMLImageElement).src = AVATAR_CONSTANTS.FALLBACK_IMAGE;
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-  };
-
-  const handleConfirmDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsDeleting(true);
-    try {
-      await onDelete(e, avatar.id);
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteConfirmation(false);
-    }
-  };
 
   const handleCancelDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,30 +36,30 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 group relative h-full flex flex-col
+      className={`bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 group relative h-full flex flex-col
     ${isActive
-          ? 'border-green-500 bg-green-50'
-          : 'border-gray-100 hover:border-blue-200'
+          ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
+          : 'border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600'
         }`}
     >
       <div className="text-center relative">
         {/* Action buttons */}
-        <div className="absolute -top-2 -right-2 flex items-center space-x-1">
+        <div className="absolute -top-1 -right-1 flex items-center space-x-1">
           {/* Edit button - slides left when delete confirmation shows */}
           <Link
             href={`/avatar/${avatar.id}`}
-            className={`w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${showDeleteConfirmation ? 'transform -translate-x-2 opacity-40' : 'transform translate-x-0 opacity-100'
+            className={`w-7 h-7 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${showDeleteConfirmation ? 'transform -translate-x-2 opacity-40' : 'transform translate-x-0 opacity-100'
               }`}
             title="Edit Avatar"
           >
-            <HiPencil className="w-4 h-4 text-white" />
+            <HiPencil className="w-3 h-3 text-white" />
           </Link>
 
           {/* Delete button that stretches */}
           <div
-            className={`bg-red-500 hover:bg-red-600 rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden ${showDeleteConfirmation
-              ? 'w-40 h-8'
-              : 'w-8 h-8'
+            className={`bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden ${showDeleteConfirmation
+              ? 'w-36 h-7'
+              : 'w-7 h-7'
               }`}
           >
             {!showDeleteConfirmation ? (
@@ -88,35 +72,32 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
                 }}
                 className="w-full h-full flex items-center justify-center transition-colors"
                 title="Delete Avatar"
-                disabled={isDeleting}
               >
-                <HiTrash className="w-4 h-4 text-white" />
+                <HiTrash className="w-3 h-3 text-white" />
               </button>
             ) : (
               // Confirmation content inside stretched button
-              <div className="w-full h-full flex items-center justify-between px-3 z-20">
+              <div className="w-full h-full flex items-center justify-between px-2 z-20">
                 <span className="text-xs text-white whitespace-nowrap font-medium">
                   Are you sure?
                 </span>
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={handleCancelDelete}
-                    className="w-5 h-5 bg-amber-950 bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
+                    className="w-4 h-4 bg-white bg-opacity-20 hover:bg-opacity-30 dark:bg-black dark:bg-opacity-20 dark:hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
                     title="Cancel"
-                    disabled={isDeleting}
                   >
-                    <HiX className="w-3 h-3 text-white" />
+                    <HiX className="w-2 h-2 text-amber-950 dark:text-amber-300" />
                   </button>
                   <button
                     onClick={onConfirm}
-                    className="w-5 h-5 bg-amber-950 bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
+                    className="w-4 h-4 bg-white text-amber-800 bg-opacity-20 hover:bg-opacity-30 dark:bg-black dark:bg-opacity-20 dark:hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
                     title="Confirm Delete"
-                    disabled={isDeleting}
                   >
                     {isDeleting ? (
                       <div className="w-2 h-2 border border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <HiTrash className="w-3 h-3 text-white" />
+                      <HiTrash className="w-2 h-2 text-amber-950 dark:text-amber-300" />
                     )}
                   </button>
                 </div>
@@ -128,25 +109,25 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         <img
           src={avatar.imageUrl}
           alt={avatar.name}
-          className="w-16 h-16 rounded-full mx-auto object-cover mb-4  transition-transform"
+          className="w-14 h-14 rounded-full mx-auto object-cover mb-3 transition-transform"
           onError={handleImageError}
         />
 
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {avatar.name}
         </h3>
 
-        <div className="space-y-2 text-xs text-gray-500">
+        <div className="space-y-1.5 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center justify-center">
             <HiMicrophone className="w-3 h-3 mr-1" />
             {avatar.voiceModel}
           </div>
           {avatar.hasEncodedData && (
-            <div className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+            <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
               Encoded
             </div>
           )}
-          <div className="text-center pt-2 border-t border-gray-100">
+          <div className="text-center pt-1 border-t border-gray-100 dark:border-gray-700">
             Created {avatar.createdAt}
           </div>
         </div>
@@ -155,7 +136,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         {!isActive && (
           <button
             onClick={() => onUse(avatar.id)}
-            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+            className="mt-3 w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
             disabled={isDeleting}
           >
             Use This Avatar
@@ -164,7 +145,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
         {/* Currently Selected Badge */}
         {isActive && (
-          <div className="mt-3 inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
+          <div className="mt-2 inline-flex items-center bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium px-3 py-1 rounded-full">
             <HiCheck className="w-3 h-3 mr-1" />
             Currently Selected
           </div>

@@ -12,7 +12,6 @@ import { useModal } from '@/hooks/useModal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAvatars, useDeleteAvatar, useActiveAvatar } from '@/hooks/useAvatars';
 
-
 const Avatars: React.FC = () => {
   // ====== Hooks & Context ======
   const { showNotification, hideNotification, notification } = useNotification();
@@ -47,6 +46,7 @@ const Avatars: React.FC = () => {
     e.stopPropagation();
     useDeleteConfirmModal.data = avatarId;
   };
+
   const confirmDelete = async () => {
     if (!useDeleteConfirmModal.data) return;
 
@@ -69,41 +69,48 @@ const Avatars: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6">
-            <HiUser className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 rounded-full mb-4 shadow-lg">
+            <HiUser className="w-8 h-8 text-white" />
+          </div> */}
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             Choose Your Avatar
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Select from your existing avatars or create a new one to begin your journey
           </p>
         </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
-          <CreateAvatarCard />
-          {isLoading && <LoadingState />}
-          {!isLoading &&
-            avatars.map((avatar) => (
-              <AvatarCard
-                key={avatar.id}
-                avatar={avatar}
-                avatarToDeleteId={useDeleteConfirmModal.data}
-                isActive={activeAvatarId === avatar.id}
-                onDelete={handleDeleteAvatar}
-                onUse={handleUseAvatarClick}
-                onConfirm={confirmDelete}
-              />
-            ))}
+        {/* Grid Section */}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
+            <CreateAvatarCard />
 
+            {isLoading && <LoadingState />}
 
-          {/* Empty State */}
-          {!isLoading && avatars.length === 0 && (
-            <EmptyState />
-          )}
+            {!isLoading &&
+              avatars.map((avatar) => (
+                <AvatarCard
+                  key={avatar.id}
+                  avatar={avatar}
+                  avatarToDeleteId={useDeleteConfirmModal.data}
+                  isActive={activeAvatarId === avatar.id}
+                  onDelete={handleDeleteAvatar}
+                  onUse={handleUseAvatarClick}
+                  onConfirm={confirmDelete}
+                />
+              ))}
+
+            {/* Empty State */}
+            {!isLoading && avatars.length === 0 && (
+              <div className="col-span-full">
+                <EmptyState />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -118,5 +125,6 @@ const Avatars: React.FC = () => {
       )}
     </div>
   );
-}
+};
+
 export default Avatars;
