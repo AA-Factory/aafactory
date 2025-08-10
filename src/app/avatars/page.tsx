@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HiUser } from 'react-icons/hi';
 import ConfirmationModal from '@/components/ConformationModal';
 import { AvatarCard } from '@/components/avatars/AvatarCard';
@@ -23,64 +23,28 @@ const Avatars: React.FC = () => {
     removeActiveAvatar,
     isAvatarActive
   } = useActiveAvatars();
-  const useConfirmModal = useModal();
-  const useDeleteConfirmModal = useModal();
-
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   // ====== Data Fetching (TanStack Query) ======
   const { data: avatars = [], isLoading, error, refetch } = useAvatars();
   const deleteAvatarMutation = useDeleteAvatar();
 
-  const handleUseAvatarClick = (avatarId: string) => {
-    const isCurrentlyActive = isAvatarActive(avatarId);
-
-    if (isCurrentlyActive) {
-      // If avatar is already active, ask for confirmation to remove it
-      useConfirmModal.openModal({
-        avatarId,
-        action: 'remove',
-        message: 'Remove this avatar from your active selection?'
-      });
-    } else {
-      // If avatar is not active, ask for confirmation to add it
-      useConfirmModal.openModal({
-        avatarId,
-        action: 'add',
-        message: 'Add this avatar to your active selection?'
-      });
-    }
-  };
-
-  const confirmToggleAvatar = () => {
-    if (useConfirmModal.data?.avatarId) {
-      toggleActiveAvatar(useConfirmModal.data.avatarId);
-
-      const action = useConfirmModal.data.action;
-      const message = action === 'add'
-        ? 'Avatar added to active selection'
-        : 'Avatar removed from active selection';
-
-      showNotification(message, 'success');
-    }
-    useConfirmModal.closeModal();
-  };
-
   const handleDeleteAvatar = (e: React.MouseEvent, avatarId: string) => {
     e.stopPropagation();
-    useDeleteConfirmModal.openModal(avatarId);
+    setSelectedAvatar(avatarId);
   };
 
   const confirmDelete = async () => {
-    if (!useDeleteConfirmModal.data) return;
+    if (!selectedAvatar) return;
 
     try {
-      await deleteAvatarMutation.mutateAsync(useDeleteConfirmModal.data);
+      await deleteAvatarMutation.mutateAsync(selectedAvatar);
 
       // Remove from active avatars if it was active
-      if (isAvatarActive(useDeleteConfirmModal.data)) {
-        removeActiveAvatar(useDeleteConfirmModal.data);
+      if (isAvatarActive(selectedAvatar)) {
+        removeActiveAvatar(selectedAvatar);
       }
 
-      useDeleteConfirmModal.closeModal();
+
       showNotification('Avatar deleted successfully', 'success');
     } catch (err) {
       console.error('Error deleting avatar:', err);
@@ -130,12 +94,9 @@ const Avatars: React.FC = () => {
                 <AvatarCard
                   key={avatar.id}
                   avatar={avatar}
-                  avatarToDeleteId={useDeleteConfirmModal.data}
-                  isActive={isAvatarActive(avatar.id)}
+                  avatarToDeleteId={selectedAvatar}
                   onDelete={handleDeleteAvatar}
-                  onUse={handleUseAvatarClick}
                   onConfirm={confirmDelete}
-                  multiSelect={true} // New prop to indicate multi-select mode
                 />
               ))}
 
@@ -159,19 +120,6 @@ const Avatars: React.FC = () => {
           </div>
         )} */}
       </div>
-
-      {/* Toggle Avatar Confirmation Modal */}
-      {useConfirmModal.isOpen && useConfirmModal.data && (
-        <ConfirmationModal
-          isOpen={useConfirmModal.isOpen}
-          title={useConfirmModal.data.action === 'add' ? 'Add Avatar' : 'Remove Avatar'}
-          message={useConfirmModal.data.message}
-          confirmText={useConfirmModal.data.action === 'add' ? 'Add' : 'Remove'}
-          cancelText="Cancel"
-          onConfirm={confirmToggleAvatar}
-          onCancel={useConfirmModal.closeModal}
-        />
-      )}
     </div>
   );
 };
