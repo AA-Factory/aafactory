@@ -15,7 +15,7 @@ import { IconType } from 'react-icons';
 import Link from 'next/link';
 import { ActiveAvatarsDisplay } from './avatars/ActiveAvatarsDisplay';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
-
+import DarkModeSwitch from './DarkModeSwitch';
 interface NavLink {
   name: string;
   href: string;
@@ -98,11 +98,15 @@ const HeaderNav: React.FC = () => {
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-200"></div>
                 </Link>
               ))}
+
+              <DarkModeSwitch />
             </div>
           </nav>
 
           {/* Mobile menu button */}
           <div className="md:hidden">
+
+            <DarkModeSwitch />
             <button
               onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
@@ -126,12 +130,12 @@ const HeaderNav: React.FC = () => {
                 <ActiveAvatarsDisplay size="sm" maxDisplay={8} />
               </Link>
 
-              <button
+              {/* <button
                 onClick={handleClearAvatars}
                 className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
               >
                 Clear All
-              </button>
+              </button> */}
             </div>
           </div>
         )}
@@ -160,7 +164,7 @@ const HeaderNav: React.FC = () => {
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                     Active Avatars ({activeAvatarIds.length})
                   </p>
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <ActiveAvatarsDisplay size="sm" maxDisplay={6} />
                     <button
                       onClick={handleClearAvatars}
@@ -168,7 +172,7 @@ const HeaderNav: React.FC = () => {
                     >
                       Clear
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}

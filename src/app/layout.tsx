@@ -8,7 +8,6 @@ import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ActiveAvatarsProvider } from '@/contexts/ActiveAvatarsContext';
 
 import Notification from '@/components/Notification';
-import DarkModeSwitch from '@/components/DarkModeSwitch'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -36,7 +35,6 @@ export default function RootLayout({
               <HeaderNav />
               {children}
               <Notification />
-              <DarkModeSwitch />
             </Providers>
           </ActiveAvatarsProvider>
         </NotificationProvider>
