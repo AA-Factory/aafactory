@@ -35,7 +35,7 @@ const DarkModeSwitch: React.FC = () => {
   return (
     <button
       onClick={toggleDarkMode}
-      className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
+      className="group relative px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out flex items-center space-x-2"
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
@@ -43,15 +43,15 @@ const DarkModeSwitch: React.FC = () => {
         {/* Sun Icon */}
         <HiSun
           className={`absolute inset-0 w-5 h-5 transition-all duration-300 ease-in-out ${isDark
-              ? 'opacity-0 rotate-90 scale-75'
-              : 'opacity-100 rotate-0 scale-100'
+            ? 'opacity-0 rotate-90 scale-75'
+            : 'opacity-100 rotate-0 scale-100'
             } text-yellow-500 group-hover:text-yellow-600`}
         />
         {/* Moon Icon */}
         <HiMoon
           className={`absolute inset-0 w-5 h-5 transition-all duration-300 ease-in-out ${isDark
-              ? 'opacity-100 rotate-0 scale-100'
-              : 'opacity-0 -rotate-90 scale-75'
+            ? 'opacity-100 rotate-0 scale-100'
+            : 'opacity-0 -rotate-90 scale-75'
             } text-blue-400 group-hover:text-blue-500`}
         />
       </div>
