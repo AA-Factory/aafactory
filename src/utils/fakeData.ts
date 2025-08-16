@@ -19,12 +19,12 @@ export const generateFakeFormData = () => {
     'Background in educational technology, curriculum design, and online learning platforms.'
   ];
 
-  const voiceModels = ['elevenlabs', 'google', 'azure'];
+  const voiceModels = ['elevenlabs', 'openai', 'azure', 'google'] as const;
 
   return {
     name: names[Math.floor(Math.random() * names.length)],
     personality: personalities[Math.floor(Math.random() * personalities.length)],
     backgroundKnowledge: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-    voiceModel: voiceModels[Math.floor(Math.random() * voiceModels.length)]
+    voiceModel: voiceModels[Math.floor(Math.random() * voiceModels.length)] as 'elevenlabs' | 'openai' | 'azure' | 'google'
   };
 };

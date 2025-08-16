@@ -1,56 +1,50 @@
-import React, { useState } from 'react';
-import { HiExclamationCircle, HiChevronDown, HiChevronUp } from 'react-icons/hi';
-import { avatarSchema } from '@/utils/validation';
+import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { HiExclamationCircle, HiChevronDown, HiChevronUp, HiLightningBolt } from 'react-icons/hi';
+import { avatarFormSchema, AvatarFormData, voiceModelOptions } from '@/utils/avatarValidation';
 import { ImageUploadSection } from './ImageUploadSection';
+import { generateFakeFormData } from '@/utils/fakeData';
 
 interface AvatarFormProps {
-  formData: { [key: string]: string };
-  fieldErrors: { [key: string]: string };
-  touched: { [key: string]: boolean };
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  onBlur: (fieldName: string) => void;
-  selectedImage: string | null;
-  isDragging: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  handleDragOver: (e: React.DragEvent) => void;
-  handleDragLeave: (e: React.DragEvent) => void;
-  handleDrop: (e: React.DragEvent) => void;
-  handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (data: AvatarFormData) => void;
+  defaultValues?: Partial<AvatarFormData>;
+  isSubmitting?: boolean;
+  existingImageUrl?: string | null;
+  editMode?: boolean;
+}
+
+export interface AvatarFormRef {
+  reset: (values?: Partial<AvatarFormData>) => void;
+  fillWithFakeData: () => void;
 }
 
 interface FormFieldProps {
-  fieldName: keyof typeof avatarSchema;
+  name: keyof AvatarFormData;
   label: string;
   type?: 'text' | 'textarea' | 'select';
   rows?: number;
   placeholder?: string;
-  formData: AvatarFormProps['formData'];
-  fieldErrors: AvatarFormProps['fieldErrors'];
-  touched: AvatarFormProps['touched'];
-  onChange: AvatarFormProps['onChange'];
-  onBlur: AvatarFormProps['onBlur'];
+  register: any;
+  error?: string;
   options?: { value: string; label: string }[];
+  required?: boolean;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
-  fieldName,
+  name,
   label,
   type = 'text',
   rows,
   placeholder,
-  formData,
-  fieldErrors,
-  touched,
-  onChange,
-  onBlur,
-  options
+  register,
+  error,
+  options,
+  required = false
 }) => {
-  const hasError = fieldErrors[fieldName] && touched[fieldName];
-  const schema = avatarSchema[fieldName];
-
   const baseClasses =
     'w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm';
-  const errorClasses = hasError
+  const errorClasses = error
     ? 'border-red-300 dark:border-red-600'
     : 'border-gray-300 dark:border-gray-600';
 
@@ -58,15 +52,12 @@ const FormField: React.FC<FormFieldProps> = ({
     <div className="mb-3">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
-        {schema?.required && <span className="text-red-500 dark:text-red-400"> *</span>}
+        {required && <span className="text-red-500 dark:text-red-400"> *</span>}
       </label>
 
       {type === 'textarea' ? (
         <textarea
-          name={fieldName}
-          value={formData[fieldName] || ''}
-          onChange={onChange}
-          onBlur={() => onBlur(fieldName)}
+          {...register(name)}
           rows={rows}
           placeholder={placeholder}
           className={`${baseClasses} resize-none placeholder-gray-500 dark:placeholder-gray-400 ${errorClasses}`}
@@ -74,12 +65,10 @@ const FormField: React.FC<FormFieldProps> = ({
       ) : type === 'select' && options ? (
         <div className="relative">
           <select
-            name={fieldName}
-            value={formData[fieldName] || ''}
-            onChange={onChange}
-            onBlur={() => onBlur(fieldName)}
+            {...register(name)}
             className={`${baseClasses} appearance-none cursor-pointer ${errorClasses}`}
           >
+            <option value="">Select {label.toLowerCase()}</option>
             {options.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -89,36 +78,73 @@ const FormField: React.FC<FormFieldProps> = ({
       ) : (
         <input
           type="text"
-          name={fieldName}
-          value={formData[fieldName] || ''}
-          onChange={onChange}
-          onBlur={() => onBlur(fieldName)}
+          {...register(name)}
           placeholder={placeholder}
           className={`${baseClasses} placeholder-gray-500 dark:placeholder-gray-400 ${errorClasses}`}
         />
       )}
 
-      {hasError && (
+      {error && (
         <div className="mt-1 flex items-center space-x-1 text-red-600 dark:text-red-400">
           <HiExclamationCircle className="h-3 w-3" />
-          <span className="text-xs">{fieldErrors[fieldName]}</span>
-        </div>
-      )}
-
-      {schema && (schema.minLength || schema.maxLength) && (
-        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          {schema.minLength && schema.maxLength && `${schema.minLength}-${schema.maxLength} characters`}
+          <span className="text-xs">{error}</span>
         </div>
       )}
     </div>
   );
 };
 
-export const AvatarForm: React.FC<AvatarFormProps> = props => {
+export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(({ onSubmit, defaultValues, isSubmitting = false, existingImageUrl, editMode = false }, ref) => {
   const [expandedSections, setExpandedSections] = useState({
     avatarInfos: true,
     voiceSettings: true,
   });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset
+  } = useForm<AvatarFormData>({
+    resolver: zodResolver(avatarFormSchema),
+    defaultValues,
+  });
+
+  // Generate fake data function
+  const fillWithFakeData = () => {
+    const fakeData = generateFakeFormData();
+    reset(fakeData);
+    setSelectedImage(null); // Clear any existing image
+  };
+
+  // Expose reset and fillWithFakeData functions to parent component
+  useImperativeHandle(ref, () => ({
+    reset: (values?: Partial<AvatarFormData>) => {
+      reset(values || defaultValues);
+      if (!values?.image) {
+        setSelectedImage(null);
+      }
+    },
+    fillWithFakeData
+  }), [reset, defaultValues, fillWithFakeData]);
+
+  // Reset form when defaultValues change
+  useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      reset(defaultValues);
+    }
+  }, [defaultValues, reset]);
+
+  // Set existing image when provided
+  useEffect(() => {
+    if (existingImageUrl && existingImageUrl !== '/placeholder-avatar.png') {
+      setSelectedImage(existingImageUrl);
+    }
+  }, [existingImageUrl]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -127,63 +153,99 @@ export const AvatarForm: React.FC<AvatarFormProps> = props => {
     }));
   };
 
-  const avatarFields: FormFieldProps[] = [
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleFileSelect = (file: File) => {
+    setValue('image', file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const avatarFields = [
     {
-      fieldName: 'name',
+      name: 'name' as const,
       label: 'Name',
       placeholder: 'Enter the name of your avatar',
-      formData: props.formData,
-      fieldErrors: props.fieldErrors,
-      touched: props.touched,
-      onChange: props.onChange,
-      onBlur: props.onBlur,
+      required: true,
     },
     {
-      fieldName: 'personality',
+      name: 'personality' as const,
       label: 'Personality',
-      type: 'textarea',
+      type: 'textarea' as const,
       rows: 2,
-      placeholder: 'Enter the personality of your avatar',
-      formData: props.formData,
-      fieldErrors: props.fieldErrors,
-      touched: props.touched,
-      onChange: props.onChange,
-      onBlur: props.onBlur,
+      placeholder: 'Describe your avatar\'s personality traits and characteristics',
+      required: true,
     },
     {
-      fieldName: 'backgroundKnowledge',
+      name: 'backgroundKnowledge' as const,
       label: 'Background Knowledge',
-      type: 'textarea',
+      type: 'textarea' as const,
       rows: 3,
-      placeholder: 'Enter the background knowledge of your avatar',
-      formData: props.formData,
-      fieldErrors: props.fieldErrors,
-      touched: props.touched,
-      onChange: props.onChange,
-      onBlur: props.onBlur,
+      placeholder: 'Enter the background knowledge and expertise of your avatar',
+      required: true,
     },
   ];
 
   return (
-    <div className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Avatar Infos Section */}
       <Section
-        title="Avatar Infos"
+        title="Avatar Information"
         expanded={expandedSections.avatarInfos}
         onToggle={() => toggleSection('avatarInfos')}
       >
         {avatarFields.map(field => (
-          <FormField key={field.fieldName} {...field} />
+          <FormField
+            key={field.name}
+            name={field.name}
+            label={field.label}
+            type={field.type}
+            rows={field.rows}
+            placeholder={field.placeholder}
+            register={register}
+            error={errors[field.name]?.message}
+            required={field.required}
+          />
         ))}
 
         <ImageUploadSection
-          selectedImage={props.selectedImage}
-          isDragging={props.isDragging}
-          fileInputRef={props.fileInputRef}
-          onDragOver={props.handleDragOver}
-          onDragLeave={props.handleDragLeave}
-          onDrop={props.handleDrop}
-          onFileSelect={props.handleFileSelect}
+          selectedImage={selectedImage}
+          isDragging={isDragging}
+          fileInputRef={fileInputRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onFileSelect={handleFileInputChange}
+          error={errors.image?.message}
+          existingImageUrl={existingImageUrl}
         />
       </Section>
 
@@ -194,25 +256,46 @@ export const AvatarForm: React.FC<AvatarFormProps> = props => {
         onToggle={() => toggleSection('voiceSettings')}
       >
         <FormField
-          fieldName="voiceModel"
+          name="voiceModel"
           label="Voice Model"
           type="select"
-          options={[
-            { value: 'elevenlabs', label: 'elevenlabs' },
-            { value: 'openai', label: 'OpenAI' },
-            { value: 'azure', label: 'Azure' },
-            { value: 'google', label: 'Google' },
-          ]}
-          formData={props.formData}
-          fieldErrors={props.fieldErrors}
-          touched={props.touched}
-          onChange={props.onChange}
-          onBlur={props.onBlur}
+          options={voiceModelOptions as any}
+          register={register}
+          error={errors.voiceModel?.message}
+          required={true}
         />
       </Section>
-    </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-between items-center pt-4">
+        {/* Development Mode: Fake Data Button */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            type="button"
+            onClick={fillWithFakeData}
+            className="inline-flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            <HiLightningBolt className="h-4 w-4" />
+            <span>Fill with Fake Data</span>
+          </button>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="inline-block bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors ml-auto"
+        >
+          {isSubmitting
+            ? (editMode ? 'Updating Avatar...' : 'Creating Avatar...')
+            : (editMode ? 'Update Avatar' : 'Create Avatar')
+          }
+        </button>
+      </div>
+    </form>
   );
-};
+});
+
+AvatarForm.displayName = 'AvatarForm';
 
 interface SectionProps {
   title: string;

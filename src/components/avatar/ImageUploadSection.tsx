@@ -9,6 +9,8 @@ interface ImageUploadSectionProps {
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
+  existingImageUrl?: string | null;
 }
 
 export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
@@ -18,7 +20,9 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   onDragOver,
   onDragLeave,
   onDrop,
-  onFileSelect
+  onFileSelect,
+  error,
+  existingImageUrl
 }) => {
   return (
     <div>
@@ -48,15 +52,15 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
 
-        {selectedImage ? (
+        {selectedImage || existingImageUrl ? (
           <div className="space-y-2">
             <img
-              src={selectedImage}
-              alt="Selected avatar"
+              src={selectedImage || existingImageUrl || ''}
+              alt="Avatar image"
               className="mx-auto h-24 w-24 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Click to change or drag a new image
+              {selectedImage ? 'Click to change or drag a new image' : 'Current image - click to change or drag a new image'}
             </p>
           </div>
         ) : (
@@ -86,6 +90,12 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
           </div>
         )}
       </div>
+      
+      {error && (
+        <div className="mt-1 flex items-center space-x-1 text-red-600 dark:text-red-400">
+          <span className="text-xs">{error}</span>
+        </div>
+      )}
     </div>
   );
 };
