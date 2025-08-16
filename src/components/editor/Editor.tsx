@@ -48,24 +48,24 @@ export const Editor = observer(() => {
     });
   }, []);
   return (
-    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh">
+    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh bg-white dark:bg-gray-900">
 
-      <div className="tile row-span-2 flex flex-col">
+      <div className="tile row-span-2 flex flex-col border-r border-gray-200 dark:border-gray-700">
         <Menu />
       </div>
-      <div className="row-span-2 flex flex-col overflow-scroll">
+      <div className="row-span-2 flex flex-col overflow-scroll bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
         <Resources />
       </div>
-      <div id="grid-canvas-container" className="col-start-3 bg-slate-100 flex justify-center items-center">
+      <div id="grid-canvas-container" className="col-start-3 bg-slate-100 dark:bg-gray-700 flex justify-center items-center border-r border-gray-200 dark:border-gray-700">
         <canvas id="canvas" className="h-[500px] w-[800px] row" />
       </div>
-      <div className="col-start-4 row-start-1">
+      <div className="col-start-4 row-start-1 bg-white dark:bg-gray-800">
         <ElementsPanel />
       </div>
-      <div className="col-start-3 row-start-2 col-span-2 relative px-[10px] py-[4px] overflow-scroll">
+      <div className="col-start-3 row-start-2 col-span-2 relative px-[10px] py-[4px] overflow-scroll bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <TimeLine />
       </div>
-      <div className="col-span-4 text-right px-2 text-[0.5em] bg-black text-white">
+      <div className="col-span-4 text-right px-2 text-[0.5em] bg-black dark:bg-gray-900 text-white border-t border-gray-200 dark:border-gray-700">
         Crafted By Amit Digga
       </div>
     </div>

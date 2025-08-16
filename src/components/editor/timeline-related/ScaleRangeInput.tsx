@@ -29,10 +29,13 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
             canvas.height = canvasSize.height;
             const ctx = canvas.getContext("2d");
             if (ctx) {
-                ctx.fillStyle = props.backgroundColor;
+                const isDarkMode = document.body.classList.contains('dark');
+                ctx.fillStyle = isDarkMode ? 'black' : 'white';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const markingColor = isDarkMode ? 'white' : 'black';
                 props.markings.forEach((marking) => {
-                    ctx.strokeStyle = marking.color;
+                    ctx.strokeStyle = markingColor;
                     ctx.lineWidth = marking.width;
                     ctx.beginPath();
                     for (let i = 0; i < max; i += marking.interval) {
@@ -44,7 +47,7 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
                 );
             }
         }
-    }, [props.markings, props.backgroundColor, max, canvasSize]);
+    }, [props.markings, max, canvasSize]);
     const updateFromMouseEvent = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const rect = ref.current?.getBoundingClientRect();
         if (rect) {
@@ -60,7 +63,7 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
             refIsMouseDown.current = true;
             updateFromMouseEvent(e);
         }}
-        onMouseUp={(e) => {
+        onMouseUp={() => {
             refIsMouseDown.current = false;
         }}
         onMouseMove={(e) => {
@@ -68,7 +71,7 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
                 updateFromMouseEvent(e);
             }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={() => {
             refIsMouseDown.current = false;
         }}
     >
@@ -76,7 +79,7 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
             height={props.height}
             ref={ref}></canvas>
         <div
-            className="rounded-full bg-black w-[4px] absolute top-0 left-0"
+            className="rounded-full bg-black dark:bg-white w-[4px] absolute top-0 left-0"
             style={{
                 height: `${props.height}px`,
                 transform: `translateX(${value / max * canvasSize.width}px) translateX(-2px)`
@@ -92,7 +95,6 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
     markings: Marking[];
     onChange: (value: number) => void;
     height: number;
-    backgroundColor: string;
 };
 export type Marking = {
     interval: number;

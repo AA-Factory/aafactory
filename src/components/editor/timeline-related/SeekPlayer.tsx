@@ -30,20 +30,21 @@ export const SeekPlayer = observer((_props: SeekPlayerProps) => {
   const Icon = store.playing ? MdPause : MdPlayArrow;
   const formattedTime = formatTimeToMinSecMili(store.currentTimeInMs);
   const formattedMaxTime = formatTimeToMinSecMili(store.maxTime);
+
   return (
-    <div className="seek-player flex flex-col">
-      <div className="flex flex-row items-center px-2">
+    <div className="seek-player flex flex-col bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex flex-row items-center px-2 py-2">
         <button
-          className="w-[80px] rounded-sm  px-2 py-2"
+          className="w-[80px] rounded-sm px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           onClick={() => {
             store.setPlaying(!store.playing);
           }}
         >
-          <Icon size="40"></Icon>
+          <Icon size="40" className="text-gray-700 dark:text-gray-300"></Icon>
         </button>
-        <span className="font-mono">{formattedTime}</span>
-        <div className="w-px h-[25px] bg-slate-300 mx-[10px]"></div>
-        <span className="font-mono">{formattedMaxTime}</span>
+        <span className="font-mono text-gray-900 dark:text-white">{formattedTime}</span>
+        <div className="w-px h-[25px] bg-slate-300 dark:bg-gray-600 mx-[10px]"></div>
+        <span className="font-mono text-gray-900 dark:text-white">{formattedMaxTime}</span>
       </div>
       <ScaleRangeInput
         max={store.maxTime}
@@ -53,7 +54,6 @@ export const SeekPlayer = observer((_props: SeekPlayerProps) => {
         }}
         height={30}
         markings={MARKINGS}
-        backgroundColor="white"
       />
     </div>
   );

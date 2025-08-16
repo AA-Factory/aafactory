@@ -10,7 +10,7 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
   const { element } = props;
   const disabled = element.type === "audio";
   const isSelected = store.selectedElement?.id === element.id;
-  const bgColorOnSelected = isSelected ? "bg-slate-800" : "bg-slate-600";
+  const bgColorOnSelected = isSelected ? "bg-slate-800 dark:bg-gray-700" : "bg-slate-600 dark:bg-gray-600";
   const disabledCursor = disabled ? "cursor-no-drop" : "cursor-ew-resize";
 
   return (
@@ -19,7 +19,7 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
         store.setSelectedElement(element);
       }}
       key={element.id}
-      className={`relative width-full h-[25px] my-2 ${isSelected ? "border-2 border-indigo-600 bg-slate-200" : ""
+      className={`relative width-full h-[25px] my-2 ${isSelected ? "border-2 border-indigo-600 dark:border-indigo-400 bg-slate-200 dark:bg-gray-700" : ""
         }`}
     >
       <DragableView
@@ -34,7 +34,7 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
         }}
       >
         <div
-          className={`bg-white border-2 border-blue-400 w-[10px] h-[10px] mt-[calc(25px/2)] translate-y-[-50%] transform translate-x-[-50%] ${disabledCursor}`}
+          className={`bg-white dark:bg-gray-200 border-2 border-blue-400 dark:border-blue-500 w-[10px] h-[10px] mt-[calc(25px/2)] translate-y-[-50%] transform translate-x-[-50%] ${disabledCursor}`}
         ></div>
       </DragableView>
 
@@ -58,7 +58,7 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
         }}
       >
         <div
-          className={`${bgColorOnSelected} h-full w-full text-white text-xs min-w-[0px] px-2 leading-[25px]`}
+          className={`${bgColorOnSelected} h-full w-full text-white dark:text-gray-100 text-xs min-w-[0px] px-2 leading-[25px]`}
         >
           {element.name}
         </div>
@@ -75,7 +75,7 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
         }}
       >
         <div
-          className={`bg-white border-2 border-blue-400 w-[10px] h-[10px] mt-[calc(25px/2)] translate-y-[-50%] transform translate-x-[-50%] ${disabledCursor}`}
+          className={`bg-white dark:bg-gray-200 border-2 border-blue-400 dark:border-blue-500 w-[10px] h-[10px] mt-[calc(25px/2)] translate-y-[-50%] transform translate-x-[-50%] ${disabledCursor}`}
         ></div>
       </DragableView>
     </div>
