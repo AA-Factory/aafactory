@@ -1,4 +1,5 @@
-import { EditorElement, EffecType } from "@/types";
+// src/utils/fabric-utils.ts
+import { EditorElement, EffecType } from "@/types/editor";
 import { fabric } from "fabric";
 // https://jsfiddle.net/i_prikot/pw7yhaLf/
 
@@ -175,8 +176,8 @@ export const CoverVideo = fabric.util.createClass(fabric.Image, {
 
 });
 
-function getFilterFromEffectType(effectType: EffecType){
-    switch(effectType){
+function getFilterFromEffectType(effectType: EffecType) {
+    switch (effectType) {
         case "blackAndWhite":
             return "grayscale(100%)";
         case "sepia":

@@ -5,8 +5,6 @@ import { useVideo } from '@/hooks/useVideo';
 const ReactPage: React.FC = () => {
   const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'; // Replace with your video URL
   const { data, error, isLoading } = useVideo(videoUrl);
-  console.log('✌️isLoading  --->', isLoading);
-  console.log('✌️data --->', data);
   return (
     <div>
       <h1 className="text-2xl font-bold">React Page</h1>

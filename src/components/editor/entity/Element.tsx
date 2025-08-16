@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { EditorElement } from "@/types";
+import { EditorElement } from "@/types/editor";
 import { StoreContext } from "@/store";
 import { observer } from "mobx-react";
 import { MdOutlineTextFields, MdMovie } from "react-icons/md";

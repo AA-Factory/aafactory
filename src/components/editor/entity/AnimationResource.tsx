@@ -12,7 +12,7 @@ import {
   SlideInAnimation,
   SlideOutAnimation,
   SlideTextType,
-} from "@/types";
+} from "@/types/editor";
 
 const ANIMATION_TYPE_TO_LABEL: Record<string, string> = {
   fadeIn: "Fade In",
@@ -40,13 +40,13 @@ export const AnimationResource = observer((props: AnimationResourceProps) => {
         </button>
       </div>
       {props.animation.type === "fadeIn" ||
-      props.animation.type === "fadeOut" ? (
+        props.animation.type === "fadeOut" ? (
         <FadeAnimation
           animation={props.animation as FadeInAnimation | FadeOutAnimation}
         />
       ) : null}
       {props.animation.type === "slideIn" ||
-      props.animation.type === "slideOut" ? (
+        props.animation.type === "slideOut" ? (
         <SlideAnimation
           animation={props.animation as SlideInAnimation | SlideOutAnimation}
         />

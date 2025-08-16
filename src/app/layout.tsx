@@ -1,9 +1,13 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import HeaderNav from '@/components/Header'
 import Providers from '@/providers/react-query-provider'
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { ActiveAvatarsProvider } from '@/contexts/ActiveAvatarsContext';
 
+import Notification from '@/components/Notification';
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -17,12 +21,23 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" >
       <body className={inter.className}>
-        <Providers>
-          <HeaderNav />
-          {children}
-        </Providers>
+        {/* {process.env.NODE_ENV === 'development' && (
+          <Script
+            src="https://unpkg.com/react-scan/dist/auto.global.js"
+            strategy="beforeInteractive"
+          />
+        )} */}
+        <NotificationProvider>
+          <ActiveAvatarsProvider>
+            <Providers>
+              <HeaderNav />
+              {children}
+              <Notification />
+            </Providers>
+          </ActiveAvatarsProvider>
+        </NotificationProvider>
       </body>
     </html>
   )
