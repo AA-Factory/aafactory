@@ -26,7 +26,6 @@ interface NavLink {
 
 const HeaderNav: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { activeAvatarIds, clearActiveAvatars } = useActiveAvatars();
 
   const navLinks: NavLink[] = [
@@ -102,9 +101,7 @@ const HeaderNav: React.FC = () => {
                   return (
                     <div
                       key={link.name}
-                      className="relative group"
-                      onMouseEnter={() => setOpenDropdown(link.name)}
-                      onMouseLeave={() => setOpenDropdown(null)}
+                      className="group relative"
                     >
                       <button
                         className="group relative px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out flex items-center space-x-2"
@@ -117,20 +114,17 @@ const HeaderNav: React.FC = () => {
                         </svg>
                         <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-200"></div>
                       </button>
-                      {openDropdown === link.name && (
-                        <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-50">
-                          {link.submenu.map((sublink) => (
-                            <Link
-                              key={sublink.name}
-                              href={sublink.href}
-                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                              onClick={() => setOpenDropdown(null)}
-                            >
-                              {sublink.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
+                      <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-50 opacity-0 invisible -translate-y-2.5 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-in-out">
+                        {link.submenu.map((sublink) => (
+                          <Link
+                            key={sublink.name}
+                            href={sublink.href}
+                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 first:rounded-t-md last:rounded-b-md"
+                          >
+                            {sublink.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   );
                 }
