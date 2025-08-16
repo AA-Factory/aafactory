@@ -6,16 +6,11 @@ import clientPromise from '@/utils/mongodb';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
-async function connectToDatabase() {
-  const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
-}
-
 // GET - Retrieve all avatars
 export async function GET(req) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     // Get query parameters for filtering/pagination if needed
     const url = new URL(req.url);

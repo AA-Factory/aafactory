@@ -7,9 +7,10 @@ import { MdAdd } from "react-icons/md";
 type ImageResourceProps = {
   image: string;
   index: number;
+  id: string;
 };
 export const ImageResource = observer(
-  ({ image, index }: ImageResourceProps) => {
+  ({ image, index, id }: ImageResourceProps) => {
     const store = React.useContext(StoreContext);
     const ref = React.useRef<HTMLImageElement>(null);
     const [resolution, setResolution] = React.useState({ w: 0, h: 0 });
@@ -21,9 +22,20 @@ export const ImageResource = observer(
         </div>
         <button
           className="hover:bg-[#00a0f5] bg-[rgba(0,0,0,.25)] rounded-sm z-10 text-white font-bold py-1 absolute text-lg bottom-2 right-2"
-          onClick={() => store.addImage(index)}
+          onClick={() => store.addImage(index, id)}
         >
           <MdAdd size="25" />
+        </button>
+        <button
+          className="hover:bg-red-500 bg-[rgba(0,0,0,.25)] rounded-sm z-10 text-white font-bold py-1 absolute text-lg top-2 left-2"
+          onClick={(e) => {
+            store.removeImageResource(id);
+            store.refreshElements();
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          X
         </button>
         <img
           onLoad={() => {
@@ -37,7 +49,7 @@ export const ImageResource = observer(
           src={image}
           height={200}
           width={200}
-          id={`image-${index}`}
+          id={id}
         ></img>
       </div>
     );

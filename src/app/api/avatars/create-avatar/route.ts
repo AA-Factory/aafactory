@@ -5,16 +5,11 @@ import { uploadFile } from '@/utils/fileUtils';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
-async function connectToDatabase() {
-  const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
-}
-
 // POST - Create new avatar
 export async function POST(req) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     const contentType = req.headers.get('content-type');
     let avatarData;

@@ -7,12 +7,16 @@ import DragableView from "./DragableView";
 
 export const TimeFrameView = observer((props: { element: EditorElement }) => {
   const store = React.useContext(StoreContext);
+  // console.log('✌️store --->', store);
   const { element } = props;
   const disabled = element.type === "audio";
   const isSelected = store.selectedElement?.id === element.id;
   const bgColorOnSelected = isSelected ? "bg-slate-800" : "bg-slate-600";
   const disabledCursor = disabled ? "cursor-no-drop" : "cursor-ew-resize";
 
+
+  React.useEffect(() => {
+  }, []);
   return (
     <div
       onClick={() => {
