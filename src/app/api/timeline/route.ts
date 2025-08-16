@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/mongodb';
+import clientPromise from '@/utils/mongodb';
+
+const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 // ✅ CREATE - POST method
 export async function POST(req: NextRequest) {
@@ -13,7 +15,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     const document = {
       elementId: elementData.id,
@@ -42,7 +45,8 @@ export async function POST(req: NextRequest) {
 // ✅ READ - GET method
 export async function GET() {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     const elements = await db.collection('timeline')
       .find({})
@@ -72,7 +76,8 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     const result = await db.collection('timeline').updateOne(
       { elementId: elementId },
@@ -119,7 +124,8 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     const result = await db.collection('timeline').deleteOne({
       elementId: elementId

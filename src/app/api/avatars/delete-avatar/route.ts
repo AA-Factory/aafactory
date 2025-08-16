@@ -6,16 +6,11 @@ import { deleteFile } from '@/utils/fileUtils';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
-async function connectToDatabase() {
-  const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
-}
-
 // DELETE - Delete avatar by ID
 export async function DELETE(req) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
     const { id } = await req.json();
 
     if (!id) {

@@ -2,8 +2,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unlink } from 'fs/promises';
 import path from 'path';
-import { connectToDatabase } from '@/utils/mongodb';
+import clientPromise from '@/utils/mongodb';
 import { ObjectId } from 'mongodb';
+
+const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 // Import your RESOURCE_CONFIG from the parent route or a shared file
 const RESOURCE_CONFIG = {
@@ -55,7 +57,8 @@ export async function DELETE(
 
     //the id is the filename so we can use that to find and delte from the database
     const config = RESOURCE_CONFIG[resource as ResourceType];
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     // Find the resource in the database
     const resourceDoc = await db.collection(config.collection).findOne({ filename: id });

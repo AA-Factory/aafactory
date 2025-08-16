@@ -4,7 +4,9 @@ import { writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { connectToDatabase } from '@/utils/mongodb'; // Adjust path as needed
+import clientPromise from '@/utils/mongodb';
+
+const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 
 // Configuration for each resource type
@@ -50,7 +52,8 @@ export async function GET(
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
     const data = await db.collection(config.collection)
       .find({})
       .sort({ uploadedAt: -1 })
@@ -164,7 +167,8 @@ export async function POST(
     };
 
     // Save to database
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
     const result = await db.collection(config.collection).insertOne(fileInfo);
 
     return NextResponse.json({
