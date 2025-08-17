@@ -29,16 +29,15 @@ function DragableView(props: {
 
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = (event) => {
     if (!data.div) return;
-    if (props.disabled) return;
+    // if (props.disabled) return;
     data.isDragging = true;
     data.initialMouseX = event.clientX;
   };
   const handleMouseMove: MouseEventHandler<HTMLDivElement> = (event) => {
     if (!data.div) return;
     if (!data.isDragging) return;
-    data.div.style.left = `${
-      (calculateNewValue(event.clientX) / props.total) * 100
-    }%`;
+    data.div.style.left = `${(calculateNewValue(event.clientX) / props.total) * 100
+      }%`;
     event.stopPropagation();
     event.preventDefault();
   };

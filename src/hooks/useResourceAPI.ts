@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export type ResourceType = 'image' | 'video' | 'audio' | 'document';
 
@@ -26,7 +27,7 @@ export const useResourceAPI = (
   const [data, setData] = useState<ResourceData[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { showNotification, hideNotification, notification } = useNotification();
   const loadResources = async (): Promise<ResourceData[]> => {
     setIsLoading(true);
     setError(null);
@@ -46,6 +47,7 @@ export const useResourceAPI = (
 
         setData(resources);
         console.log(`✅ Loaded ${resources.length} ${resourceType}s from database`);
+        showNotification(`Loaded ${resources.length} ${resourceType}s`, 'success');
         return resources;
       } else {
         const errorMessage = result.message || `Failed to load ${resourceType}s`;

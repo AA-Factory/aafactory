@@ -10,6 +10,7 @@ import { Menu } from "./Menu";
 import { TimeLine } from "./TimeLine";
 import { Store } from "@/store/Store";
 import "@/utils/fabricUtils";
+import { useNotification } from '@/contexts/NotificationContext';
 
 export const EditorWithStore = () => {
   const [store] = useState(new Store());
@@ -22,7 +23,7 @@ export const EditorWithStore = () => {
 
 export const Editor = observer(() => {
   const store = React.useContext(StoreContext);
-
+  const { showNotification } = useNotification();
   useEffect(() => {
     const loadTimelineFromDatabase = async () => {
       try {
@@ -35,6 +36,7 @@ export const Editor = observer(() => {
             store.addEditorElement(item.elementData);
           });
         }
+        showNotification('Timeline loaded successfully', 'success');
       } catch (error) {
         console.error('Load failed:', error);
       }
@@ -80,9 +82,6 @@ export const Editor = observer(() => {
       </div>
       <div className="col-start-3 row-start-2 col-span-2 relative px-[10px] py-[4px] overflow-scroll">
         <TimeLine />
-      </div>
-      <div className="col-span-4 text-right px-2 text-[0.5em] bg-black text-white">
-        Crafted By Amit Digga
       </div>
     </div>
   );

@@ -9,29 +9,13 @@ import clientPromise from '@/utils/mongodb';
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 
-// Configuration for each resource type
-const RESOURCE_CONFIG = {
-  video: {
-    allowedTypes: ['video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime'],
-    maxSize: 100 * 1024 * 1024, // 100MB
-    uploadDir: 'uploads/videos',
-    collection: 'videos'
-  },
-  audio: {
-    allowedTypes: ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/aac'],
-    maxSize: 50 * 1024 * 1024, // 50MB
-    uploadDir: 'uploads/audios',
-    collection: 'audios'
-  },
-  image: {
-    allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
-    maxSize: 10 * 1024 * 1024, // 10MB
-    uploadDir: 'uploads/images',
-    collection: 'images'
-  }
-} as const;
+import { RESOURCE_CONFIG, ResourceType } from '@/config/resourceConfig';
 
-type ResourceType = keyof typeof RESOURCE_CONFIG;
+interface RouteParams {
+  params: {
+    resource: string;
+  };
+}
 
 export async function GET(
   request: NextRequest,
@@ -79,11 +63,9 @@ export async function GET(
 }
 
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'videos');
-
-async function ensureUploadDir() {
-  if (!existsSync(UPLOAD_DIR)) {
-    await mkdir(UPLOAD_DIR, { recursive: true });
+async function ensureUploadDir(uploadDir: string) {
+  if (!existsSync(uploadDir)) {
+    await mkdir(uploadDir, { recursive: true });
   }
 }
 

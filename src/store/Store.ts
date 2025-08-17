@@ -103,37 +103,37 @@ export class Store {
     this.videos = videos;
   }
 
-  addVideoResource(video: { id: string, src: string }) {
-    this.videos = [...this.videos, video];
-  }
-  async removeVideoResource(id: string) {
-    this.videos = this.videos.filter(v => v.id !== id);
-    try {
-      await fetch(`/api/video/${id}`, {
-        method: 'DELETE',
-      });
-      console.log('✅ Video removed from database');
-    } catch (error) {
-      console.error('Delete failed:', error);
-    }
-  }
-  addAudioResource(audio: string) {
-    this.audios = [...this.audios, audio];
-  }
-  addImageResource(image: { id: string, src: string }) {
-    this.images = [...this.images, image];
-  }
-  async removeImageResource(id: string) {
-    this.images = this.images.filter(i => i.id !== id);
-    try {
-      await fetch(`/api/image/${id}`, {
-        method: 'DELETE',
-      });
-      console.log('✅ Image removed from database');
-    } catch (error) {
-      console.error('Delete failed:', error);
-    }
-  }
+  // addVideoResource(video: { id: string, src: string }) {
+  //   this.videos = [...this.videos, video];
+  // }
+  // async removeVideoResource(id: string) {
+  //   this.videos = this.videos.filter(v => v.id !== id);
+  //   try {
+  //     await fetch(`/api/video/${id}`, {
+  //       method: 'DELETE',
+  //     });
+  //     console.log('✅ Video removed from database');
+  //   } catch (error) {
+  //     console.error('Delete failed:', error);
+  //   }
+  // }
+  // addAudioResource(audio: string) {
+  //   this.audios = [...this.audios, audio];
+  // }
+  // addImageResource(image: { id: string, src: string }) {
+  //   this.images = [...this.images, image];
+  // }
+  // async removeImageResource(id: string) {
+  //   this.images = this.images.filter(i => i.id !== id);
+  //   try {
+  //     await fetch(`/api/image/${id}`, {
+  //       method: 'DELETE',
+  //     });
+  //     console.log('✅ Image removed from database');
+  //   } catch (error) {
+  //     console.error('Delete failed:', error);
+  //   }
+  // }
   addAnimation(animation: Animation) {
     this.animations = [...this.animations, animation];
     this.refreshAnimations();
@@ -371,7 +371,7 @@ export class Store {
     this.setEditorElements([...this.editorElements, editorElement]);
     this.refreshElements();
     // this.setSelectedElement(this.editorElements[this.editorElements.length - 1]);
-    this.updateElementInDatabase(editorElement);
+    // this.updateElementInDatabase(editorElement);
   }
 
   async removeEditorElement(id: string) {
@@ -506,8 +506,6 @@ export class Store {
     }
   }
 
-
-
   addImage(index: number, image_id: string) {
     const imageElement = document.getElementById(`${image_id}`)
     if (!isHtmlImageElement(imageElement)) {
@@ -558,12 +556,14 @@ export class Store {
     }
   }
 
-  addAudio(index: number) {
-    const audioElement = document.getElementById(`audio-${index}`)
+  addAudio(index: number, audio_id: string) {
+    const audioElement = document.getElementById(`${audio_id}`)
+    console.log('✌️audioElement --->', audioElement);
     if (!isHtmlAudioElement(audioElement)) {
       return;
     }
     const audioDurationMs = audioElement.duration * 1000;
+    console.log('✌️audioDurationMs --->', audioDurationMs);
     const id = getUid();
     this.addEditorElement(
       {
@@ -589,7 +589,17 @@ export class Store {
         }
       },
     );
-
+    try {
+      fetch('/api/timeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ elementData: this.editorElements[this.editorElements.length - 1] })
+      });
+      console.log('✅ Audio added to database');
+    } catch (error) {
+      console.error('Add failed:', error);
+      window.alert(`Error adding audio: ${error}`);
+    }
   }
   addText(options: {
     text: string,
