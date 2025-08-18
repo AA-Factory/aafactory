@@ -20,14 +20,14 @@ export const Element = observer((props: ElementProps) => {
       style={{
         backgroundColor: bgColor,
       }}
-      className={`flex mx-2 my-1 py-2 px-1 flex-row justify-start items-center ${bgColor}`}
+      className={`flex mx-2 my-1 py-2 px-1 flex-row justify-start items-center rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
       key={element.id}
       onClick={() => {
         store.setSelectedElement(element);
       }}
     >
-      <Icon size="20" color="gray"></Icon>
-      <div className="truncate text-xs ml-2 flex-1 font-medium">
+      <Icon size="20" className="text-gray-600 dark:text-gray-300"></Icon>
+      <div className="truncate text-xs ml-2 flex-1 font-medium text-gray-900 dark:text-white">
         {element.name}
       </div>
       <div>
@@ -76,7 +76,7 @@ export const Element = observer((props: ElementProps) => {
         ) : null}
       </div>
       <button
-        className="bg-red-500 hover:bg-red-700 text-white mr-2 text-xs py-0 px-1 rounded-sm"
+        className="bg-red-500 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-800 text-white mr-2 text-xs py-0 px-1 rounded-sm transition-colors"
         onClick={(e) => {
           store.removeEditorElement(element.id);
           store.refreshElements();
