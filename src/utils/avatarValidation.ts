@@ -10,6 +10,16 @@ export const avatarFormSchema = z.object({
       'Name must contain only letters, numbers, underscores, spaces, and hyphens'
     ),
   
+  description: z
+    .string()
+    .min(5, 'Description must be at least 5 characters')
+    .max(200, 'Description must be no more than 200 characters')
+    .optional(),
+  
+  category: z.enum(['realistic', 'stylized', 'cartoon', 'fantasy'], {
+    message: 'Please select a valid category',
+  }).optional(),
+  
   personality: z
     .string()
     .min(10, 'Personality must be at least 10 characters')
@@ -44,4 +54,11 @@ export const voiceModelOptions = [
   { value: 'openai', label: 'OpenAI' },
   { value: 'azure', label: 'Azure' },
   { value: 'google', label: 'Google' },
+] as const;
+
+export const categoryOptions = [
+  { value: 'realistic', label: 'Realistic' },
+  { value: 'stylized', label: 'Stylized' },
+  { value: 'cartoon', label: 'Cartoon' },
+  { value: 'fantasy', label: 'Fantasy' },
 ] as const;

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } f
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { HiExclamationCircle, HiChevronDown, HiChevronUp, HiLightningBolt } from 'react-icons/hi';
-import { avatarFormSchema, AvatarFormData, voiceModelOptions } from '@/utils/avatarValidation';
+import { avatarFormSchema, AvatarFormData, voiceModelOptions, categoryOptions } from '@/utils/avatarValidation';
 import { ImageUploadSection } from './ImageUploadSection';
 import { generateFakeFormData } from '@/utils/fakeData';
 
@@ -197,6 +197,22 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(({ onSubmit
       required: true,
     },
     {
+      name: 'description' as const,
+      label: 'Description',
+      type: 'textarea' as const,
+      rows: 2,
+      placeholder: 'Brief description of your avatar',
+      required: false,
+    },
+    {
+      name: 'category' as const,
+      label: 'Category',
+      type: 'select' as const,
+      options: categoryOptions,
+      placeholder: 'Select avatar category',
+      required: false,
+    },
+    {
       name: 'personality' as const,
       label: 'Personality',
       type: 'textarea' as const,
@@ -233,6 +249,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(({ onSubmit
             register={register}
             error={errors[field.name]?.message}
             required={field.required}
+            options={field.options}
           />
         ))}
 

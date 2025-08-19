@@ -20,6 +20,8 @@ import {
 } from 'react-icons/fi';
 import { TbSparkles } from 'react-icons/tb';
 import { PiFileVideoBold } from 'react-icons/pi';
+import { useAvatars } from '@/hooks/useAvatars';
+import { Avatar } from '@/types/avatar';
 
 interface SceneLayer {
   id: string;
@@ -53,14 +55,6 @@ interface GenerationSettings {
   seed: number;
 }
 
-interface AIAvatar {
-  id: string;
-  name: string;
-  description: string;
-  thumbnail: string;
-  category: 'realistic' | 'stylized' | 'cartoon' | 'fantasy';
-}
-
 export default function GenerateVideoPage() {
   const [activeTab, setActiveTab] = useState<'compose' | 'format'>('compose');
   const [layers, setLayers] = useState<SceneLayer[]>([]);
@@ -68,6 +62,7 @@ export default function GenerateVideoPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const { data: avatars = [], isLoading, error, refetch } = useAvatars();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [cameraMovement, setCameraMovement] = useState<CameraMovement>({
     type: 'static',
@@ -111,50 +106,6 @@ export default function GenerateVideoPage() {
     return () => observer.disconnect();
   }, []);
 
-  const availableAvatars: AIAvatar[] = [
-    {
-      id: 'avatar-1',
-      name: 'Emma',
-      description: 'Professional businesswoman',
-      thumbnail: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      category: 'realistic'
-    },
-    {
-      id: 'avatar-2',
-      name: 'Marcus',
-      description: 'Creative artist',
-      thumbnail: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      category: 'realistic'
-    },
-    {
-      id: 'avatar-3',
-      name: 'Sophia',
-      description: 'Tech entrepreneur',
-      thumbnail: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      category: 'realistic'
-    },
-    {
-      id: 'avatar-4',
-      name: 'Alex',
-      description: 'Fitness instructor',
-      thumbnail: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      category: 'realistic'
-    },
-    {
-      id: 'avatar-5',
-      name: 'Luna',
-      description: 'Anime character',
-      thumbnail: 'https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      category: 'stylized'
-    },
-    {
-      id: 'avatar-6',
-      name: 'Phoenix',
-      description: 'Fantasy warrior',
-      thumbnail: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      category: 'fantasy'
-    }
-  ];
 
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -284,8 +235,17 @@ export default function GenerateVideoPage() {
 
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">AI Avatars</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {availableAvatars.map((avatar) => (
+                {isLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Loading avatars...</div>
+                  </div>
+                ) : error ? (
+                  <div className="flex items-center justify-center p-4">
+                    <div className="text-sm text-red-500 dark:text-red-400">Failed to load avatars</div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                  {avatars.map((avatar: Avatar) => (
                     <div
                       key={avatar.id}
                       onClick={() => setSelectedAvatar(avatar.id === selectedAvatar ? null : avatar.id)}
@@ -296,7 +256,7 @@ export default function GenerateVideoPage() {
                       }`}
                     >
                       <img
-                        src={avatar.thumbnail}
+                        src={avatar.imageUrl}
                         alt={avatar.name}
                         className="w-full h-20 object-cover"
                       />
@@ -312,23 +272,26 @@ export default function GenerateVideoPage() {
                           </div>
                         </div>
                       )}
-                      <div className={`absolute top-1 left-1 px-1.5 py-0.5 rounded text-xs font-medium ${
-                        avatar.category === 'realistic' ? 'bg-blue-500/80 dark:bg-blue-400/80 text-white dark:text-white' :
-                        avatar.category === 'stylized' ? 'bg-pink-500/80 dark:bg-pink-400/80 text-white dark:text-white' :
-                        avatar.category === 'cartoon' ? 'bg-yellow-500/80 dark:bg-yellow-400/80 text-black dark:text-gray-900' :
-                        'bg-purple-500/80 dark:bg-purple-400/80 text-white dark:text-white'
-                      }`}>
-                        <span className="text-current">{avatar.category}</span>
-                      </div>
+                      {avatar.category && (
+                        <div className={`absolute top-1 left-1 px-1.5 py-0.5 rounded text-xs font-medium ${
+                          avatar.category === 'realistic' ? 'bg-blue-500/80 dark:bg-blue-400/80 text-white dark:text-white' :
+                          avatar.category === 'stylized' ? 'bg-pink-500/80 dark:bg-pink-400/80 text-white dark:text-white' :
+                          avatar.category === 'cartoon' ? 'bg-yellow-500/80 dark:bg-yellow-400/80 text-black dark:text-gray-900' :
+                          'bg-purple-500/80 dark:bg-purple-400/80 text-white dark:text-white'
+                        }`}>
+                          <span className="text-current">{avatar.category}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+                )}
                 {selectedAvatar && (
                   <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-600/20 border border-blue-200 dark:border-blue-500/50 rounded-lg">
                     <div className="flex items-center space-x-2">
                       <FiUser className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm text-blue-700 dark:text-blue-300">
-                        {availableAvatars.find(a => a.id === selectedAvatar)?.name} selected
+                        {avatars.find((a: Avatar) => a.id === selectedAvatar)?.name} selected
                       </span>
                     </div>
                   </div>
