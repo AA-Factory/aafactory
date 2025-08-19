@@ -24,6 +24,8 @@ const mapAvatar = (avatar: any): Avatar => ({
   createdAt: new Date(avatar.createdAt).toLocaleDateString(),
   personality: avatar.personality || 'No personality defined',
   backgroundKnowledge: avatar.backgroundKnowledge || 'No background knowledge defined',
+  description: avatar.description || '',
+  category: avatar.category || 'realistic',
   hasEncodedData: avatar.hasEncodedData || false,
   fileName: avatar.fileName
 });
