@@ -20,9 +20,20 @@ export const generateFakeFormData = () => {
   ];
 
   const voiceModels = ['elevenlabs', 'openai', 'azure', 'google'] as const;
+  const categories = ['realistic', 'stylized', 'cartoon', 'fantasy'] as const;
+  const descriptions = [
+    'Professional businesswoman with expertise in technology',
+    'Creative artist with a passion for innovation',
+    'Tech entrepreneur focused on solving complex problems',
+    'Fitness instructor promoting healthy lifestyles',
+    'Anime character with vibrant personality',
+    'Fantasy warrior with magical abilities'
+  ];
 
   return {
     name: names[Math.floor(Math.random() * names.length)],
+    description: descriptions[Math.floor(Math.random() * descriptions.length)],
+    category: categories[Math.floor(Math.random() * categories.length)] as 'realistic' | 'stylized' | 'cartoon' | 'fantasy',
     personality: personalities[Math.floor(Math.random() * personalities.length)],
     backgroundKnowledge: backgrounds[Math.floor(Math.random() * backgrounds.length)],
     voiceModel: voiceModels[Math.floor(Math.random() * voiceModels.length)] as 'elevenlabs' | 'openai' | 'azure' | 'google'

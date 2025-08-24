@@ -25,6 +25,8 @@ export async function PUT(req) {
         name: formData.get('name'),
         personality: formData.get('personality'),
         backgroundKnowledge: formData.get('backgroundKnowledge'),
+        description: formData.get('description'),
+        category: formData.get('category'),
         voiceModel: formData.get('voiceModel'),
         hasEncodedData: formData.get('hasEncodedData') === 'true',
       };
