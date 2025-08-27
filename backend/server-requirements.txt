@@ -1,0 +1,8 @@
+piexif==1.1.3
+ipywidgets==8.0.7
+jupyterlab==3.6.7
+jupyter-archive==3.3.4
+jupyter_contrib_nbextensions==0.7.0
+segment_anything
+huggingface_hub
+scikit-image
