@@ -55,9 +55,16 @@ RUN /restore_snapshot.sh
 
 # Change working directory to ComfyUI
 WORKDIR /comfyui
+RUN pip install -r /comfyui/requirements.txt
 
 # Create necessary directories
 RUN mkdir -p models/checkpoints models/vae
+
+# Install Zonos
+RUN git clone https://github.com/BuffMcBigHuge/ComfyUI-Zonos /comfyui/custom_nodes/ComfyUI-Zonos
+RUN cd /comfyui/custom_nodes/ComfyUI-Zonos && git submodule update --init --recursive
+RUN cd /comfyui/custom_nodes/ComfyUI-Zonos && git clone https://github.com/Zyphra/Zonos.git
+RUN pip install -r /comfyui/custom_nodes/ComfyUI-Zonos/requirements.txt
 
 # Install civitdl and system dependencies
 RUN pip3 install civitdl && \
