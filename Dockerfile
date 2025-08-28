@@ -7,7 +7,7 @@ RUN npm install
 
 COPY . .
 
-# Install wait-port to wait for MongoDB port
+# Install wait-port to wait for MongoDB port update
 RUN npm install -g wait-port
 
 EXPOSE 3000
