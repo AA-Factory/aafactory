@@ -13,7 +13,7 @@ steps:
   
   # Build and push for linux/amd64
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['buildx', 'build', '--platform', 'linux/amd64', '--push', '-t', 'elliotcarery/aafactory-server:2.6', '.']
+    args: ['buildx', 'build', '--platform', 'linux/amd64', '--push', '-t', 'elliotcarery/aafactory-server:$TAG_NAME', '.']
     dir: 'backend'
 
 # Configure secrets

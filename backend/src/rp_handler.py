@@ -72,18 +72,24 @@ def validate_input(job_input):
         return None, "Missing 'workflow' parameter"
 
     # Validate 'images' in input, if provided
-    images = job_input.get("images")
-    if images is not None:
-        if not isinstance(images, list) or not all(
-            "name" in image and "image" in image for image in images
+    files = job_input.get("files")
+    if files is not None:
+        if not isinstance(files, list) or not all(
+            file.get("name") is not None 
+            and (   
+                file.get("image") is not None or 
+                file.get("video") is not None or
+                file.get("audio") is not None
+            )
+            for file in files
         ):
             return (
                 None,
-                "'images' must be a list of objects with 'name' and 'image' keys",
+                "'files' must be a list of objects with 'name' and ['image', 'audio' or 'video'] keys",
             )
 
     # Return validated data and no error
-    return {"workflow": workflow, "images": images}, None
+    return {"workflow": workflow, "files": files}, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -120,7 +126,7 @@ def check_server(url, retries=500, delay=50):
     return False
 
 
-def upload_images(images):
+def upload_files(files: list[dict]) -> dict:
     """
     Upload a list of base64 encoded images to the ComfyUI server using the /upload/image endpoint.
 
@@ -131,22 +137,35 @@ def upload_images(images):
     Returns:
         list: A list of responses from the server for each image upload.
     """
-    if not images:
+    if not files:
         return {"status": "success", "message": "No images to upload", "details": []}
 
     responses = []
     upload_errors = []
 
-    print(f"runpod-worker-comfy - image(s) upload")
+    print(f"runpod-worker-comfy - file(s) upload")
 
-    for image in images:
-        name = image["name"]
-        image_data = image["image"]
-        blob = base64.b64decode(image_data)
+    for file in files:
+        name = file["name"]
+        file_data = file.get("image") or file.get("video") or file.get("audio")
+        file_type = file_data.split(";")[0].split(":")[-1]  # e.g., "image", "video", "audio"
+        if not file_data:
+            upload_errors.append(f"Error: No data found for {name}")
+            continue
+        if file_data.startswith("data:audio"):
+            file_data = file_data.split(",")[1]
+
+        # Add padding if necessary
+        missing_padding = len(file_data) % 4
+        if missing_padding:
+            file_data += "=" * (4 - missing_padding)
+
+        # Decode
+        blob = base64.b64decode(file_data)
 
         # Prepare the form data
         files = {
-            "image": (name, BytesIO(blob), "image/png"),
+            "image": (name, BytesIO(blob), f"{file_type}"),
             "overwrite": (None, "true"),
         }
 
@@ -158,17 +177,17 @@ def upload_images(images):
             responses.append(f"Successfully uploaded {name}")
 
     if upload_errors:
-        print(f"runpod-worker-comfy - image(s) upload with errors")
+        print(f"runpod-worker-comfy - file(s) upload with errors")
         return {
             "status": "error",
-            "message": "Some images failed to upload",
+            "message": "Some files failed to upload",
             "details": upload_errors,
         }
 
-    print(f"runpod-worker-comfy - image(s) upload complete")
+    print(f"runpod-worker-comfy - file(s) upload complete")
     return {
         "status": "success",
-        "message": "All images uploaded successfully",
+        "message": "All files uploaded successfully",
         "details": responses,
     }
 
@@ -252,17 +271,24 @@ def process_output_images(outputs, job_id):
     # The path where ComfyUI stores the generated images
     COMFY_OUTPUT_PATH = os.environ.get("COMFY_OUTPUT_PATH", "/comfyui/output")
 
-    output_images = {}
+    output = {}
 
     for node_id, node_output in outputs.items():
-        if "images" in node_output:
-            for image in node_output["images"]:
-                output_images = os.path.join(image["subfolder"], image["filename"])
+        if _process_output_response("images", node_output):
+            output = _process_output_response("images", node_output)
+            break
+        
+        if _process_output_response("audio", node_output):
+            output = _process_output_response("audio", node_output)
+            break
+        if _process_output_response("video", node_output):
+            output = _process_output_response("video", node_output)
+            break
 
     print(f"runpod-worker-comfy - image generation is done")
 
     # expected image output folder
-    local_image_path = f"{COMFY_OUTPUT_PATH}/{output_images}"
+    local_image_path = f"{COMFY_OUTPUT_PATH}/{output}"
 
     print(f"runpod-worker-comfy - {local_image_path}")
 
@@ -270,27 +296,39 @@ def process_output_images(outputs, job_id):
     if os.path.exists(local_image_path):
         if os.environ.get("BUCKET_ENDPOINT_URL", False):
             # URL to image in AWS S3
-            image = rp_upload.upload_image(job_id, local_image_path)
+            encode_output = rp_upload.upload_image(job_id, local_image_path)
             print(
                 "runpod-worker-comfy - the image was generated and uploaded to AWS S3"
             )
         else:
-            # base64 image
-            image = base64_encode(local_image_path)
+            # base64 output
+            encode_output = base64_encode(local_image_path)
             print(
-                "runpod-worker-comfy - the image was generated and converted to base64"
+                "runpod-worker-comfy - the output was generated and converted to base64"
             )
 
         return {
             "status": "success",
-            "message": image,
+            "message": encode_output,
         }
     else:
-        print("runpod-worker-comfy - the image does not exist in the output folder")
+        print("runpod-worker-comfy - the output does not exist in the output folder")
         return {
             "status": "error",
-            "message": f"the image does not exist in the specified output folder: {local_image_path}",
+            "message": f"the output does not exist in the specified output folder: {local_image_path}",
         }
+
+
+def _process_output_response(output_format: str, node_output: dict) -> str | None:
+    if output_format in node_output:
+        for item in node_output[output_format]:
+            if item["type"] == "temp":
+                output = os.path.join(item["type"], item["filename"])
+                return output
+            else:
+                output = os.path.join(item["subfolder"], item["filename"])
+                return output
+    return None
 
 
 def handler(job):
@@ -315,7 +353,7 @@ def handler(job):
 
     # Extract validated data
     workflow = validated_data["workflow"]
-    images = validated_data.get("images")
+    files = validated_data.get("files")
 
     # Make sure that the ComfyUI API is available
     check_server(
@@ -325,7 +363,7 @@ def handler(job):
     )
 
     # Upload images if they exist
-    upload_result = upload_images(images)
+    upload_result = upload_files(files)
 
     if upload_result["status"] == "error":
         return upload_result
@@ -339,7 +377,7 @@ def handler(job):
         return {"error": f"Error queuing workflow: {str(e)}"}
 
     # Poll for completion
-    print(f"runpod-worker-comfy - wait until image generation is complete")
+    print(f"runpod-worker-comfy - wait until generation is complete")
     retries = 0
     try:
         while retries < COMFY_POLLING_MAX_RETRIES:
