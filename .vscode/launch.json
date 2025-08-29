@@ -30,6 +30,15 @@
                 "uriFormat": "%s",
                 "action": "debugWithChrome"
             }
+        },
+        {
+            "name": "Run Handler",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/src/rp_handler.py",
+            "args": ["--rp_api_host=0.0.0.0"],
+            "justMyCode": false
         }
+
     ]
 }

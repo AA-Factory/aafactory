@@ -17,13 +17,14 @@ nohup python3 -m jupyter lab --allow-root --no-browser --port=8888 --ip=* --File
 echo "Jupyter Lab started"
 
 # Download models
-huggingface-cli download LeonJoe13/Sonic --local-dir  ./models/sonic
-huggingface-cli download stabilityai/stable-video-diffusion-img2vid-xt --local-dir  ./models/sonic/stable-video-diffusion-img2vid-xt
-huggingface-cli download openai/whisper-tiny --local-dir ./models/sonic/whisper-tiny
-mv models/sonic/stable-video-diffusion-img2vid-xt/svd_xt.safetensors models/checkpoints/
-mv models/sonic/Sonic/* models/sonic/
+# wget https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors -O ./checkpoints/sd_xl_base_1.0.safetensors
+# huggingface-cli download LeonJoe13/Sonic --local-dir  ./models/sonic
+# huggingface-cli download stabilityai/stable-video-diffusion-img2vid-xt --local-dir  ./models/sonic/stable-video-diffusion-img2vid-xt
+# huggingface-cli download openai/whisper-tiny --local-dir ./models/sonic/whisper-tiny
+# mv models/sonic/stable-video-diffusion-img2vid-xt/svd_xt.safetensors models/checkpoints/
+# mv models/sonic/Sonic/* models/sonic/
 
-poetry run python3 /comfyui/main.py --disable-auto-launch --disable-metadata &
+python3 /comfyui/main.py --disable-auto-launch --disable-metadata --listen &
 
 echo "runpod-worker-comfy: Starting RunPod Handler PROD"
-python3 -u /rp_handler.py
+python3 -u /rp_handler.py -—rp_debugger --rp_api_host=0.0.0.0

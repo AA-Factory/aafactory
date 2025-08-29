@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     libgl1 \
     && ln -sf /usr/bin/python3.10 /usr/bin/python \
-    && ln -sf /usr/bin/pip3 /usr/bin/pip
+    && ln -sf /usr/bin/pip3 /usr/bin/pip \
+    && apt install -y espeak-ng
 
 # Clean up to reduce image size
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
@@ -43,9 +44,10 @@ ADD src/extra_model_paths.yaml ./
 WORKDIR /
 
 # Add scripts
-ADD pyproject.toml README.md src/start.sh src/restore_snapshot.sh src/rp_handler.py test_input.json ./
+ADD server-requirements.txt pyproject.toml README.md src/start.sh src/restore_snapshot.sh src/rp_handler.py test_input.json ./
 RUN chmod +x /start.sh /restore_snapshot.sh
 RUN poetry install --no-root
+RUN pip install -r server-requirements.txt 
 
 # Optionally copy the snapshot file
 ADD *snapshot*.json /
@@ -75,6 +77,7 @@ RUN pip3 install civitdl && \
 # Configure civitdl with API key
 # Commented out until models are added
 # COPY models /comfyui/models
+RUN wget https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors -O /comfyui/models/checkpoints/sd_xl_base_1.0.safetensors
 
 WORKDIR /
 
