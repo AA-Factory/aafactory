@@ -24,12 +24,19 @@ Choose one of the following development approaches:
    cd ai-avatar-factory
    ```
 
-2. Build the container
+2. Create `.env.local` file with your RunPod URLs:
+   ```bash
+   NEXT_PUBLIC_COMFYUI_BASE_URL=https://08qdhdjhb5jhfk-8000.proxy.runpod.net
+   NEXT_PUBLIC_COMFYUI_SERVER_URL=https://08qdhdjhb5jhfk-8188.proxy.runpod.net
+   ```
+   Replace the example URLs with your actual RunPod URLs.
+
+3. Build the container
    ```bash
    docker-compose build
    ```
 
-3. Start the container
+4. Start the container
    ```bash
    docker-compose up
    ```
@@ -64,17 +71,24 @@ The application will be available at the configured port once the containers are
    ./scripts/install-mongodb-local.sh
    ```
 
-4. Install project dependencies
+4. Create `.env.local` file with your RunPod URLs:
+   ```bash
+   NEXT_PUBLIC_COMFYUI_BASE_URL=https://08qdhdjhb5jhfk-8000.proxy.runpod.net
+   NEXT_PUBLIC_COMFYUI_SERVER_URL=https://08qdhdjhb5jhfk-8188.proxy.runpod.net
+   ```
+   Replace the example URLs with your actual RunPod URLs.
+
+5. Install project dependencies
    ```bash
    npm install
    ```
 
-5. Start MongoDB service
+6. Start MongoDB service
    ```bash
    mongod
    ```
 
-6. Start the development server
+7. Start the development server
    ```bash
    npm run dev
    ```

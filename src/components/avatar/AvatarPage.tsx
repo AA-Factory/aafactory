@@ -50,6 +50,8 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
 
     const avatarData = {
       name: existingAvatar.name || '',
+      description: existingAvatar.description || '',
+      category: (existingAvatar.category as 'realistic' | 'stylized' | 'cartoon' | 'fantasy') || 'realistic',
       personality: existingAvatar.personality || '',
       backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
       voiceModel: (existingAvatar.voiceModel as 'elevenlabs' | 'openai' | 'azure' | 'google') || 'elevenlabs',
@@ -96,6 +98,8 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
 
       const avatarData = { 
         name: formData.name,
+        description: formData.description,
+        category: formData.category,
         personality: formData.personality,
         backgroundKnowledge: formData.backgroundKnowledge,
         voiceModel: formData.voiceModel,
@@ -145,6 +149,8 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
 
       const formDataToEncode = {
         name: formData.name,
+        description: formData.description,
+        category: formData.category,
         personality: formData.personality,
         backgroundKnowledge: formData.backgroundKnowledge,
         voiceModel: formData.voiceModel,

@@ -143,15 +143,36 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         </h3>
 
         <div className="space-y-1.5 text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center justify-center">
-            <HiMicrophone className="w-3 h-3 mr-1" />
-            {avatar.voiceModel}
+          {avatar.description && (
+            <div className="text-center text-gray-600 dark:text-gray-400 text-xs mb-2">
+              {avatar.description}
+            </div>
+          )}
+          
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <div className="flex items-center">
+              <HiMicrophone className="w-3 h-3 mr-1" />
+              {avatar.voiceModel}
+            </div>
+            
+            {avatar.category && (
+              <div className={`text-xs px-2 py-1 rounded-full font-medium ${
+                avatar.category === 'realistic' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
+                avatar.category === 'stylized' ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300' :
+                avatar.category === 'cartoon' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+              }`}>
+                {avatar.category}
+              </div>
+            )}
           </div>
+          
           {avatar.hasEncodedData && (
-            <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
+            <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
               Encoded
             </div>
           )}
+          
           <div className="text-center pt-1 border-t border-gray-100 dark:border-gray-700">
             Created {avatar.createdAt}
           </div>
