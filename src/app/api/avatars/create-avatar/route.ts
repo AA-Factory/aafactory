@@ -32,7 +32,8 @@ export async function POST(req) {
         description: formData.get('description'),
         category: formData.get('category') || 'realistic',
         voiceModel: formData.get('voiceModel') || 'elevenlabs',
-        hasEncodedData: formData.get('hasEncodedData') === 'true'
+        hasEncodedData: formData.get('hasEncodedData') === 'true',
+        voiceTrainingData: 'rick_and_morty_voice_training.wav'
       };
 
       // Handle file upload if present
