@@ -5,10 +5,11 @@ import {
   COMFYUI_RUN_SYNC,
   COMFYUI_SERVER_URL,
 } from "@/config/constants";
+import { Avatar } from "@/types/avatar";
 
 export type GenerateAudioPayload = {
   dialog: string;
-  avatarId: string; // Avatar ID to get voice model from database
+  avatar: Avatar | null;
   async?: boolean;
 };
 
@@ -66,6 +67,7 @@ async function encodeAudioFile(
     const audioResponse = await fetch(
       `/test/training_audio/${audioTrainingFile}`,
     );
+
     if (!audioResponse.ok) {
       throw new Error(`Failed to load audio file: ${audioTrainingFile}`);
     }
@@ -113,17 +115,11 @@ export function useGenerateAudio() {
       payload: GenerateAudioPayload,
     ): Promise<GenerateAudioResponse> => {
       try {
-        // Encode audio file
-        // First, get avatar data from database
-        const avatarResponse = await fetch(
-          `/api/avatars/get-avatar?id=${payload.avatarId}`,
-        );
-        if (!avatarResponse.ok) {
-          throw new Error(`Failed to load avatar: ${payload.avatarId}`);
+        if (!payload.avatar?.voiceTrainingData) {
+          throw new Error("No voice training data provided for the avatar.");
         }
-        const avatarData = await avatarResponse.json();
         const { base64: audioBase64, filename: audioFilename } =
-          await encodeAudioFile(avatarData.avatar.voiceTrainingData);
+          await encodeAudioFile(payload.avatar.voiceTrainingData);
 
         // Import and build workflow
         const baseWorkflow = await import(
@@ -154,7 +150,6 @@ export function useGenerateAudio() {
         const headers = new Headers();
         headers.append("Content-Type", "application/json");
         const url = payload.async ? COMFYUI_RUN_ASYNC : COMFYUI_RUN_SYNC;
-        console.log("✌️ url --->", url);
 
         const res = await fetch(url, {
           headers,

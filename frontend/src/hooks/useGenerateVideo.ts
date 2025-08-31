@@ -6,10 +6,11 @@ import {
   COMFYUI_SERVER_URL,
   COMFYUI_STATUS,
 } from "@/config/constants";
+import { Avatar } from "@/types/avatar";
 
 export type GenerateVideoPayload = {
   audioFilename: string; // Generated audio filename from useGenerateAudio
-  avatarId: string; // Avatar ID to get image from database
+  avatar: Avatar | null; // Avatar object containing voice model and image
   async?: boolean;
 };
 
@@ -156,22 +157,17 @@ export function useGenerateVideo() {
       payload: GenerateVideoPayload,
     ): Promise<GenerateVideoResponse> => {
       try {
-        // First, get avatar data from database
-        const avatarResponse = await fetch(
-          `/api/avatars/get-avatar?id=${payload.avatarId}`,
-        );
-        if (!avatarResponse.ok) {
-          throw new Error(`Failed to load avatar: ${payload.avatarId}`);
-        }
-        const avatarData = await avatarResponse.json();
-        console.log("✌️ avatarData --->", avatarData);
 
         // Encode audio file from ComfyUI server
         const audioBase64 = await encodeAudioFromServer(payload.audioFilename);
 
         // Encode avatar image from local file
-        const imageBase64 = await encodeImageFromUrl(avatarData.avatar.src);
-        const imageFilename = avatarData.avatar.fileName;
+        console.log('✌️payload.avatar --->', payload.avatar);
+        if (!payload.avatar?.src) {
+          throw new Error("Avatar image source is missing.");
+        }
+        const imageBase64 = await encodeImageFromUrl(payload.avatar.src);
+        const imageFilename = payload.avatar?.fileName;
         console.log("✌️imageFilename --->", imageFilename);
 
         // Import and build workflow

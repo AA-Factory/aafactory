@@ -4,21 +4,16 @@ import clientPromise from "@/utils/mongodb";
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
 
-async function connectToDatabase() {
-  const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
-}
-
 // GET - Retrieve all avatars
-export async function GET(req) {
+export async function GET(req: NextRequest) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     // Get query parameters for filtering/pagination if needed
     const url = new URL(req.url);
-    const limit = parseInt(url.searchParams.get("limit")) || 50;
-    const skip = parseInt(url.searchParams.get("skip")) || 0;
+    const limit = parseInt(url.searchParams.get("limit") || "50");
+    const skip = parseInt(url.searchParams.get("skip") || "0");
     const search = url.searchParams.get("search");
 
     let query = {};
@@ -54,7 +49,7 @@ export async function GET(req) {
         hasMore: skip + limit < totalCount,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching avatars:", error);
     return NextResponse.json(
       {

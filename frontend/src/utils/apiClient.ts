@@ -1,5 +1,7 @@
 // src/utils/apiClient.ts
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+import {
+  BASE_URL,
+} from "@/config/constants";
 
 class ApiClient {
   private token: string | null = null;
@@ -18,9 +20,9 @@ class ApiClient {
   ): Promise<T> {
     const url = `${BASE_URL}${endpoint}`;
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers as Record<string, string> || {}),
     };
 
     if (this.token) {

@@ -13,7 +13,7 @@ async function connectToDatabase() {
 }
 
 // DELETE - Delete avatar by ID
-export async function DELETE(req) {
+export async function DELETE(req: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const { id } = await req.json();
@@ -47,12 +47,9 @@ export async function DELETE(req) {
     if (avatar.src) {
       try {
         await deleteFile(avatar.src);
-        console.log("Associated avatar file deleted successfully:", avatar.src);
-      } catch (fileError) {
-        console.warn(
-          "Could not delete associated avatar file:",
-          fileError.message,
-        );
+        console.log('Associated avatar file deleted successfully:', avatar.src);
+      } catch (fileError: any) {
+        console.warn('Could not delete associated avatar file:', fileError.message);
         // Don't fail the entire operation if file deletion fails
         // The avatar is already deleted from the database
       }

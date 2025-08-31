@@ -12,7 +12,7 @@ async function connectToDatabase() {
 }
 
 // GET - Retrieve single avatar by ID
-export async function GET(req) {
+export async function GET(req: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const { searchParams } = new URL(req.url);

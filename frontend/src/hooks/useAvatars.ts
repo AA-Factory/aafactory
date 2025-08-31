@@ -29,6 +29,8 @@ const mapAvatar = (avatar: any): Avatar => ({
   category: avatar.category || "realistic",
   hasEncodedData: avatar.hasEncodedData || false,
   fileName: avatar.fileName,
+  voiceTrainingData: avatar.voiceTrainingData || "",
+  src: avatar.src
 });
 
 const apiRequest = async <T>(
@@ -41,11 +43,11 @@ const apiRequest = async <T>(
     ...(isFormData
       ? {}
       : {
-          headers: {
-            "Content-Type": "application/json",
-            ...(options?.headers || {}),
-          },
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(options?.headers || {}),
+        },
+      }),
   });
 
   const responseText = await response.text();
@@ -231,6 +233,9 @@ export const useCreateAvatar = () => {
             false,
           fileName: newData.fileName,
           createdAt: new Date().toLocaleDateString(),
+          description: newData.jsonData?.description || newData.formData?.description || "",
+          category: newData.jsonData?.category || newData.formData?.category || "realistic",
+          voiceTrainingData: newData.jsonData?.voiceTrainingData || "",
         },
         ...(old ?? []),
       ]);
@@ -318,7 +323,6 @@ export const useRefreshAvatars = () => {
 };
 
 export const useActiveAvatar = () => {
-  console.log("useActiveAvatar called");
   const { data: avatars } = useAvatars();
   const getActiveAvatarId = () =>
     typeof window !== "undefined"

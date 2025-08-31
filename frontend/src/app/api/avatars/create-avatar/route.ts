@@ -12,7 +12,7 @@ async function connectToDatabase() {
 }
 
 // POST - Create new avatar
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   try {
     const { db } = await connectToDatabase();
 
@@ -26,29 +26,29 @@ export async function POST(req) {
 
       // Extract avatar data from form
       avatarData = {
-        name: formData.get("name"),
-        personality: formData.get("personality"),
-        backgroundKnowledge: formData.get("backgroundKnowledge"),
-        description: formData.get("description"),
-        category: formData.get("category") || "realistic",
-        voiceModel: formData.get("voiceModel") || "elevenlabs",
-        hasEncodedData: formData.get("hasEncodedData") === "true",
-        voiceTrainingData: "rick_and_morty_voice_training.wav",
+        name: formData.get('name') as string | null,
+        personality: formData.get('personality') as string | null,
+        backgroundKnowledge: formData.get('backgroundKnowledge') as string | null,
+        description: formData.get('description') as string | null,
+        category: (formData.get('category') as string) || 'realistic',
+        voiceModel: (formData.get('voiceModel') as string) || 'elevenlabs',
+        hasEncodedData: formData.get('hasEncodedData') === 'true',
+        voiceTrainingData: 'rick_and_morty_voice_training.wav'
       };
 
-      // Handle file upload if present
-      const file = formData.get("file");
-      if (file && file.size > 0) {
-        const fileName = formData.get("fileName") || file.name;
-        uploadResult = await uploadFile(file, fileName);
+      // Handle file upload - Next.js way
+      const fileEntry = formData.get('file') as File | null;
+      if (fileEntry && fileEntry.size > 0) {
+        const fileNameEntry = formData.get('fileName') as string | null;
+        const fileName = fileNameEntry || fileEntry.name;
 
-        // Add file information to avatar data
+        uploadResult = await uploadFile(fileEntry, fileName);
+
         avatarData.src = uploadResult.filePath;
         avatarData.fileName = uploadResult.fileName;
       }
-    }
-    // Handle JSON data (without file upload)
-    else {
+    } else {
+      // Handle JSON data (without file upload)
       avatarData = await req.json();
     }
 
@@ -77,13 +77,14 @@ export async function POST(req) {
       avatar: { ...avatar, _id: result.insertedId },
       uploadResult: uploadResult
         ? {
-            filePath: uploadResult.filePath,
-            fileName: uploadResult.fileName,
-          }
+          filePath: uploadResult.filePath,
+          fileName: uploadResult.fileName,
+        }
         : null,
     });
-  } catch (error) {
-    console.error("Error saving avatar:", error);
+
+  } catch (error: any) {
+    console.error('Error saving avatar:', error);
 
     // Provide more specific error messages
     if (error.message.includes("upload")) {

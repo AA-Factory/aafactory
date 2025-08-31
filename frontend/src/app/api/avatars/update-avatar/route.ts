@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import clientPromise from "@/utils/mongodb";
-import { uploadFile } from "@/utils/fileUtils";
+import { NextResponse } from 'next/server';
+import { ObjectId } from 'mongodb';
+import clientPromise from '@/utils/mongodb';
+import { uploadFile } from '@/utils/fileUtils';
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
 
@@ -10,7 +10,7 @@ async function connectToDatabase() {
   return client.db(MONGODB_DB);
 }
 
-export async function PUT(req) {
+export async function PUT(req: NextRequest) {
   try {
     const db = await connectToDatabase();
     const contentType = req.headers.get("content-type");
@@ -20,19 +20,20 @@ export async function PUT(req) {
 
     if (contentType?.includes("multipart/form-data")) {
       const formData = await req.formData();
+
       data = {
-        id: formData.get("id"),
-        name: formData.get("name"),
-        personality: formData.get("personality"),
-        backgroundKnowledge: formData.get("backgroundKnowledge"),
-        description: formData.get("description"),
-        category: formData.get("category"),
-        voiceModel: formData.get("voiceModel"),
-        hasEncodedData: formData.get("hasEncodedData") === "true",
+        id: formData.get('id'),
+        name: formData.get('name'),
+        personality: formData.get('personality'),
+        backgroundKnowledge: formData.get('backgroundKnowledge'),
+        description: formData.get('description'),
+        category: formData.get('category'),
+        voiceModel: formData.get('voiceModel'),
+        hasEncodedData: formData.get('hasEncodedData') === 'true',
       };
 
-      const file = formData.get("file");
-      const fileName = formData.get("fileName") || `avatar-${Date.now()}.png`;
+      const file = formData.get('file');
+      const fileName = formData.get('fileName') || `avatar-${Date.now()}.png`;
 
       if (file?.size) {
         uploadResult = await uploadFile(file, fileName);
@@ -79,10 +80,7 @@ export async function PUT(req) {
         : null,
     });
   } catch (error) {
-    console.error("Error updating avatar:", error);
-    return NextResponse.json(
-      { error: "Failed to update avatar", details: error.message },
-      { status: 500 },
-    );
+    console.error('Error updating avatar:', error);
+    return NextResponse.json({ error: 'Failed to update avatar', details: error.message }, { status: 500 });
   }
 }

@@ -10,11 +10,13 @@ export interface Avatar {
   description?: string;
   category?: "realistic" | "stylized" | "cartoon" | "fantasy";
   hasEncodedData?: boolean;
+  voiceTrainingData: string;
   fileName?: string;
+  src?: string;
 }
 
 export interface AvatarResponse {
-  avatars: any[];
+  avatars: Avatar[];
 }
 
 export interface AvatarPageProps {
