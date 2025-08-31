@@ -11,7 +11,7 @@ interface AudioTask {
   filePath: string;
 }
 interface VideoGenerationState {
-  // Video type and avatar
+  // video type and avatar
   videoType: {
     id: string;
     label: string;
@@ -25,7 +25,7 @@ interface VideoGenerationState {
   dialog: string;
   audioReady: boolean;
 
-  // Video data
+  // video data
   videoTasks: VideoTask[];
   generatedVideoUrl: string | null;
   selectedVideoTask: VideoTask | null;
@@ -52,7 +52,7 @@ interface VideoGenerationContextType {
     audioReady: boolean;
   }) => void;
 
-  // Video actions
+  // video actions
   refreshVideoTasks: () => void;
   selectVideoTask: (task: VideoTask | null) => void;
 
@@ -137,7 +137,7 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
 
   const refreshVideoTasks = useCallback(() => {
     if (state.avatar?.id) {
-      pollPendingVideoTasks()
+      pollPendingVideoTasks(state.avatar.id)
       setState(prev => ({ ...prev, loadingVideoTasks: true }));
       fetchVideoTasks(state.avatar.id)
         .then(tasks => {

@@ -1,5 +1,7 @@
 export interface AudioTask {
   taskId: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE';
+  taskType: 'audio';
   userPrompt: string;
   filePath: string;
 }
@@ -10,5 +12,5 @@ export interface VideoTask {
   filePath: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE';
   thumbnailPath?: string; // optional thumbnail path for videos
-  taskType: 'VIDEO' | 'OTHER'; // to differentiate task types if needed
+  taskType: 'video' | 'OTHER'; // to differentiate task types if needed
 }

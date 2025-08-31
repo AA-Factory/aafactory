@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateTaskStatus, updateTaskWithFile, getTask, deleteTask } from "@/lib/taskDb";
+import { updateTaskStatus, updateTaskWithFile, getTask, deleteTask, createResource } from "@/lib/taskDb";
 
 // PUT - Update task status or with file
 export async function PUT(
@@ -14,6 +14,7 @@ export async function PUT(
       // Update task with file
       const { base64Data, status = 'SUCCESS' } = body;
       const fileResult = await updateTaskWithFile(taskId, base64Data, status);
+      await createResource(taskId, fileResult);
       return NextResponse.json({
         success: true,
         message: "Task updated with file",

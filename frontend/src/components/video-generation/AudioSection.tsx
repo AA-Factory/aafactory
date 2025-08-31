@@ -44,6 +44,7 @@ export const AudioSection: React.FC = () => {
         .finally(() => {
           setLoadingAudioTasks(false);
         });
+
     } else {
       setAvailableAudioTasks([]);
       setSelectedAudioTask(null);

@@ -1,22 +1,25 @@
 import { AudioTask, VideoTask } from '@/types/tasks';
 
-export const fetchAudioTasks = async (avatarId: string): Promise<AudioTask[]> => {
+export const fetchAudioTasks = async (avatarId: string, status?: string): Promise<AudioTask[]> => {
   try {
-    const response = await fetch(`/api/tasks/audio/${avatarId}`);
+    const response = await fetch(`/api/tasks/avatar/${avatarId}/audio`);
     const data = await response.json();
-    return data.success ? data.audioTasks : [];
+    if (data.tasks) {
+      return status ? data.tasks.filter((task: AudioTask) => task.status === status) : data.tasks;
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching audio tasks:', error);
     return [];
   }
 };
 
-export const fetchVideoTasks = async (avatarId: string): Promise<VideoTask[]> => {
+export const fetchVideoTasks = async (avatarId: string, status?: string): Promise<VideoTask[]> => {
   try {
-    const response = await fetch(`/api/tasks?avatarId=${avatarId}`);
+    const response = await fetch(`/api/tasks/avatar/${avatarId}/video`);
     const data = await response.json();
     if (data.tasks) {
-      return data.tasks.filter((task: VideoTask) => task.taskType === 'VIDEO');
+      return status ? data.tasks.filter((task: VideoTask) => task.status === status) : data.tasks;
     }
     return [];
   } catch (error) {
@@ -25,9 +28,9 @@ export const fetchVideoTasks = async (avatarId: string): Promise<VideoTask[]> =>
   }
 };
 
-export const pollPendingVideoTasks = async (): Promise<{ updatedCount: number }> => {
+export const pollPendingVideoTasks = async (avatarId: string): Promise<{ updatedCount: number }> => {
   try {
-    const response = await fetch('/api/tasks/polling/check', {
+    const response = await fetch(`/api/tasks/avatar/${avatarId}/video/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

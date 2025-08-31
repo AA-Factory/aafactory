@@ -13,7 +13,7 @@ export interface ResourceConfig {
 export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
   video: {
     collection: 'videos',
-    uploadDir: 'uploads/videos',
+    uploadDir: 'video',
     allowedTypes: ['video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime'],
     maxSize: 100 * 1024 * 1024,
     displayName: 'Video',
@@ -21,7 +21,7 @@ export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
   },
   audio: {
     collection: 'audios',
-    uploadDir: 'uploads/audios',
+    uploadDir: 'audio',
     allowedTypes: ['audio/mpeg', 'audio/mp3', 'audio/wav'],
     maxSize: 20 * 1024 * 1024,
     displayName: 'Audio',
@@ -29,7 +29,7 @@ export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
   },
   image: {
     collection: 'images',
-    uploadDir: 'uploads/images',
+    uploadDir: 'image',
     allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
     maxSize: 10 * 1024 * 1024,
     displayName: 'Image',

@@ -327,7 +327,7 @@ export default function AvatarPage({
             existingAudioFileName={existingAudioFileName}
             editMode={editMode}
           />
-
+          {/* 
           {currentFormData && (
             <div className="space-y-3">
               <button
@@ -342,7 +342,7 @@ export default function AvatarPage({
                     : "Save & Encode to Image + Upload"}
               </button>
             </div>
-          )}
+          )} */}
 
           <div className="space-y-3">
             {encodedImage && (

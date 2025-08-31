@@ -4,44 +4,32 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { deleteFile } from "@/lib/fileUtils";
 
-const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
-
-async function connectToDatabase() {
-  const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
-}
+const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 // DELETE - Delete avatar by ID
 export async function DELETE(req: NextRequest) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
     const { id } = await req.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Avatar ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Avatar ID is required' }, { status: 400 });
     }
 
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid avatar ID" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid avatar ID' }, { status: 400 });
     }
 
     // Get the avatar before deletion to get file path for cleanup
-    const avatar = await db
-      .collection("avatars")
-      .findOne({ _id: new ObjectId(id) });
+    const avatar = await db.collection('avatars').findOne({ _id: new ObjectId(id) });
 
     if (!avatar) {
-      return NextResponse.json({ error: "Avatar not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Avatar not found' }, { status: 404 });
     }
 
     // Delete from database first
-    const result = await db
-      .collection("avatars")
-      .deleteOne({ _id: new ObjectId(id) });
+    const result = await db.collection('avatars').deleteOne({ _id: new ObjectId(id) });
 
     // Clean up associated file if it exists
     if (avatar.src) {
@@ -59,13 +47,11 @@ export async function DELETE(req: NextRequest) {
       success: true,
       deletedCount: result.deletedCount,
       deletedAvatar: avatar,
-      message: "Avatar and associated files deleted successfully",
+      message: 'Avatar and associated files deleted successfully'
     });
+
   } catch (error) {
-    console.error("Error deleting avatar:", error);
-    return NextResponse.json(
-      { error: "Failed to delete avatar" },
-      { status: 500 },
-    );
+    console.error('Error deleting avatar:', error);
+    return NextResponse.json({ error: 'Failed to delete avatar' }, { status: 500 });
   }
 }

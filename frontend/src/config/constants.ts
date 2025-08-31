@@ -16,12 +16,12 @@ export const VIDEO_TYPES = [
 ];
 
 export const POLLING_CONFIG = {
-  AUDIO: {
+  audio: {
     INTERVAL: 5000,
     MAX_ATTEMPTS: 60,
     TIMEOUT: 300000,
   },
-  VIDEO: {
+  video: {
     INTERVAL: 50000,
     MAX_ATTEMPTS: 400,
     TIMEOUT: 9000000,

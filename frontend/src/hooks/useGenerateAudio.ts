@@ -38,10 +38,10 @@ export function useGenerateAudio(options?: UseGenerateAudioOptions) {
       const { taskRequest } = await prepareAudioData(payload);
 
       // Start task
-      const taskId = await startTask(taskRequest, payload.avatar?.id || '', 'AUDIO', payload.dialog);
+      const taskId = await startTask(taskRequest, payload.avatar?.id || '', 'audio', payload.dialog);
 
       // Poll for result
-      const base64Audio = await pollTaskStatus(taskId, 'AUDIO');
+      const base64Audio = await pollTaskStatus(taskId, 'audio');
 
       // Create response
       const result = createAudioResponse(base64Audio, taskId);

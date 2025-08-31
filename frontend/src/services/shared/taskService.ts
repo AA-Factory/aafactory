@@ -24,7 +24,7 @@ export class TaskTimeoutError extends TaskError {
 export async function startTask(
   requestData: CeleryTaskRequest,
   avatarId: string,
-  taskType: 'AUDIO' | 'VIDEO',
+  taskType: 'audio' | 'video',
   userPrompt?: string
 ): Promise<string> {
   try {
@@ -47,7 +47,7 @@ export async function startTask(
     }
 
     // Create task entry in MongoDB via API
-    await fetch('/api/tasks', {
+    await fetch('/api/task', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export async function startTask(
       body: JSON.stringify({
         taskId: result.task_id,
         avatarId,
-        taskType,
+        taskType, // Temporary hardcode to "video" until audio tasks are implemented
         userPrompt,
       })
     });
@@ -72,14 +72,14 @@ export async function startTask(
 
 export async function pollTaskStatus(
   taskId: string,
-  taskType: 'AUDIO' | 'VIDEO'
+  taskType: 'audio' | 'video'
 ): Promise<string> {
   const config = POLLING_CONFIG[taskType];
   let attempts = 0;
   const startTime = Date.now();
 
   // Update DB status to IN_PROGRESS via API
-  await fetch(`/api/tasks/${taskId}`, {
+  await fetch(`/api/task/${taskId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export async function pollTaskStatus(
 
   while (attempts < config.MAX_ATTEMPTS) {
     if (Date.now() - startTime > config.TIMEOUT) {
-      await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/task/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ export async function pollTaskStatus(
 
       if (taskResult.status === 'SUCCESS') {
         if (!taskResult.result) {
-          await fetch(`/api/tasks/${taskId}`, {
+          await fetch(`/api/task/${taskId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export async function pollTaskStatus(
         }
 
         // Save file and update DB with file path via API
-        await fetch(`/api/tasks/${taskId}`, {
+        const response = await fetch(`/api/task/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -143,12 +143,16 @@ export async function pollTaskStatus(
             status: 'SUCCESS'
           })
         });
+        const data = await response.json();
+        console.log('✌️data --->', data);
+        if (response.ok) {
+        }
         return taskResult.result;
       }
 
       if (taskResult.status === 'FAILURE') {
         const errorMessage = taskResult.error || 'Task failed';
-        await fetch(`/api/tasks/${taskId}`, {
+        await fetch(`/api/task/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -167,7 +171,7 @@ export async function pollTaskStatus(
       if (error instanceof TaskError) {
         // Update DB with failure status if not already updated
         try {
-          await fetch(`/api/tasks/${taskId}`, {
+          await fetch(`/api/task/${taskId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -184,7 +188,7 @@ export async function pollTaskStatus(
       }
 
       const errorMessage = `Polling failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/task/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -198,7 +202,7 @@ export async function pollTaskStatus(
     }
   }
 
-  await fetch(`/api/tasks/${taskId}`, {
+  await fetch(`/api/task/${taskId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

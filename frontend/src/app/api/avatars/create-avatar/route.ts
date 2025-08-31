@@ -3,18 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { uploadFile, uploadTrainingAudio } from "@/lib/fileUtils";
 
-const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
-
-async function connectToDatabase() {
-  const client = await clientPromise;
-  const db = client.db(MONGODB_DB);
-  return { client, db };
-}
+const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 // POST - Create new avatar
 export async function POST(req: NextRequest) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db(MONGODB_DB);
 
     const contentType = req.headers.get("content-type");
     let data;
@@ -22,7 +17,7 @@ export async function POST(req: NextRequest) {
     let audioUploadResult = null;
 
     // Handle form data (with file upload)
-    if (contentType?.includes("multipart/form-data")) {
+    if (contentType?.includes('multipart/form-data')) {
       const formData = await req.formData();
 
       // Extract avatar data from form
@@ -47,7 +42,7 @@ export async function POST(req: NextRequest) {
         const fileNameEntry = formData.get("fileName") as string | null;
         const fileName = fileNameEntry || fileEntry.name;
 
-        uploadResult = await uploadFile(fileEntry, fileName, "avatars");
+        uploadResult = await uploadFile(fileEntry, fileName, "image");
 
         data.src = uploadResult.filePath;
         data.fileName = uploadResult.fileName;
@@ -83,10 +78,10 @@ export async function POST(req: NextRequest) {
     const avatar = {
       ...data,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      updatedAt: new Date()
     };
 
-    const result = await db.collection("avatars").insertOne(avatar);
+    const result = await db.collection('avatars').insertOne(avatar);
 
     return NextResponse.json({
       success: true,
@@ -94,35 +89,29 @@ export async function POST(req: NextRequest) {
       avatar: { ...avatar, _id: result.insertedId },
       uploadResult: uploadResult
         ? {
-            filePath: uploadResult.filePath,
-            fileName: uploadResult.fileName,
-          }
+          filePath: uploadResult.filePath,
+          fileName: uploadResult.fileName,
+        }
         : null,
       audioUploadResult: audioUploadResult
         ? {
-            filePath: audioUploadResult.filePath,
-            fileName: audioUploadResult.fileName,
-          }
+          filePath: audioUploadResult.filePath,
+          fileName: audioUploadResult.fileName,
+        }
         : null,
     });
   } catch (error: any) {
     console.error("Error saving avatar:", error);
 
     // Provide more specific error messages
-    if (error.message.includes("upload")) {
-      return NextResponse.json(
-        {
-          error: "Failed to upload file: " + error.message,
-        },
-        { status: 500 },
-      );
+    if (error.message.includes('upload')) {
+      return NextResponse.json({
+        error: 'Failed to upload file: ' + error.message
+      }, { status: 500 });
     }
 
-    return NextResponse.json(
-      {
-        error: "Failed to save avatar: " + error.message,
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({
+      error: 'Failed to save avatar: ' + error.message
+    }, { status: 500 });
   }
-}
+};

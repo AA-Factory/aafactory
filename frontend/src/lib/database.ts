@@ -13,17 +13,16 @@ export async function connectToDatabase(): Promise<Db> {
   }
 }
 
-export async function getTasksCollection(): Promise<Collection<TaskDocument>> {
+export async function getCollection<T>(collectionName: string): Promise<Collection<T>> {
   const database = await connectToDatabase();
-  return database.collection<TaskDocument>('tasks');
+  return database.collection<T>(collectionName);
 }
-
 export interface TaskDocument {
   _id?: string;
   taskId: string;
   avatarId: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE';
-  taskType: 'AUDIO' | 'VIDEO';
+  taskType: 'audio' | 'video';
   createdAt: Date;
   updatedAt: Date;
   filePath?: string;

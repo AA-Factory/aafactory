@@ -35,7 +35,7 @@ export async function saveBase64File(
     const fileName = `${taskId}_${Date.now()}.${extension}`;
 
     // Create public directory path
-    const publicDir = path.join(process.cwd(), 'public/generations', fileType);
+    const publicDir = path.join(process.cwd(), 'public/uploads', fileType);
     const filePath = path.join(publicDir, fileName);
 
     // Ensure directory exists
@@ -46,7 +46,7 @@ export async function saveBase64File(
     await fs.promises.writeFile(filePath, buffer as any);
 
     // Return relative path for web access
-    const webPath = `/generations/${fileType}/${fileName}`;
+    const webPath = `/uploads/${fileType}/${fileName}`;
 
     return {
       filePath: webPath,
@@ -93,7 +93,7 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
 
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
-    const absolutePath = path.join(process.cwd(), "public", filePath);
+    const absolutePath = path.join(process.cwd(), "public/uploads", filePath);
 
     if (!existsSync(absolutePath)) {
       return {
@@ -119,7 +119,7 @@ export async function deleteFile(filePath: string): Promise<DeleteResult> {
  */
 export async function deleteFileSimple(filePath: string): Promise<void> {
   try {
-    const fullPath = path.join(process.cwd(), 'public', filePath);
+    const fullPath = path.join(process.cwd(), 'public/uploads', filePath);
     await fs.promises.unlink(fullPath);
   } catch (error) {
     console.error('Error deleting file:', error);
@@ -136,13 +136,12 @@ export async function deleteFileSimple(filePath: string): Promise<void> {
 export async function uploadFile(
   blob: Blob | Buffer,
   fileName: string,
-  destination: string = "avatars",
+  destination: string = "image",
 ): Promise<UploadResult> {
   try {
     const uploadsDir = path.join(
       process.cwd(),
-      "public",
-      "uploads",
+      "public/uploads",
       destination,
     );
     await mkdir(uploadsDir, { recursive: true });
@@ -180,7 +179,7 @@ export async function uploadFile(
 }
 
 /**
- * Upload an image file to the avatars directory
+ * Upload an image file to the image directory
  * @param blob - The image file Blob or Buffer to upload
  * @param fileName - The original file name
  */
@@ -188,7 +187,7 @@ export async function uploadAvatarImage(
   blob: Blob | Buffer,
   fileName: string,
 ): Promise<UploadResult> {
-  return uploadFile(blob, fileName, "avatars");
+  return uploadFile(blob, fileName, "image");
 }
 
 /**
@@ -201,4 +200,93 @@ export async function uploadTrainingAudio(
   fileName: string,
 ): Promise<UploadResult> {
   return uploadFile(blob, fileName, "audio");
+}
+
+export async function cleanAllDirectories() {
+  const baseDir = path.join(process.cwd(), 'public/uploads');
+  const directories = ['audio', 'image', 'video'];
+
+  for (const dir of directories) {
+    const dirPath = path.join(baseDir, dir);
+
+    try {
+      if (existsSync(dirPath)) {
+        const files = await fs.promises.readdir(dirPath);
+
+        for (const file of files) {
+          const filePath = path.join(dirPath, file);
+
+          try {
+            // Check if it's a file or directory
+            const stats = await fs.promises.stat(filePath);
+
+            if (stats.isFile()) {
+              await fs.promises.unlink(filePath);
+              console.log(`Deleted file: ${filePath}`);
+            } else if (stats.isDirectory()) {
+              // Recursively remove directory and its contents
+              await fs.promises.rmdir(filePath, { recursive: true });
+              console.log(`Deleted directory: ${filePath}`);
+            }
+          } catch (fileError) {
+            console.error(`Error deleting ${filePath}:`, fileError);
+            // Continue with other files even if one fails
+          }
+        }
+
+        console.log(`Cleaned directory: ${dirPath}`);
+      } else {
+        console.log(`Directory does not exist: ${dirPath}`);
+      }
+    } catch (dirError) {
+      console.error(`Error processing directory ${dirPath}:`, dirError);
+    }
+  }
+}
+
+export async function cleanSpecificDirectories(directories: string[]) {
+  const baseDir = path.join(process.cwd(), 'public/uploads');
+  const validDirectories = ['audio', 'image', 'video'];
+
+  for (const dir of directories) {
+    if (!validDirectories.includes(dir)) {
+      console.warn(`Invalid directory: ${dir}. Valid directories: ${validDirectories.join(', ')}`);
+      continue;
+    }
+
+    const dirPath = path.join(baseDir, dir);
+
+    try {
+      if (existsSync(dirPath)) {
+        const files = await fs.promises.readdir(dirPath);
+
+        for (const file of files) {
+          const filePath = path.join(dirPath, file);
+
+          try {
+            // Check if it's a file or directory
+            const stats = await fs.promises.stat(filePath);
+
+            if (stats.isFile()) {
+              await fs.promises.unlink(filePath);
+              console.log(`Deleted file: ${filePath}`);
+            } else if (stats.isDirectory()) {
+              // Recursively remove directory and its contents
+              await fs.promises.rmdir(filePath, { recursive: true });
+              console.log(`Deleted directory: ${filePath}`);
+            }
+          } catch (fileError) {
+            console.error(`Error deleting ${filePath}:`, fileError);
+            // Continue with other files even if one fails
+          }
+        }
+
+        console.log(`Cleaned directory: ${dirPath}`);
+      } else {
+        console.log(`Directory does not exist: ${dirPath}`);
+      }
+    } catch (dirError) {
+      console.error(`Error processing directory ${dirPath}:`, dirError);
+    }
+  }
 }

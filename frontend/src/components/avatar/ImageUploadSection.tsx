@@ -35,13 +35,12 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
       </p>
 
       <div
-        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-          isDragging
-            ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-            : selectedImage
-              ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
-              : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50"
-        }`}
+        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${isDragging
+          ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+          : selectedImage
+            ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
+            : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50"
+          }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}

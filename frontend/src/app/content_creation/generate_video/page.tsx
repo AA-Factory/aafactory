@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
-import { useAvatars } from "@/hooks/useAvatars";
 
 // Import components
 import { VideoTypeSelector } from "@/components/video-generation/VideoTypeSelector";

@@ -34,7 +34,7 @@ export function isHtmlAudioElement(
     | HTMLElement,
 ): element is HTMLAudioElement {
   if (!element) return false;
-  return element.tagName === "AUDIO";
+  return element.tagName === "audio";
 }
 
 export function formatTimeToMinSec(time: number) {

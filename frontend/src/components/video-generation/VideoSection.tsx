@@ -53,14 +53,11 @@ export const VideoSection: React.FC = () => {
         {
           onSuccess: (result) => {
             showNotification("Video generated successfully!", "success");
-            console.log('✌️Video generated successfully --->');
-            // Refresh immediately when task completes
             refreshVideoTasks();
           },
           onError: (error) => {
             console.error("Video generation failed:", error);
             showNotification("Video generation failed. Please try again.", "error");
-            // Still refresh on error to update any status changes
             refreshVideoTasks();
           },
           onSettled: () => {
