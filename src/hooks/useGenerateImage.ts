@@ -1,11 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
-import { buildWorkflow } from '../utils/workflow';
+import { useMutation } from "@tanstack/react-query";
+import { buildWorkflow } from "../utils/workflow";
 import {
   COMFYUI_RUN_ASYNC,
   COMFYUI_RUN_SYNC,
   COMFYUI_SERVER_URL,
-  COMFYUI_STATUS
-} from '@/config/constants';
+  COMFYUI_STATUS,
+} from "@/config/constants";
 
 export type GenerateImagePayload = {
   workflow: Record<string, unknown>;
@@ -50,7 +50,7 @@ export type GenerateResponse = BaseResponse & {
      * The base64 encode generated image
      */
     message: string;
-    status: 'success' | 'error';
+    status: "success" | "error";
     prompt_id?: string;
   };
 };
@@ -63,31 +63,43 @@ export type StatusResponse = BaseResponse & {
      * The base64 encode generated image
      */
     message: string;
-    status: 'success' | 'error';
+    status: "success" | "error";
   };
 };
 
 export type ImageQueryResult = {
-  data: ({ uploadUrl: string } & (BaseResponse | GenerateResponse | StatusResponse)) | null;
+  data:
+    | ({ uploadUrl: string } & (
+        | BaseResponse
+        | GenerateResponse
+        | StatusResponse
+      ))
+    | null;
   error: unknown;
 };
 
-type JobStatus = 'COMPLETED' | 'IN_QUEUE' | 'IN_PROGRESS' | 'FAILED' | 'CANCELLED';
-
+type JobStatus =
+  | "COMPLETED"
+  | "IN_QUEUE"
+  | "IN_PROGRESS"
+  | "FAILED"
+  | "CANCELLED";
 
 export function useGenerateImage() {
-
   return useMutation({
     mutationFn: async (payload: GenerateImagePayload) => {
       const headers = new Headers();
-      headers.append('Content-Type', 'application/json');
+      headers.append("Content-Type", "application/json");
 
       // Extract the actual workflow from the import (handle both direct and default exports)
       const baseWorkflow = payload.workflow.default || payload.workflow;
 
       // Use buildWorkflow if workflowOverrides are provided, otherwise use the workflow directly
       let finalWorkflow;
-      if (payload.workflowOverrides && Object.keys(payload.workflowOverrides).length > 0) {
+      if (
+        payload.workflowOverrides &&
+        Object.keys(payload.workflowOverrides).length > 0
+      ) {
         finalWorkflow = buildWorkflow(baseWorkflow, payload.workflowOverrides);
       } else {
         finalWorkflow = baseWorkflow;
@@ -96,7 +108,7 @@ export function useGenerateImage() {
       const outPayload: GenerateImageOutPayload = {
         input: {
           workflow: finalWorkflow,
-          images: payload.images || []
+          images: payload.images || [],
         },
       };
 
@@ -105,7 +117,7 @@ export function useGenerateImage() {
       try {
         const res = await fetch(url, {
           headers,
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(outPayload),
         });
 
@@ -114,28 +126,36 @@ export function useGenerateImage() {
         }
 
         const json = (await res.json()) as BaseResponse | GenerateResponse;
-        console.log('Generate image response:', json);
+        console.log("Generate image response:", json);
 
         if (json.error) {
           throw new Error(json.error);
         }
 
-        if (json.status === 'COMPLETED' && 'output' in json && json.output.status === 'error') {
+        if (
+          json.status === "COMPLETED" &&
+          "output" in json &&
+          json.output.status === "error"
+        ) {
           const errorMessage = json.output.message.startsWith(
-            'the image does not exist in the specified output folder',
+            "the image does not exist in the specified output folder",
           )
-            ? 'An unknown error occurred during the image generation'
+            ? "An unknown error occurred during the image generation"
             : json.output.message;
 
           throw new Error(errorMessage);
         }
 
-        if (json.status !== 'COMPLETED') {
-          throw new Error(`Image generation failed. Status: ${json.status} Error: ${json.error}`);
+        if (json.status !== "COMPLETED") {
+          throw new Error(
+            `Image generation failed. Status: ${json.status} Error: ${json.error}`,
+          );
         }
 
         const imageString =
-          'output' in json && json.output.status === 'success' ? json.output.message : '';
+          "output" in json && json.output.status === "success"
+            ? json.output.message
+            : "";
 
         return {
           data: {
@@ -157,5 +177,3 @@ export function useGenerateImage() {
     },
   });
 }
-
-

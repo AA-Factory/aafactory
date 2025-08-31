@@ -1,27 +1,38 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { HiDownload, HiTrash, HiArrowLeft } from 'react-icons/hi';
-import { AvatarForm, AvatarFormRef } from './AvatarForm';
-import { AvatarFormData } from '@/utils/avatarValidation';
-import { useNotification } from '@/contexts/NotificationContext';
-import { useAvatar, useCreateAvatar, useUpdateAvatar, useDeleteAvatar, useRefreshAvatars } from '@/hooks/useAvatars';
-import Link from 'next/link';
-import { encodeFormDataIntoImage } from '@/utils/steganography';
-import { useRouter } from 'next/navigation';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { HiDownload, HiTrash, HiArrowLeft } from "react-icons/hi";
+import { AvatarForm, AvatarFormRef } from "./AvatarForm";
+import { AvatarFormData } from "@/utils/avatarValidation";
+import { useNotification } from "@/contexts/NotificationContext";
+import {
+  useAvatar,
+  useCreateAvatar,
+  useUpdateAvatar,
+  useDeleteAvatar,
+  useRefreshAvatars,
+} from "@/hooks/useAvatars";
+import Link from "next/link";
+import { encodeFormDataIntoImage } from "@/utils/steganography";
+import { useRouter } from "next/navigation";
 
 type AvatarPageProps = {
   editMode?: boolean;
   avatarId?: string;
 };
 
-export default function AvatarPage({ editMode = false, avatarId }: AvatarPageProps) {
+export default function AvatarPage({
+  editMode = false,
+  avatarId,
+}: AvatarPageProps) {
   // Context / router
   const { showNotification } = useNotification();
   const router = useRouter();
 
   // Queries / mutations
-  const { data: existingAvatar, isLoading: isLoadingAvatar } = useAvatar(editMode ? avatarId : undefined);
+  const { data: existingAvatar, isLoading: isLoadingAvatar } = useAvatar(
+    editMode ? avatarId : undefined,
+  );
   const createAvatarMutation = useCreateAvatar();
   const updateAvatarMutation = useUpdateAvatar();
   const deleteAvatarMutation = useDeleteAvatar();
@@ -33,14 +44,18 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
   const avatarFormRef = useRef<AvatarFormRef>(null);
 
   // Form state
-  const [defaultValues, setDefaultValues] = useState<Partial<AvatarFormData>>({});
+  const [defaultValues, setDefaultValues] = useState<Partial<AvatarFormData>>(
+    {},
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Avatar / UI state
   const [encodedImage, setEncodedImage] = useState<string | null>(null);
   const [savedAvatarId, setSavedAvatarId] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [currentFormData, setCurrentFormData] = useState<AvatarFormData | null>(null);
+  const [currentFormData, setCurrentFormData] = useState<AvatarFormData | null>(
+    null,
+  );
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
   // ---- Load existing avatar into form when editing ----
@@ -49,23 +64,36 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
     if (!existingAvatar || isLoadingAvatar) return;
 
     const avatarData = {
-      name: existingAvatar.name || '',
-      description: existingAvatar.description || '',
-      category: (existingAvatar.category as 'realistic' | 'stylized' | 'cartoon' | 'fantasy') || 'realistic',
-      personality: existingAvatar.personality || '',
-      backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
-      voiceModel: (existingAvatar.voiceModel as 'elevenlabs' | 'openai' | 'azure' | 'google') || 'elevenlabs',
+      name: existingAvatar.name || "",
+      description: existingAvatar.description || "",
+      category:
+        (existingAvatar.category as
+          | "realistic"
+          | "stylized"
+          | "cartoon"
+          | "fantasy") || "realistic",
+      personality: existingAvatar.personality || "",
+      backgroundKnowledge: existingAvatar.backgroundKnowledge || "",
+      voiceModel:
+        (existingAvatar.voiceModel as
+          | "elevenlabs"
+          | "openai"
+          | "azure"
+          | "google") || "elevenlabs",
     };
 
     setDefaultValues(avatarData);
-    
+
     // Reset the form with existing data
     if (avatarFormRef.current) {
       avatarFormRef.current.reset(avatarData);
     }
 
     // Load existing image if available
-    if (existingAvatar.imageUrl && existingAvatar.imageUrl !== '/placeholder-avatar.png') {
+    if (
+      existingAvatar.imageUrl &&
+      existingAvatar.imageUrl !== "/placeholder-avatar.png"
+    ) {
       setExistingImageUrl(existingAvatar.imageUrl);
     } else {
       setExistingImageUrl(null);
@@ -85,129 +113,192 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
     setIsSubmitting(false);
   }, []);
 
-  const handleFormSubmitAndEncode = useCallback(async (data: AvatarFormData) => {
-    setCurrentFormData(data);
-    setIsSubmitting(true);
-    await handleSaveAndEncode(data);
-    setIsSubmitting(false);
-  }, []);
+  const handleFormSubmitAndEncode = useCallback(
+    async (data: AvatarFormData) => {
+      setCurrentFormData(data);
+      setIsSubmitting(true);
+      await handleSaveAndEncode(data);
+      setIsSubmitting(false);
+    },
+    [],
+  );
 
-  const handleSaveOnly = useCallback(async (formData: AvatarFormData) => {
-    try {
-      showNotification('Saving avatar...', 'info');
+  const handleSaveOnly = useCallback(
+    async (formData: AvatarFormData) => {
+      try {
+        showNotification("Saving avatar...", "info");
 
-      const avatarData = { 
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        personality: formData.personality,
-        backgroundKnowledge: formData.backgroundKnowledge,
-        voiceModel: formData.voiceModel,
-      } as any;
-      
-      let file: File | null = formData.image || null;
-      let fileName: string | null = null;
+        const avatarData = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          personality: formData.personality,
+          backgroundKnowledge: formData.backgroundKnowledge,
+          voiceModel: formData.voiceModel,
+        } as any;
 
-      if (file) {
-        fileName = `${formData.name || 'avatar'}-original.png`;
-        avatarData.hasEncodedData = false;
-      }
+        let file: File | null = formData.image || null;
+        let fileName: string | null = null;
 
-      if (editMode && avatarId) {
-        const updateData: any = { id: avatarId, ...avatarData };
-        if (file && fileName) {
-          updateData.file = file;
-          updateData.fileName = fileName;
-        }
-        await updateAvatarMutation.mutateAsync(updateData);
-        showNotification('Avatar data successfully updated!', 'success');
-      } else {
         if (file) {
-          await createAvatarMutation.mutateAsync({ formData: avatarData, file, fileName: fileName! });
-        } else {
-          await createAvatarMutation.mutateAsync({ jsonData: avatarData });
+          fileName = `${formData.name || "avatar"}-original.png`;
+          avatarData.hasEncodedData = false;
         }
-        showNotification('Avatar successfully saved!', 'success');
+
+        if (editMode && avatarId) {
+          const updateData: any = { id: avatarId, ...avatarData };
+          if (file && fileName) {
+            updateData.file = file;
+            updateData.fileName = fileName;
+          }
+          await updateAvatarMutation.mutateAsync(updateData);
+          showNotification("Avatar data successfully updated!", "success");
+        } else {
+          if (file) {
+            await createAvatarMutation.mutateAsync({
+              formData: avatarData,
+              file,
+              fileName: fileName!,
+            });
+          } else {
+            await createAvatarMutation.mutateAsync({ jsonData: avatarData });
+          }
+          showNotification("Avatar successfully saved!", "success");
+        }
+
+        refreshAll();
+        router.push("/avatars");
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        showNotification(errorMessage, "error");
+      }
+    },
+    [
+      editMode,
+      avatarId,
+      createAvatarMutation,
+      updateAvatarMutation,
+      refreshAll,
+      router,
+      showNotification,
+    ],
+  );
+
+  const handleSaveAndEncode = useCallback(
+    async (formData: AvatarFormData) => {
+      if (!formData.image) {
+        showNotification("Please select an image first", "warning");
+        return;
       }
 
-      refreshAll();
-      router.push('/avatars');
-    } catch (err: any) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      showNotification(errorMessage, 'error');
-    }
-  }, [editMode, avatarId, createAvatarMutation, updateAvatarMutation, refreshAll, router, showNotification]);
+      try {
+        showNotification("Encoding avatar data into image...", "info");
 
-  const handleSaveAndEncode = useCallback(async (formData: AvatarFormData) => {
-    if (!formData.image) {
-      showNotification('Please select an image first', 'warning');
-      return;
-    }
+        const formDataToEncode = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          personality: formData.personality,
+          backgroundKnowledge: formData.backgroundKnowledge,
+          voiceModel: formData.voiceModel,
+        };
 
-    try {
-      showNotification('Encoding avatar data into image...', 'info');
+        const { blob, downloadUrl } = await encodeFormDataIntoImage(
+          formDataToEncode,
+          formData.image,
+        );
+        setEncodedImage(downloadUrl);
+        showNotification(
+          "Saving avatar and uploading encoded image...",
+          "info",
+        );
 
-      const formDataToEncode = {
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        personality: formData.personality,
-        backgroundKnowledge: formData.backgroundKnowledge,
-        voiceModel: formData.voiceModel,
-      };
+        const fileName = `${formData.name || "avatar"}-encoded.png`;
+        const avatarData = { ...formDataToEncode, hasEncodedData: true } as any;
 
-      const { blob, downloadUrl } = await encodeFormDataIntoImage(formDataToEncode, formData.image);
-      setEncodedImage(downloadUrl);
-      showNotification('Saving avatar and uploading encoded image...', 'info');
-
-      const fileName = `${formData.name || 'avatar'}-encoded.png`;
-      const avatarData = { ...formDataToEncode, hasEncodedData: true } as any;
-
-      if (editMode && avatarId) {
-        await updateAvatarMutation.mutateAsync({ id: avatarId, ...avatarData, file: new File([blob], fileName), fileName });
-        showNotification('Avatar successfully updated and encoded!', 'success');
-      } else {
-        await createAvatarMutation.mutateAsync({ formData: avatarData, file: new File([blob], fileName), fileName });
-        showNotification('Avatar successfully saved and encoded!', 'success');
+        if (editMode && avatarId) {
+          await updateAvatarMutation.mutateAsync({
+            id: avatarId,
+            ...avatarData,
+            file: new File([blob], fileName),
+            fileName,
+          });
+          showNotification(
+            "Avatar successfully updated and encoded!",
+            "success",
+          );
+        } else {
+          await createAvatarMutation.mutateAsync({
+            formData: avatarData,
+            file: new File([blob], fileName),
+            fileName,
+          });
+          showNotification("Avatar successfully saved and encoded!", "success");
+        }
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        showNotification(errorMessage, "error");
       }
-    } catch (err: any) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      showNotification(errorMessage, 'error');
-    }
-  }, [editMode, avatarId, createAvatarMutation, updateAvatarMutation, showNotification]);
+    },
+    [
+      editMode,
+      avatarId,
+      createAvatarMutation,
+      updateAvatarMutation,
+      showNotification,
+    ],
+  );
 
   const handleDownload = useCallback(() => {
     if (!encodedImage) return;
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = encodedImage;
-    a.download = `${currentFormData?.name || 'avatar'}-encoded.png`;
+    a.download = `${currentFormData?.name || "avatar"}-encoded.png`;
     a.click();
   }, [encodedImage, currentFormData?.name]);
 
-  const handleDeleteAvatar = useCallback(async (id?: string) => {
-    if (!id) return;
-    try {
-      await deleteAvatarMutation.mutateAsync(id);
-      showNotification('Avatar and associated files deleted successfully!', 'success');
-    } catch (err: any) {
-      showNotification('Failed to delete avatar: ' + (err?.message ?? String(err)), 'error');
-    } finally {
-      router.push('/avatars');
-    }
-  }, [deleteAvatarMutation, router, showNotification]);
+  const handleDeleteAvatar = useCallback(
+    async (id?: string) => {
+      if (!id) return;
+      try {
+        await deleteAvatarMutation.mutateAsync(id);
+        showNotification(
+          "Avatar and associated files deleted successfully!",
+          "success",
+        );
+      } catch (err: any) {
+        showNotification(
+          "Failed to delete avatar: " + (err?.message ?? String(err)),
+          "error",
+        );
+      } finally {
+        router.push("/avatars");
+      }
+    },
+    [deleteAvatarMutation, router, showNotification],
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
       <div className="max-w-4xl mx-auto p-4">
         <div className="space-y-4">
           <div className="text-center">
-            <Link href="/avatars" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mb-3">
+            <Link
+              href="/avatars"
+              className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mb-3"
+            >
               <HiArrowLeft className="w-4 h-4" />
               <span className="text-sm">Back to Avatars</span>
             </Link>
 
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{editMode ? 'Edit Avatar' : 'Avatar Creator'}</h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">{editMode ? 'Update your avatar details and settings' : 'Create and save your avatar with steganography encoding'}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+              {editMode ? "Edit Avatar" : "Avatar Creator"}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              {editMode
+                ? "Update your avatar details and settings"
+                : "Create and save your avatar with steganography encoding"}
+            </p>
           </div>
 
           <AvatarForm
@@ -221,28 +312,49 @@ export default function AvatarPage({ editMode = false, avatarId }: AvatarPagePro
 
           {currentFormData && (
             <div className="space-y-3">
-              <button 
-                onClick={() => handleFormSubmitAndEncode(currentFormData)} 
-                disabled={isSubmitting || !currentFormData.image} 
+              <button
+                onClick={() => handleFormSubmitAndEncode(currentFormData)}
+                disabled={isSubmitting || !currentFormData.image}
                 className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg transition-colors font-medium text-sm"
               >
-                {isSubmitting ? 'Processing...' : savedAvatarId ? 'Update & Encode to Image + Upload' : 'Save & Encode to Image + Upload'}
+                {isSubmitting
+                  ? "Processing..."
+                  : savedAvatarId
+                    ? "Update & Encode to Image + Upload"
+                    : "Save & Encode to Image + Upload"}
               </button>
             </div>
           )}
 
           <div className="space-y-3">
             {encodedImage && (
-              <button onClick={handleDownload} className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2 text-sm">
+              <button
+                onClick={handleDownload}
+                className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2 text-sm"
+              >
                 <HiDownload className="h-4 w-4" />
                 <span>Download Encoded Image</span>
               </button>
             )}
 
             {savedAvatarId && (
-              <button onClick={() => (showConfirmation ? handleDeleteAvatar(avatarId) : setShowConfirmation(true))} className="w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white px-6 py-2.5 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2 text-sm" disabled={isLoadingAvatar}>
+              <button
+                onClick={() =>
+                  showConfirmation
+                    ? handleDeleteAvatar(avatarId)
+                    : setShowConfirmation(true)
+                }
+                className="w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white px-6 py-2.5 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2 text-sm"
+                disabled={isLoadingAvatar}
+              >
                 <HiTrash className="h-4 w-4" />
-                <span>{isLoadingAvatar ? 'Deleting...' : showConfirmation ? 'Are you sure?' : 'Delete Avatar'}</span>
+                <span>
+                  {isLoadingAvatar
+                    ? "Deleting..."
+                    : showConfirmation
+                      ? "Are you sure?"
+                      : "Delete Avatar"}
+                </span>
               </button>
             )}
           </div>

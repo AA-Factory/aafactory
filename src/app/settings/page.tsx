@@ -1,65 +1,71 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { HiChevronDown, HiChevronUp, HiEye, HiEyeOff, HiSave } from 'react-icons/hi';
+import React, { useState } from "react";
+import {
+  HiChevronDown,
+  HiChevronUp,
+  HiEye,
+  HiEyeOff,
+  HiSave,
+} from "react-icons/hi";
 
 const SettingsPage: React.FC = () => {
   const [formData, setFormData] = useState({
-    comfyServerUrl: '',
-    comfyServerPort: '',
-    elevenLabsApiKey: '',
-    openaiApiKey: ''
+    comfyServerUrl: "",
+    comfyServerPort: "",
+    elevenLabsApiKey: "",
+    openaiApiKey: "",
   });
 
   const [expandedSections, setExpandedSections] = useState({
     comfyui: true,
     elevenlabs: true,
-    llm: true
+    llm: true,
   });
 
   const [showPasswords, setShowPasswords] = useState({
     elevenLabsApiKey: false,
-    openaiApiKey: false
+    openaiApiKey: false,
   });
 
-  const [saveStatus, setSaveStatus] = useState('');
+  const [saveStatus, setSaveStatus] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
   const togglePasswordVisibility = (field) => {
-    setShowPasswords(prev => ({
+    setShowPasswords((prev) => ({
       ...prev,
-      [field]: !prev[field]
+      [field]: !prev[field],
     }));
   };
 
   const handleSubmit = () => {
-    setSaveStatus('Saving...');
+    setSaveStatus("Saving...");
 
     // Simulate API call
     setTimeout(() => {
-      setSaveStatus('Settings saved successfully!');
-      setTimeout(() => setSaveStatus(''), 3000);
+      setSaveStatus("Settings saved successfully!");
+      setTimeout(() => setSaveStatus(""), 3000);
     }, 1000);
   };
 
   const maskApiKey = (key, visible) => {
     if (visible || !key) return key;
     const prefix = key.substring(0, 7);
-    const masked = '*'.repeat(Math.max(0, key.length - 7));
+    const masked = "*".repeat(Math.max(0, key.length - 7));
     return prefix + masked;
   };
 
@@ -72,7 +78,7 @@ const SettingsPage: React.FC = () => {
           {/* ComfyUI Section */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
-              onClick={() => toggleSection('comfyui')}
+              onClick={() => toggleSection("comfyui")}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <span className="text-lg font-medium">ComfyUI</span>
@@ -117,7 +123,7 @@ const SettingsPage: React.FC = () => {
           {/* ElevenLabs Section */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
-              onClick={() => toggleSection('elevenlabs')}
+              onClick={() => toggleSection("elevenlabs")}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <span className="text-lg font-medium">ElevenLabs</span>
@@ -137,13 +143,19 @@ const SettingsPage: React.FC = () => {
                   <div className="relative">
                     <input
                       name="elevenLabsApiKey"
-                      value={showPasswords.elevenLabsApiKey ? formData.elevenLabsApiKey : maskApiKey(formData.elevenLabsApiKey, false)}
+                      value={
+                        showPasswords.elevenLabsApiKey
+                          ? formData.elevenLabsApiKey
+                          : maskApiKey(formData.elevenLabsApiKey, false)
+                      }
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 pr-10 bg-blue-50 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                       placeholder="sk_..."
                     />
                     <button
-                      onClick={() => togglePasswordVisibility('elevenLabsApiKey')}
+                      onClick={() =>
+                        togglePasswordVisibility("elevenLabsApiKey")
+                      }
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600  hover:bg-gray-50"
                     >
                       {showPasswords.elevenLabsApiKey ? (
@@ -161,7 +173,7 @@ const SettingsPage: React.FC = () => {
           {/* LLM Section */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
-              onClick={() => toggleSection('llm')}
+              onClick={() => toggleSection("llm")}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <span className="text-lg font-medium">LLM</span>
@@ -181,13 +193,17 @@ const SettingsPage: React.FC = () => {
                   <div className="relative">
                     <input
                       name="openaiApiKey"
-                      value={showPasswords.openaiApiKey ? formData.openaiApiKey : maskApiKey(formData.openaiApiKey, false)}
+                      value={
+                        showPasswords.openaiApiKey
+                          ? formData.openaiApiKey
+                          : maskApiKey(formData.openaiApiKey, false)
+                      }
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 pr-10 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 font-mono text-sm"
                       placeholder="sk-proj-..."
                     />
                     <button
-                      onClick={() => togglePasswordVisibility('openaiApiKey')}
+                      onClick={() => togglePasswordVisibility("openaiApiKey")}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-900"
                     >
                       {showPasswords.openaiApiKey ? (
@@ -216,8 +232,13 @@ const SettingsPage: React.FC = () => {
           {/* Save Status */}
           {saveStatus && (
             <div className="text-center">
-              <p className={`text-sm ${saveStatus.includes('successfully') ? 'text-green-600' : 'text-blue-600'
-                }`}>
+              <p
+                className={`text-sm ${
+                  saveStatus.includes("successfully")
+                    ? "text-green-600"
+                    : "text-blue-600"
+                }`}
+              >
                 {saveStatus}
               </p>
             </div>

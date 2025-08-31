@@ -40,13 +40,13 @@ export const AnimationResource = observer((props: AnimationResourceProps) => {
         </button>
       </div>
       {props.animation.type === "fadeIn" ||
-        props.animation.type === "fadeOut" ? (
+      props.animation.type === "fadeOut" ? (
         <FadeAnimation
           animation={props.animation as FadeInAnimation | FadeOutAnimation}
         />
       ) : null}
       {props.animation.type === "slideIn" ||
-        props.animation.type === "slideOut" ? (
+      props.animation.type === "slideOut" ? (
         <SlideAnimation
           animation={props.animation as SlideInAnimation | SlideOutAnimation}
         />
@@ -83,7 +83,7 @@ export const FadeAnimation = observer(
         </div>
       </div>
     );
-  }
+  },
 );
 
 // Animation has direction 'left', 'right', 'top', 'bottom' in properties
@@ -173,5 +173,5 @@ export const SlideAnimation = observer(
         </div>
       </div>
     );
-  }
+  },
 );

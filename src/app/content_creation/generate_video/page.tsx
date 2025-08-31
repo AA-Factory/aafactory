@@ -1,12 +1,19 @@
 "use client";
 import React, { useState } from "react";
-import { FiChevronRight, FiChevronLeft, FiImage, FiEdit2, FiCheckCircle, FiPlayCircle } from "react-icons/fi";
+import {
+  FiChevronRight,
+  FiChevronLeft,
+  FiImage,
+  FiEdit2,
+  FiCheckCircle,
+  FiPlayCircle,
+} from "react-icons/fi";
 import { TbSparkles } from "react-icons/tb";
 import { PiFileVideoBold } from "react-icons/pi";
 import { useAvatars } from "@/hooks/useAvatars";
-import { useGenerateAudio } from '@/hooks/useGenerateAudio';
-import { useGenerateVideo } from '@/hooks/useGenerateVideo';
-import { useNotification } from '@/contexts/NotificationContext';
+import { useGenerateAudio } from "@/hooks/useGenerateAudio";
+import { useGenerateVideo } from "@/hooks/useGenerateVideo";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const VIDEO_TYPES = [
   { id: "conversational", label: "Conversational Video" },
@@ -44,7 +51,8 @@ const PREVIOUS_VIDEOS = [
   {
     id: "vid-2",
     title: "First Last Frame Example",
-    thumbnail: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg?x11217",
+    thumbnail:
+      "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg?x11217",
     videoUrl: "https://www.w3schools.com/html/movie.mp4",
   },
   {
@@ -64,20 +72,32 @@ export default function GenerateVideoWizard() {
   const [lastFrame, setLastFrame] = useState<File | null>(null);
   const [dialog, setDialog] = useState(() => getRandomDialogSeed());
   const [audioReady, setAudioReady] = useState(false);
-  const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
-  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
-  const [generatedAudioFilename, setGeneratedAudioFilename] = useState<string | null>(null);
+  const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(
+    null,
+  );
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(
+    null,
+  );
+  const [generatedAudioFilename, setGeneratedAudioFilename] = useState<
+    string | null
+  >(null);
   const generateAudioMutation = useGenerateAudio();
   const generateVideoMutation = useGenerateVideo();
   // For image previews
-  const [firstFramePreview, setFirstFramePreview] = useState<string | null>(null);
+  const [firstFramePreview, setFirstFramePreview] = useState<string | null>(
+    null,
+  );
   const [lastFramePreview, setLastFramePreview] = useState<string | null>(null);
 
   const { showNotification } = useNotification();
   // Video player state
   const [selectedVideo, setSelectedVideo] = useState(PREVIOUS_VIDEOS[0]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: (f: File | null) => void, previewSetter: (url: string | null) => void) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (f: File | null) => void,
+    previewSetter: (url: string | null) => void,
+  ) => {
     const file = e.target.files?.[0] || null;
     setter(file);
     if (file) {
@@ -90,50 +110,68 @@ export default function GenerateVideoWizard() {
   };
 
   const handleAudioGeneration = async () => {
-    showNotification('Generating audio, this may take a minute...', 'info');
+    showNotification("Generating audio, this may take a minute...", "info");
 
-    generateAudioMutation.mutate({
-      dialog,
-      avatarId: avatar || '', // should always be set here
-    }, {
-      onSuccess: (result) => {
-        setGeneratedAudioUrl(result.audioUrl);
-        setGeneratedAudioFilename(result.filename);
-        setAudioReady(true);
-        showNotification('Audio generated successfully!', 'success');
-        console.log('Generated audio URL:', result.audioUrl);
+    generateAudioMutation.mutate(
+      {
+        dialog,
+        avatarId: avatar || "", // should always be set here
       },
-      onError: (error) => {
-        console.error('Audio generation failed:', error);
-        showNotification('Audio generation failed. Please try again.', 'error');
-      }
-    });
+      {
+        onSuccess: (result) => {
+          setGeneratedAudioUrl(result.audioUrl);
+          setGeneratedAudioFilename(result.filename);
+          setAudioReady(true);
+          showNotification("Audio generated successfully!", "success");
+          console.log("Generated audio URL:", result.audioUrl);
+        },
+        onError: (error) => {
+          console.error("Audio generation failed:", error);
+          showNotification(
+            "Audio generation failed. Please try again.",
+            "error",
+          );
+        },
+      },
+    );
   };
 
   const handleVideoGeneration = async () => {
     if (!generatedAudioFilename || !avatar) {
-      showNotification('Please generate audio and select an avatar first.', 'error');
+      showNotification(
+        "Please generate audio and select an avatar first.",
+        "error",
+      );
       return;
     }
 
-    showNotification('Generating video, this may take a few minutes...', 'info');
+    showNotification(
+      "Generating video, this may take a few minutes...",
+      "info",
+    );
 
-    generateVideoMutation.mutate({
-      audioFilename: generatedAudioFilename,
-      avatarId: avatar,
-      async: false
-    }, {
-      onSuccess: (result) => {
-        console.log('✌️result --->', result);
-        setGeneratedVideoUrl(result.videoUrl);
-        showNotification('Video generated successfully!', 'success');
-        console.log('Generated video URL:', result.videoUrl);
+    generateVideoMutation.mutate(
+      {
+        audioFilename: generatedAudioFilename,
+        avatarId: avatar,
+        async: false,
       },
-      onError: (error) => {
-        console.error('Video generation failed:', error);
-        showNotification('Video generation failed. Please try again.', 'error');
-      }
-    });
+      {
+        onSuccess: (result) => {
+          console.log("✌️result --->", result);
+          setGeneratedVideoUrl(result.videoUrl);
+          showNotification("Video generated successfully!", "success");
+          console.log("Generated video URL:", result.videoUrl);
+        },
+        onError: (error) => {
+          console.error("Video generation failed:", error);
+          showNotification(
+            "Video generation failed. Please try again.",
+            "error",
+          );
+        },
+      },
+    );
   };
 
   const steps = [
@@ -147,10 +185,11 @@ export default function GenerateVideoWizard() {
               <button
                 key={type.id}
                 onClick={() => setVideoType(type.id)}
-                className={`p-4 rounded-lg border-2 flex flex-col items-center space-y-2 transition-all w-full ${videoType === type.id
-                  ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                  : "border-gray-200 dark:border-gray-700 hover:border-blue-400"
-                  }`}
+                className={`p-4 rounded-lg border-2 flex flex-col items-center space-y-2 transition-all w-full ${
+                  videoType === type.id
+                    ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                    : "border-gray-200 dark:border-gray-700 hover:border-blue-400"
+                }`}
               >
                 <PiFileVideoBold className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 <span className="font-semibold">{type.label}</span>
@@ -179,10 +218,11 @@ export default function GenerateVideoWizard() {
                 <button
                   key={a.id}
                   onClick={() => setAvatar(a.id)}
-                  className={`rounded-lg border-2 flex flex-col items-center p-3 space-y-2 transition-all w-full ${avatar === a.id
-                    ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                    : "border-gray-200 dark:border-gray-700 hover:border-blue-400"
-                    }`}
+                  className={`rounded-lg border-2 flex flex-col items-center p-3 space-y-2 transition-all w-full ${
+                    avatar === a.id
+                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                      : "border-gray-200 dark:border-gray-700 hover:border-blue-400"
+                  }`}
                 >
                   <img
                     src={a.imageUrl}
@@ -328,7 +368,8 @@ export default function GenerateVideoWizard() {
           <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-500/50 rounded-lg flex items-center space-x-2">
             <FiEdit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span className="text-xs text-blue-700 dark:text-blue-300">
-              We need a way to create the audio before the video to make sure the quality is good
+              We need a way to create the audio before the video to make sure
+              the quality is good
             </span>
             <label className="ml-auto flex items-center space-x-1">
               <input
@@ -337,7 +378,9 @@ export default function GenerateVideoWizard() {
                 onChange={() => setAudioReady((v) => !v)}
                 className="rounded bg-gray-100 dark:bg-gray-600 border-gray-300 dark:border-gray-500 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
               />
-              <span className="text-xs text-gray-600 dark:text-gray-400">Audio ready</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Audio ready
+              </span>
             </label>
           </div>
         </div>
@@ -352,10 +395,12 @@ export default function GenerateVideoWizard() {
           <h2 className="text-lg font-bold mb-2">Ready to generate!</h2>
           <ul className="text-left text-gray-700 dark:text-gray-200 space-y-1 text-xs">
             <li>
-              <strong>Video type:</strong> {VIDEO_TYPES.find((t) => t.id === videoType)?.label}
+              <strong>Video type:</strong>{" "}
+              {VIDEO_TYPES.find((t) => t.id === videoType)?.label}
             </li>
             <li>
-              <strong>Avatar:</strong> {avatars?.find((a) => a.id === avatar)?.name}
+              <strong>Avatar:</strong>{" "}
+              {avatars?.find((a) => a.id === avatar)?.name}
             </li>
             <li>
               <strong>1st frame:</strong> {firstFrame?.name}
@@ -373,11 +418,17 @@ export default function GenerateVideoWizard() {
           <button
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleVideoGeneration}
-            disabled={!generatedAudioFilename || !avatar || generateVideoMutation.isPending}
+            disabled={
+              !generatedAudioFilename ||
+              !avatar ||
+              generateVideoMutation.isPending
+            }
           >
             <TbSparkles className="w-4 h-4" />
             <span>
-              {generateVideoMutation.isPending ? 'Generating Video...' : 'Generate Video'}
+              {generateVideoMutation.isPending
+                ? "Generating Video..."
+                : "Generate Video"}
             </span>
           </button>
         </div>
@@ -395,7 +446,9 @@ export default function GenerateVideoWizard() {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-400 dark:to-purple-500 rounded-lg flex items-center justify-center">
               <PiFileVideoBold className="w-5 h-5 text-white dark:text-white" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Generate Video</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              Generate Video
+            </h1>
           </div>
         </div>
       </header>
@@ -409,20 +462,22 @@ export default function GenerateVideoWizard() {
             {steps.map((s, idx) => (
               <div key={s.label} className="flex items-center space-x-3">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-base border-2 ${step === idx
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : step > idx
-                      ? "bg-green-500 text-white border-green-500"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-500 border-gray-300 dark:border-gray-600"
-                    }`}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-base border-2 ${
+                    step === idx
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : step > idx
+                        ? "bg-green-500 text-white border-green-500"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-500 border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   {idx + 1}
                 </div>
                 <span
-                  className={`text-sm ${step === idx
-                    ? "text-blue-600 dark:text-blue-400 font-semibold"
-                    : "text-gray-500 dark:text-gray-400"
-                    }`}
+                  className={`text-sm ${
+                    step === idx
+                      ? "text-blue-600 dark:text-blue-400 font-semibold"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
                 >
                   {s.label}
                 </span>
@@ -434,10 +489,11 @@ export default function GenerateVideoWizard() {
           {/* Navigation buttons */}
           <div className="flex justify-between mt-8">
             <button
-              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${step === 0
-                ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${
+                step === 0
+                  ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={step === 0}
               type="button"
@@ -446,10 +502,11 @@ export default function GenerateVideoWizard() {
               <span>Back</span>
             </button>
             <button
-              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${steps[step].canNext
-                ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-                }`}
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${
+                steps[step].canNext
+                  ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+              }`}
               onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
               disabled={!steps[step].canNext}
               type="button"
@@ -498,10 +555,11 @@ export default function GenerateVideoWizard() {
             <button
               key={vid.id}
               onClick={() => setSelectedVideo(vid)}
-              className={`flex flex-col items-center space-y-1 min-w-[120px] max-w-[140px] p-2 rounded-lg border-2 transition-all ${selectedVideo?.id === vid.id
-                ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                : "border-transparent hover:border-blue-400"
-                }`}
+              className={`flex flex-col items-center space-y-1 min-w-[120px] max-w-[140px] p-2 rounded-lg border-2 transition-all ${
+                selectedVideo?.id === vid.id
+                  ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                  : "border-transparent hover:border-blue-400"
+              }`}
             >
               <img
                 src={vid.thumbnail}

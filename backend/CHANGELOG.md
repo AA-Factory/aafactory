@@ -1,61 +1,52 @@
 # [3.4.0](https://github.com/blib-la/runpod-worker-comfy/compare/3.3.0...3.4.0) (2024-11-19)
 
-
 ### Bug Fixes
 
-* start the container in all cases ([413707b](https://github.com/blib-la/runpod-worker-comfy/commit/413707bf130eb736afd682adac8b37fa64a5c9a4))
-
+- start the container in all cases ([413707b](https://github.com/blib-la/runpod-worker-comfy/commit/413707bf130eb736afd682adac8b37fa64a5c9a4))
 
 ### Features
 
-* simplified and added compatibility with Windows ([9f41231](https://github.com/blib-la/runpod-worker-comfy/commit/9f412316a743f0539981b408c1ccd0692cff5c82))
+- simplified and added compatibility with Windows ([9f41231](https://github.com/blib-la/runpod-worker-comfy/commit/9f412316a743f0539981b408c1ccd0692cff5c82))
 
 # [3.3.0](https://github.com/blib-la/runpod-worker-comfy/compare/3.2.1...3.3.0) (2024-11-18)
 
-
 ### Bug Fixes
 
-* added missing start command ([9a7ffdb](https://github.com/blib-la/runpod-worker-comfy/commit/9a7ffdb078d2f75194c86ed0b8c2d027592e52c3))
-
+- added missing start command ([9a7ffdb](https://github.com/blib-la/runpod-worker-comfy/commit/9a7ffdb078d2f75194c86ed0b8c2d027592e52c3))
 
 ### Features
 
-* added sensible defaults and default platform ([3f5162a](https://github.com/blib-la/runpod-worker-comfy/commit/3f5162af85ee7d0002ad65a7e324c3850e00a229))
+- added sensible defaults and default platform ([3f5162a](https://github.com/blib-la/runpod-worker-comfy/commit/3f5162af85ee7d0002ad65a7e324c3850e00a229))
 
 ## [3.2.1](https://github.com/blib-la/runpod-worker-comfy/compare/3.2.0...3.2.1) (2024-11-18)
 
-
 ### Bug Fixes
 
-* update the version inside of semanticrelease ([d93e991](https://github.com/blib-la/runpod-worker-comfy/commit/d93e991b82251d62500e20c367a087d22d58b20a))
+- update the version inside of semanticrelease ([d93e991](https://github.com/blib-la/runpod-worker-comfy/commit/d93e991b82251d62500e20c367a087d22d58b20a))
 
 # [3.2.0](https://github.com/blib-la/runpod-worker-comfy/compare/3.1.2...3.2.0) (2024-11-18)
 
-
 ### Features
 
-* automatically update latest version ([7d846e8](https://github.com/blib-la/runpod-worker-comfy/commit/7d846e8ca3edcea869db3e680f0b423b8a98cc4c))
+- automatically update latest version ([7d846e8](https://github.com/blib-la/runpod-worker-comfy/commit/7d846e8ca3edcea869db3e680f0b423b8a98cc4c))
 
 ## [3.1.2](https://github.com/blib-la/runpod-worker-comfy/compare/3.1.1...3.1.2) (2024-11-10)
 
-
 ### Bug Fixes
 
-* convert environment variables to int ([#70](https://github.com/blib-la/runpod-worker-comfy/issues/70)) ([7ab3d2a](https://github.com/blib-la/runpod-worker-comfy/commit/7ab3d2a234325c2a502002ea7bdee7df3e0c8dfe))
+- convert environment variables to int ([#70](https://github.com/blib-la/runpod-worker-comfy/issues/70)) ([7ab3d2a](https://github.com/blib-la/runpod-worker-comfy/commit/7ab3d2a234325c2a502002ea7bdee7df3e0c8dfe))
 
 ## [3.1.1](https://github.com/blib-la/runpod-worker-comfy/compare/3.1.0...3.1.1) (2024-11-10)
 
-
 ### Bug Fixes
 
-* create directories which are required to run ComfyUI ([#58](https://github.com/blib-la/runpod-worker-comfy/issues/58)) ([6edf62b](https://github.com/blib-la/runpod-worker-comfy/commit/6edf62b0f4cd99dba5c22dd76f51c886f57a28ed))
+- create directories which are required to run ComfyUI ([#58](https://github.com/blib-la/runpod-worker-comfy/issues/58)) ([6edf62b](https://github.com/blib-la/runpod-worker-comfy/commit/6edf62b0f4cd99dba5c22dd76f51c886f57a28ed))
 
 # [3.1.0](https://github.com/blib-la/runpod-worker-comfy/compare/3.0.0...3.1.0) (2024-08-19)
 
-
 ### Features
 
-* added FLUX.1 schnell & dev ([9170191](https://github.com/blib-la/runpod-worker-comfy/commit/9170191eccb65de2f17009f68952a18fc008fa6a))
+- added FLUX.1 schnell & dev ([9170191](https://github.com/blib-la/runpod-worker-comfy/commit/9170191eccb65de2f17009f68952a18fc008fa6a))
 
 # [3.0.0](https://github.com/blib-la/runpod-worker-comfy/compare/2.2.0...3.0.0) (2024-07-26)
 

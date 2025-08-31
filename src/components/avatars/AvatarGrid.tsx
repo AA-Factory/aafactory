@@ -1,10 +1,10 @@
 // components/avatars/AvatarGrid.tsx
-import React from 'react';
-import { Avatar } from '../../types/avatar';
-import { AvatarCard } from './AvatarCard';
-import { CreateAvatarCard } from './CreateAvatarCard';
-import { LoadingCards } from '../LoadingCards/LoadingCards';
-import EmptyState from './EmptyState';
+import React from "react";
+import { Avatar } from "../../types/avatar";
+import { AvatarCard } from "./AvatarCard";
+import { CreateAvatarCard } from "./CreateAvatarCard";
+import { LoadingCards } from "../LoadingCards/LoadingCards";
+import EmptyState from "./EmptyState";
 
 interface AvatarGridProps {
   avatars: Avatar[];

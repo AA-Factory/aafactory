@@ -32,9 +32,7 @@ export const Menu = observer(() => {
             >
               <option.icon
                 size="20"
-                color={
-                  isSelected ? "#000" : "#444"
-                }
+                color={isSelected ? "#000" : "#444"}
                 className="dark:text-white"
               />
               <div

@@ -1,10 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
-import { buildWorkflow } from '../utils/workflow';
+import { useMutation } from "@tanstack/react-query";
+import { buildWorkflow } from "../utils/workflow";
 import {
   COMFYUI_RUN_ASYNC,
   COMFYUI_RUN_SYNC,
   COMFYUI_SERVER_URL,
-} from '@/config/constants';
+} from "@/config/constants";
 
 export type GenerateAudioPayload = {
   dialog: string;
@@ -25,7 +25,12 @@ type GenerateAudioOutPayload = {
   };
 };
 
-type JobStatus = 'COMPLETED' | 'IN_QUEUE' | 'IN_PROGRESS' | 'FAILED' | 'CANCELLED';
+type JobStatus =
+  | "COMPLETED"
+  | "IN_QUEUE"
+  | "IN_PROGRESS"
+  | "FAILED"
+  | "CANCELLED";
 
 type BaseResponse = {
   id: string;
@@ -40,13 +45,15 @@ export type GenerateResponse = BaseResponse & {
 
   output: {
     message: string;
-    status: 'success' | 'error';
+    status: "success" | "error";
     prompt_id?: string;
   };
 };
 
 // Extract audio file encoding to separate function
-async function encodeAudioFile(audioTrainingFile: string | File): Promise<{ base64: string; filename: string }> {
+async function encodeAudioFile(
+  audioTrainingFile: string | File,
+): Promise<{ base64: string; filename: string }> {
   let audioBlob: Blob;
   let filename: string;
 
@@ -56,7 +63,9 @@ async function encodeAudioFile(audioTrainingFile: string | File): Promise<{ base
     filename = audioTrainingFile.name;
   } else {
     // Handle file path (existing functionality)
-    const audioResponse = await fetch(`/test/training_audio/${audioTrainingFile}`);
+    const audioResponse = await fetch(
+      `/test/training_audio/${audioTrainingFile}`,
+    );
     if (!audioResponse.ok) {
       throw new Error(`Failed to load audio file: ${audioTrainingFile}`);
     }
@@ -69,10 +78,10 @@ async function encodeAudioFile(audioTrainingFile: string | File): Promise<{ base
     reader.onloadend = () => {
       const base64String = reader.result as string;
       // Remove the data:audio/wav;base64, prefix
-      const base64Data = base64String.split(',')[1];
+      const base64Data = base64String.split(",")[1];
       resolve(base64Data);
     };
-    reader.onerror = () => reject(new Error('Failed to encode audio file'));
+    reader.onerror = () => reject(new Error("Failed to encode audio file"));
     reader.readAsDataURL(audioBlob);
   });
 
@@ -80,12 +89,15 @@ async function encodeAudioFile(audioTrainingFile: string | File): Promise<{ base
 }
 
 // Extract audio filename from history data
-function extractAudioFilename(historyData: any, promptId: string): string | null {
+function extractAudioFilename(
+  historyData: any,
+  promptId: string,
+): string | null {
   const outputs = historyData[promptId]?.outputs;
   if (!outputs) return null;
 
   let filename = null;
-  Object.keys(outputs).forEach(nodeId => {
+  Object.keys(outputs).forEach((nodeId) => {
     const nodeOutput = outputs[nodeId];
     if (nodeOutput.audio && nodeOutput.audio[0]?.filename) {
       filename = nodeOutput.audio[0].filename;
@@ -97,47 +109,56 @@ function extractAudioFilename(historyData: any, promptId: string): string | null
 
 export function useGenerateAudio() {
   return useMutation({
-    mutationFn: async (payload: GenerateAudioPayload): Promise<GenerateAudioResponse> => {
+    mutationFn: async (
+      payload: GenerateAudioPayload,
+    ): Promise<GenerateAudioResponse> => {
       try {
         // Encode audio file
         // First, get avatar data from database
-        const avatarResponse = await fetch(`/api/avatars/get-avatar?id=${payload.avatarId}`);
+        const avatarResponse = await fetch(
+          `/api/avatars/get-avatar?id=${payload.avatarId}`,
+        );
         if (!avatarResponse.ok) {
           throw new Error(`Failed to load avatar: ${payload.avatarId}`);
         }
         const avatarData = await avatarResponse.json();
-        const { base64: audioBase64, filename: audioFilename } = await encodeAudioFile(avatarData.avatar.voiceTrainingData);
+        const { base64: audioBase64, filename: audioFilename } =
+          await encodeAudioFile(avatarData.avatar.voiceTrainingData);
 
         // Import and build workflow
-        const baseWorkflow = await import('@/config/workflows/text_to_speech_with_zonos.json');
+        const baseWorkflow = await import(
+          "@/config/workflows/text_to_speech_with_zonos.json"
+        );
         const workflow = buildWorkflow(baseWorkflow.default || baseWorkflow, {
           12: { inputs: { audio: audioFilename } },
           24: {
             inputs: {
-              speech: payload.dialog
-            }
+              speech: payload.dialog,
+            },
           },
         });
 
         const outPayload: GenerateAudioOutPayload = {
           input: {
             workflow,
-            images: [{
-              name: audioFilename,
-              image: audioBase64
-            }]
+            images: [
+              {
+                name: audioFilename,
+                image: audioBase64,
+              },
+            ],
           },
         };
 
         // Make the request to ComfyUI
         const headers = new Headers();
-        headers.append('Content-Type', 'application/json');
+        headers.append("Content-Type", "application/json");
         const url = payload.async ? COMFYUI_RUN_ASYNC : COMFYUI_RUN_SYNC;
-        console.log('✌️ url --->', url);
+        console.log("✌️ url --->", url);
 
         const res = await fetch(url, {
           headers,
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(outPayload),
         });
 
@@ -145,32 +166,40 @@ export function useGenerateAudio() {
           throw new Error(`Request failed: ${res.status}`);
         }
 
-        const json = await res.json() as BaseResponse | GenerateResponse;
+        const json = (await res.json()) as BaseResponse | GenerateResponse;
 
         if (json.error) {
           throw new Error(json.error);
         }
 
-        if (json.status !== 'COMPLETED') {
-          throw new Error(`Audio generation failed. Status: ${json.status} Error: ${json.error}`);
+        if (json.status !== "COMPLETED") {
+          throw new Error(
+            `Audio generation failed. Status: ${json.status} Error: ${json.error}`,
+          );
         }
 
         // Extract prompt_id
-        const promptId = ('output' in json && json.output.prompt_id) ? json.output.prompt_id : json.id;
+        const promptId =
+          "output" in json && json.output.prompt_id
+            ? json.output.prompt_id
+            : json.id;
 
         if (!promptId) {
-          throw new Error('No prompt ID returned from generation');
+          throw new Error("No prompt ID returned from generation");
         }
 
         // Fetch history with delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        const historyResponse = await fetch(`${COMFYUI_SERVER_URL}/history/${promptId}`, {
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
+        const historyResponse = await fetch(
+          `${COMFYUI_SERVER_URL}/history/${promptId}`,
+          {
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         if (!historyResponse.ok) {
           throw new Error(`Failed to fetch history: ${historyResponse.status}`);
@@ -182,20 +211,19 @@ export function useGenerateAudio() {
         const filename = extractAudioFilename(historyData, promptId);
 
         if (!filename) {
-          throw new Error('No audio file generated');
+          throw new Error("No audio file generated");
         }
 
         const audioUrl = `${COMFYUI_SERVER_URL}/api/view?filename=${filename}`;
-        console.log('Generated audio filename:', filename);
+        console.log("Generated audio filename:", filename);
 
         return {
           audioUrl,
           filename,
-          promptId
+          promptId,
         };
-
       } catch (error) {
-        console.error('Audio generation error:', error);
+        console.error("Audio generation error:", error);
         throw error;
       }
     },

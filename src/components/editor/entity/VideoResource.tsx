@@ -41,5 +41,5 @@ export const VideoResource = observer(
         ></video>
       </div>
     );
-  }
+  },
 );

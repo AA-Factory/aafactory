@@ -1,11 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
-import { buildWorkflow } from '../utils/workflow';
+import { useMutation } from "@tanstack/react-query";
+import { buildWorkflow } from "../utils/workflow";
 import {
   COMFYUI_RUN_ASYNC,
   COMFYUI_RUN_SYNC,
   COMFYUI_SERVER_URL,
-  COMFYUI_STATUS
-} from '@/config/constants';
+  COMFYUI_STATUS,
+} from "@/config/constants";
 
 export type GenerateVideoPayload = {
   audioFilename: string; // Generated audio filename from useGenerateAudio
@@ -26,7 +26,12 @@ type GenerateVideoOutPayload = {
   };
 };
 
-type JobStatus = 'COMPLETED' | 'IN_QUEUE' | 'IN_PROGRESS' | 'FAILED' | 'CANCELLED';
+type JobStatus =
+  | "COMPLETED"
+  | "IN_QUEUE"
+  | "IN_PROGRESS"
+  | "FAILED"
+  | "CANCELLED";
 
 type BaseResponse = {
   id: string;
@@ -41,14 +46,16 @@ export type GenerateResponse = BaseResponse & {
 
   output: {
     message: string;
-    status: 'success' | 'error';
+    status: "success" | "error";
     prompt_id?: string;
   };
 };
 
 // Encode audio file from ComfyUI server
 async function encodeAudioFromServer(filename: string): Promise<string> {
-  const audioResponse = await fetch(`${COMFYUI_SERVER_URL}/api/view?filename=${filename}`);
+  const audioResponse = await fetch(
+    `${COMFYUI_SERVER_URL}/api/view?filename=${filename}`,
+  );
   if (!audioResponse.ok) {
     throw new Error(`Failed to load audio file: ${filename}`);
   }
@@ -59,10 +66,10 @@ async function encodeAudioFromServer(filename: string): Promise<string> {
     reader.onloadend = () => {
       const base64String = reader.result as string;
       // Remove the data:audio/flac;base64, prefix (or whatever format)
-      const base64Data = base64String.split(',')[1];
+      const base64Data = base64String.split(",")[1];
       resolve(base64Data);
     };
-    reader.onerror = () => reject(new Error('Failed to encode audio file'));
+    reader.onerror = () => reject(new Error("Failed to encode audio file"));
     reader.readAsDataURL(audioBlob);
   });
 }
@@ -80,21 +87,24 @@ async function encodeImageFromUrl(imageUrl: string): Promise<string> {
     reader.onloadend = () => {
       const base64String = reader.result as string;
       // Remove the data:image/jpeg;base64, prefix (or whatever format)
-      const base64Data = base64String.split(',')[1];
+      const base64Data = base64String.split(",")[1];
       resolve(base64Data);
     };
-    reader.onerror = () => reject(new Error('Failed to encode image file'));
+    reader.onerror = () => reject(new Error("Failed to encode image file"));
     reader.readAsDataURL(imageBlob);
   });
 }
 
 // Extract video filename from history data
-function extractVideoFilename(historyData: any, promptId: string): string | null {
+function extractVideoFilename(
+  historyData: any,
+  promptId: string,
+): string | null {
   const outputs = historyData[promptId]?.outputs;
   if (!outputs) return null;
 
   let filename = null;
-  Object.keys(outputs).forEach(nodeId => {
+  Object.keys(outputs).forEach((nodeId) => {
     const nodeOutput = outputs[nodeId];
     // Look for video files (common extensions)
     if (nodeOutput.videos && nodeOutput.videos[0]?.filename) {
@@ -107,46 +117,54 @@ function extractVideoFilename(historyData: any, promptId: string): string | null
   return filename;
 }
 
-async function pollJobStatus(jobId: string, interval = 1000, maxAttempts = 30): Promise<GenerateResponse> {
+async function pollJobStatus(
+  jobId: string,
+  interval = 1000,
+  maxAttempts = 30,
+): Promise<GenerateResponse> {
   let attempts = 0;
 
   while (attempts < maxAttempts) {
     const res = await fetch(`${COMFYUI_STATUS}/${jobId}`, {
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
     });
     if (!res.ok) {
       throw new Error(`Failed to fetch job status: ${res.status}`);
     }
-    const json = await res.json() as GenerateResponse;
-    console.log('✌️ json --->', json);
+    const json = (await res.json()) as GenerateResponse;
+    console.log("✌️ json --->", json);
 
-    if (json.status === 'COMPLETED') {
+    if (json.status === "COMPLETED") {
       return json;
     }
-    if (json.status === 'FAILED' || json.status === 'CANCELLED') {
+    if (json.status === "FAILED" || json.status === "CANCELLED") {
       throw new Error(`Job ${jobId} failed or cancelled: ${json.error}`);
     }
 
     // wait before polling again
-    await new Promise(resolve => setTimeout(resolve, interval));
+    await new Promise((resolve) => setTimeout(resolve, interval));
     attempts++;
   }
 
-  throw new Error('Job polling timed out');
+  throw new Error("Job polling timed out");
 }
 
 export function useGenerateVideo() {
   return useMutation({
-    mutationFn: async (payload: GenerateVideoPayload): Promise<GenerateVideoResponse> => {
+    mutationFn: async (
+      payload: GenerateVideoPayload,
+    ): Promise<GenerateVideoResponse> => {
       try {
         // First, get avatar data from database
-        const avatarResponse = await fetch(`/api/avatars/get-avatar?id=${payload.avatarId}`);
+        const avatarResponse = await fetch(
+          `/api/avatars/get-avatar?id=${payload.avatarId}`,
+        );
         if (!avatarResponse.ok) {
           throw new Error(`Failed to load avatar: ${payload.avatarId}`);
         }
         const avatarData = await avatarResponse.json();
-        console.log('✌️ avatarData --->', avatarData);
+        console.log("✌️ avatarData --->", avatarData);
 
         // Encode audio file from ComfyUI server
         const audioBase64 = await encodeAudioFromServer(payload.audioFilename);
@@ -154,10 +172,12 @@ export function useGenerateVideo() {
         // Encode avatar image from local file
         const imageBase64 = await encodeImageFromUrl(avatarData.avatar.src);
         const imageFilename = avatarData.avatar.fileName;
-        console.log('✌️imageFilename --->', imageFilename);
+        console.log("✌️imageFilename --->", imageFilename);
 
         // Import and build workflow
-        const baseWorkflow = await import('@/config/workflows/audio_image_to_video_with_sonic.json');
+        const baseWorkflow = await import(
+          "@/config/workflows/audio_image_to_video_with_sonic.json"
+        );
         const workflow = buildWorkflow(baseWorkflow.default || baseWorkflow, {
           // These node IDs will need to be updated based on your actual workflow
           9: { inputs: { audio: payload.audioFilename } }, // Audio input node
@@ -170,24 +190,24 @@ export function useGenerateVideo() {
             images: [
               {
                 name: payload.audioFilename,
-                image: audioBase64
+                image: audioBase64,
               },
               {
                 name: imageFilename,
-                image: imageBase64
-              }
-            ]
+                image: imageBase64,
+              },
+            ],
           },
         };
 
         // Make the request to ComfyUI
         const headers = new Headers();
-        headers.append('Content-Type', 'application/json');
+        headers.append("Content-Type", "application/json");
         const url = payload.async ? COMFYUI_RUN_ASYNC : COMFYUI_RUN_SYNC;
 
         const res = await fetch(url, {
           headers,
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(outPayload),
         });
 
@@ -195,7 +215,7 @@ export function useGenerateVideo() {
           throw new Error(`Request failed: ${res.status}`);
         }
 
-        const json = await res.json() as BaseResponse | GenerateResponse;
+        const json = (await res.json()) as BaseResponse | GenerateResponse;
 
         if (json.error) {
           throw new Error(json.error);
@@ -203,25 +223,30 @@ export function useGenerateVideo() {
 
         let promptId: string;
 
-        if (payload.async && json.status !== 'COMPLETED') {
+        if (payload.async && json.status !== "COMPLETED") {
           // async flow → poll until it's completed
           const result = await pollJobStatus(json.id);
           promptId = result.output?.prompt_id || result.id;
         } else {
           // sync flow
-          if (json.status !== 'COMPLETED') {
+          if (json.status !== "COMPLETED") {
             throw new Error(`Video generation failed. Status: ${json.status}`);
           }
-          promptId = ('output' in json && json.output.prompt_id) ? json.output.prompt_id : json.id;
+          promptId =
+            "output" in json && json.output.prompt_id
+              ? json.output.prompt_id
+              : json.id;
         }
 
-
-        const historyResponse = await fetch(`${COMFYUI_SERVER_URL}/history/${promptId}`, {
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
+        const historyResponse = await fetch(
+          `${COMFYUI_SERVER_URL}/history/${promptId}`,
+          {
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         if (!historyResponse.ok) {
           throw new Error(`Failed to fetch history: ${historyResponse.status}`);
@@ -233,20 +258,19 @@ export function useGenerateVideo() {
         const filename = extractVideoFilename(historyData, promptId);
 
         if (!filename) {
-          throw new Error('No video file generated');
+          throw new Error("No video file generated");
         }
 
         const videoUrl = `${COMFYUI_SERVER_URL}/api/view?filename=${filename}`;
-        console.log('Generated video filename:', filename);
+        console.log("Generated video filename:", filename);
 
         return {
           videoUrl,
           filename,
-          promptId
+          promptId,
         };
-
       } catch (error) {
-        console.error('Video generation error:', error);
+        console.error("Video generation error:", error);
         throw error;
       }
     },

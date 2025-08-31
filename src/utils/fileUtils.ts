@@ -1,7 +1,7 @@
 // utils/fileUtils.ts
-import { writeFile, mkdir, unlink, stat } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
+import { writeFile, mkdir, unlink, stat } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
 
 export interface UploadResult {
   success: boolean;
@@ -21,10 +21,10 @@ export interface DeleteResult {
  */
 export async function uploadFile(
   blob: Blob | Buffer,
-  fileName: string
+  fileName: string,
 ): Promise<UploadResult> {
   try {
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars');
+    const uploadsDir = path.join(process.cwd(), "public", "uploads", "avatars");
     await mkdir(uploadsDir, { recursive: true });
 
     const timestamp = Date.now();
@@ -43,7 +43,7 @@ export async function uploadFile(
     } else if (Buffer.isBuffer(blob)) {
       buffer = blob;
     } else {
-      throw new Error('Invalid file type. Expected Blob or Buffer.');
+      throw new Error("Invalid file type. Expected Blob or Buffer.");
     }
 
     await writeFile(filePath, buffer);
@@ -55,7 +55,7 @@ export async function uploadFile(
       fullPath: filePath,
     };
   } catch (error: any) {
-    console.error('Error uploading file:', error);
+    console.error("Error uploading file:", error);
     throw new Error(`Failed to upload file: ${error.message}`);
   }
 }
@@ -66,12 +66,12 @@ export async function uploadFile(
  */
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
-    const absolutePath = path.join(process.cwd(), 'public', filePath);
+    const absolutePath = path.join(process.cwd(), "public", filePath);
 
     if (!existsSync(absolutePath)) {
       return {
         success: true,
-        message: 'File does not exist (already deleted)',
+        message: "File does not exist (already deleted)",
       };
     }
 
@@ -79,10 +79,10 @@ export async function deleteFile(filePath: string): Promise<DeleteResult> {
 
     return {
       success: true,
-      message: 'File deleted successfully',
+      message: "File deleted successfully",
     };
   } catch (error: any) {
-    console.error('Error deleting file:', error);
+    console.error("Error deleting file:", error);
     throw new Error(`Failed to delete file: ${error.message}`);
   }
 }

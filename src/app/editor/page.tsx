@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic'
+import dynamic from "next/dynamic";
 
-const DynmicEditor = dynamic(() => import('../../components/editor/Editor').then(a => a.EditorWithStore), {
-  ssr: false,
-})
-
+const DynmicEditor = dynamic(
+  () => import("../../components/editor/Editor").then((a) => a.EditorWithStore),
+  {
+    ssr: false,
+  },
+);
 
 function EditorPage() {
-  return (
-    <DynmicEditor />
-  );
+  return <DynmicEditor />;
 }
 
 EditorPage.diplsayName = "EditorPage";

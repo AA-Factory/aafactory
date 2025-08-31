@@ -18,7 +18,7 @@ export const EditorWithStore = () => {
       <Editor></Editor>
     </StoreContext.Provider>
   );
-}
+};
 
 export const Editor = observer(() => {
   const store = React.useContext(StoreContext);
@@ -49,14 +49,16 @@ export const Editor = observer(() => {
   }, []);
   return (
     <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh bg-white dark:bg-gray-900">
-
       <div className="tile row-span-2 flex flex-col border-r border-gray-200 dark:border-gray-700">
         <Menu />
       </div>
       <div className="row-span-2 flex flex-col overflow-scroll bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
         <Resources />
       </div>
-      <div id="grid-canvas-container" className="col-start-3 bg-slate-100 dark:bg-gray-700 flex justify-center items-center border-r border-gray-200 dark:border-gray-700">
+      <div
+        id="grid-canvas-container"
+        className="col-start-3 bg-slate-100 dark:bg-gray-700 flex justify-center items-center border-r border-gray-200 dark:border-gray-700"
+      >
         <canvas id="canvas" className="h-[500px] w-[800px] row" />
       </div>
       <div className="col-start-4 row-start-1 bg-white dark:bg-gray-800">

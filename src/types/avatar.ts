@@ -8,7 +8,7 @@ export interface Avatar {
   personality: string;
   backgroundKnowledge: string;
   description?: string;
-  category?: 'realistic' | 'stylized' | 'cartoon' | 'fantasy';
+  category?: "realistic" | "stylized" | "cartoon" | "fantasy";
   hasEncodedData?: boolean;
   fileName?: string;
 }

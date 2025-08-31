@@ -40,5 +40,5 @@ export const AudioResource = observer(
         ></audio>
       </div>
     );
-  }
+  },
 );

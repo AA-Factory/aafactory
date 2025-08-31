@@ -1,27 +1,28 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { HiUser } from 'react-icons/hi';
-import ConfirmationModal from '@/components/ConformationModal';
-import { AvatarCard } from '@/components/avatars/AvatarCard';
-import { CreateAvatarCard } from '@/components/avatars/CreateAvatarCard';
-import EmptyState from '@/components/avatars/EmptyState';
-import LoadingState from '@/components/avatars/LoadingState';
-import { ActiveAvatarsDisplay } from '@/components/avatars/ActiveAvatarsDisplay';
-import { Avatar } from '../../types/avatar';
-import { useModal } from '@/hooks/useModal';
-import { useNotification } from '@/contexts/NotificationContext';
-import { useAvatars, useDeleteAvatar } from '@/hooks/useAvatars';
-import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
+import React, { useEffect, useState } from "react";
+import { HiUser } from "react-icons/hi";
+import ConfirmationModal from "@/components/ConformationModal";
+import { AvatarCard } from "@/components/avatars/AvatarCard";
+import { CreateAvatarCard } from "@/components/avatars/CreateAvatarCard";
+import EmptyState from "@/components/avatars/EmptyState";
+import LoadingState from "@/components/avatars/LoadingState";
+import { ActiveAvatarsDisplay } from "@/components/avatars/ActiveAvatarsDisplay";
+import { Avatar } from "../../types/avatar";
+import { useModal } from "@/hooks/useModal";
+import { useNotification } from "@/contexts/NotificationContext";
+import { useAvatars, useDeleteAvatar } from "@/hooks/useAvatars";
+import { useActiveAvatars } from "@/contexts/ActiveAvatarsContext";
 
 const Avatars: React.FC = () => {
   // ====== Hooks & Context ======
-  const { showNotification, hideNotification, notification } = useNotification();
+  const { showNotification, hideNotification, notification } =
+    useNotification();
   const {
     activeAvatarIds,
     toggleActiveAvatar,
     removeActiveAvatar,
-    isAvatarActive
+    isAvatarActive,
   } = useActiveAvatars();
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   // ====== Data Fetching (TanStack Query) ======
@@ -44,13 +45,14 @@ const Avatars: React.FC = () => {
         removeActiveAvatar(selectedAvatar);
       }
 
-
-      showNotification('Avatar deleted successfully', 'success');
+      showNotification("Avatar deleted successfully", "success");
     } catch (err) {
-      console.error('Error deleting avatar:', err);
+      console.error("Error deleting avatar:", err);
       showNotification(
-        err instanceof Error ? err.message : 'Failed to delete avatar. Please try again.',
-        'error'
+        err instanceof Error
+          ? err.message
+          : "Failed to delete avatar. Please try again.",
+        "error",
       );
     }
   };
@@ -64,7 +66,8 @@ const Avatars: React.FC = () => {
             Choose Your Avatars
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6">
-            Select multiple avatars to be active at once. Click on avatars to add or remove them from your active selection.
+            Select multiple avatars to be active at once. Click on avatars to
+            add or remove them from your active selection.
           </p>
 
           {/* Active Avatars Display */}

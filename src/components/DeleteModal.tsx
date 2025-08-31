@@ -1,5 +1,5 @@
-import React from 'react';
-import { HiTrash, HiRefresh } from 'react-icons/hi';
+import React from "react";
+import { HiTrash, HiRefresh } from "react-icons/hi";
 
 interface Avatar {
   id: string;
@@ -17,17 +17,17 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   avatarToDeleteId,
   isDeleting,
   onCancel,
-  onConfirm
+  onConfirm,
 }) => {
   if (!avatarToDeleteId) return null;
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       onConfirm();
-    } else if (event.key === 'Escape') {
+    } else if (event.key === "Escape") {
       onCancel();
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -47,7 +47,8 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
             Delete Avatar
           </h3>
           <p className="text-gray-600 mb-8">
-            This action cannot be undone. The avatar and its associated files will be permanently removed from the database.
+            This action cannot be undone. The avatar and its associated files
+            will be permanently removed from the database.
           </p>
           <div className="flex space-x-4">
             <button
@@ -68,7 +69,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
                   Deleting...
                 </>
               ) : (
-                'Delete'
+                "Delete"
               )}
             </button>
           </div>

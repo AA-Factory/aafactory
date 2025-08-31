@@ -10,10 +10,7 @@
   },
   "13": {
     "inputs": {
-      "audio": [
-        "24",
-        0
-      ]
+      "audio": ["24", 0]
     },
     "class_type": "PreviewAudio",
     "_meta": {
@@ -51,14 +48,8 @@
       "disable_compiler": true,
       "sample_text": "No, all that stuff, like you could have all the money in the world, all the followers, everything. It's just doesn't really make you happy.",
       "speaker_noised": true,
-      "sample_audio": [
-        "12",
-        0
-      ],
-      "emotion": [
-        "22",
-        0
-      ]
+      "sample_audio": ["12", 0],
+      "emotion": ["22", 0]
     },
     "class_type": "ZonosGenerate",
     "_meta": {
@@ -67,10 +58,7 @@
   },
   "25": {
     "inputs": {
-      "audio": [
-        "24",
-        0
-      ],
+      "audio": ["24", 0],
       "filename_prefix": "zonos_output"
     },
     "class_type": "SaveAudio",

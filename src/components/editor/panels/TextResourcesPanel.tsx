@@ -63,13 +63,9 @@ export const TextResourcesPanel = observer(() => {
         Text
       </div>
       <ul>
-
-
         {TEXT_RESOURCES.map((resource) => {
           return (
-            <li
-              key={resource.name}
-            >
+            <li key={resource.name}>
               <TextResource
                 sampleText={resource.name}
                 fontSize={resource.fontSize}

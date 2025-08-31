@@ -1,9 +1,16 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  ReactNode,
+} from "react";
+import { usePathname } from "next/navigation";
 
-type NotificationType = 'success' | 'error' | 'warning' | 'info';
+type NotificationType = "success" | "error" | "warning" | "info";
 
 interface NotificationState {
   isVisible: boolean;
@@ -14,17 +21,23 @@ interface NotificationState {
 
 interface NotificationContextType {
   notification: NotificationState;
-  showNotification: (message: string, type?: NotificationType, duration?: number) => void;
+  showNotification: (
+    message: string,
+    type?: NotificationType,
+    duration?: number,
+  ) => void;
   hideNotification: () => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined,
+);
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notification, setNotification] = useState<NotificationState>({
     isVisible: false,
-    message: '',
-    type: 'info',
+    message: "",
+    type: "info",
     isFading: false,
   });
 
@@ -37,24 +50,28 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
   };
 
-  const showNotification = (message: string, type: NotificationType = 'info', duration = 3000) => {
+  const showNotification = (
+    message: string,
+    type: NotificationType = "info",
+    duration = 3000,
+  ) => {
     clearTimers();
     setNotification({ isVisible: true, message, type, isFading: false });
 
     // Auto-close after duration, even across navigation
     timerRef.current = setTimeout(() => {
-      setNotification(prev => ({ ...prev, isFading: true }));
+      setNotification((prev) => ({ ...prev, isFading: true }));
       fadeTimerRef.current = setTimeout(() => {
-        setNotification(prev => ({ ...prev, isVisible: false, message: '' }));
+        setNotification((prev) => ({ ...prev, isVisible: false, message: "" }));
       }, 500);
     }, duration);
   };
 
   const hideNotification = () => {
     clearTimers();
-    setNotification(prev => ({ ...prev, isFading: true }));
+    setNotification((prev) => ({ ...prev, isFading: true }));
     fadeTimerRef.current = setTimeout(() => {
-      setNotification(prev => ({ ...prev, isVisible: false, message: '' }));
+      setNotification((prev) => ({ ...prev, isVisible: false, message: "" }));
     }, 500);
   };
 
@@ -64,7 +81,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ notification, showNotification, hideNotification }}>
+    <NotificationContext.Provider
+      value={{ notification, showNotification, hideNotification }}
+    >
       {children}
     </NotificationContext.Provider>
   );
@@ -72,6 +91,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
 export const useNotification = () => {
   const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error('useNotification must be used within a NotificationProvider');
+  if (!ctx)
+    throw new Error(
+      "useNotification must be used within a NotificationProvider",
+    );
   return ctx;
 };

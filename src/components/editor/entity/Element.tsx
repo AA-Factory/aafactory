@@ -20,7 +20,7 @@ export const Element = observer((props: ElementProps) => {
       style={{
         backgroundColor: bgColor,
       }}
-      className={`flex mx-2 my-1 py-2 px-1 flex-row justify-start items-center rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+      className={`flex mx-2 my-1 py-2 px-1 flex-row justify-start items-center rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isSelected ? "bg-blue-100 dark:bg-blue-900" : ""}`}
       key={element.id}
       onClick={() => {
         store.setSelectedElement(element);

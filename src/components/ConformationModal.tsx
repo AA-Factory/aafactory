@@ -1,11 +1,11 @@
-import React from 'react';
-import { HiUser } from 'react-icons/hi';
+import React from "react";
+import { HiUser } from "react-icons/hi";
 
 const ConfirmationModal = ({
   isOpen,
   avatarToConfirm,
   onConfirm,
-  onCancel
+  onCancel,
 }) => {
   if (!isOpen || !avatarToConfirm) return null;
 
@@ -20,7 +20,8 @@ const ConfirmationModal = ({
             Use {avatarToConfirm.name}?
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm leading-relaxed">
-            This will set {avatarToConfirm.name} as your active avatar for conversations.
+            This will set {avatarToConfirm.name} as your active avatar for
+            conversations.
           </p>
           <div className="flex space-x-3">
             <button

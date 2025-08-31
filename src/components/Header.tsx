@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   HiMenu,
   HiX,
@@ -10,12 +10,12 @@ import {
   HiLightningBolt,
   HiCog,
   HiAdjustments,
-} from 'react-icons/hi';
-import { IconType } from 'react-icons';
-import Link from 'next/link';
-import { ActiveAvatarsDisplay } from './avatars/ActiveAvatarsDisplay';
-import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
-import DarkModeSwitch from './DarkModeSwitch';
+} from "react-icons/hi";
+import { IconType } from "react-icons";
+import Link from "next/link";
+import { ActiveAvatarsDisplay } from "./avatars/ActiveAvatarsDisplay";
+import { useActiveAvatars } from "@/contexts/ActiveAvatarsContext";
+import DarkModeSwitch from "./DarkModeSwitch";
 
 interface NavLink {
   name: string;
@@ -30,32 +30,32 @@ const HeaderNav: React.FC = () => {
 
   const navLinks: NavLink[] = [
     {
-      name: 'Avatars',
+      name: "Avatars",
       icon: HiUser,
       submenu: [
-        { name: 'Create Avatar', href: '/avatar/create' },
-        { name: 'Manage Avatars', href: '/avatars' }
-      ]
+        { name: "Create Avatar", href: "/avatar/create" },
+        { name: "Manage Avatars", href: "/avatars" },
+      ],
     },
     {
-      name: 'Content Creation',
+      name: "Content Creation",
       icon: HiCode,
       submenu: [
-        { name: 'Generate Video', href: '/content_creation/generate_video' },
-        { name: 'Editor', href: '/editor' }
-      ]
+        { name: "Generate Video", href: "/content_creation/generate_video" },
+        { name: "Editor", href: "/editor" },
+      ],
     },
     {
-      name: 'Real-Time',
+      name: "Real-Time",
       icon: HiLightningBolt,
       submenu: [
-        { name: 'Chat', href: '/chat' },
-        { name: 'Act', href: '/act' },
-        { name: 'ReAct', href: '/react' }
-      ]
+        { name: "Chat", href: "/chat" },
+        { name: "Act", href: "/act" },
+        { name: "ReAct", href: "/react" },
+      ],
     },
-    { name: 'Utils', href: '/utils', icon: HiAdjustments },
-    { name: 'Settings', href: '/settings', icon: HiCog },
+    { name: "Utils", href: "/utils", icon: HiAdjustments },
+    { name: "Settings", href: "/settings", icon: HiCog },
   ];
 
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
@@ -99,18 +99,25 @@ const HeaderNav: React.FC = () => {
                 const IconComponent = link.icon;
                 if (link.submenu) {
                   return (
-                    <div
-                      key={link.name}
-                      className="group relative"
-                    >
+                    <div key={link.name} className="group relative">
                       <button
                         className="group relative px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out flex items-center space-x-2"
                         type="button"
                       >
                         <IconComponent className="h-4 w-4" />
                         <span>{link.name}</span>
-                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="w-3 h-3 ml-1"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                         <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-200"></div>
                       </button>
@@ -167,7 +174,10 @@ const HeaderNav: React.FC = () => {
         {activeAvatarIds.length > 0 && (
           <div className="md:hidden pb-3 pt-2 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <Link href="/avatars" className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Link
+                href="/avatars"
+                className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
                 <ActiveAvatarsDisplay size="sm" maxDisplay={8} />
               </Link>
             </div>

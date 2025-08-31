@@ -10,20 +10,19 @@ import { ScaleRangeInput } from "./ScaleRangeInput";
 const MARKINGS = [
   {
     interval: 5000,
-    color: 'black',
+    color: "black",
     size: 16,
-    width: 1
+    width: 1,
   },
   {
     interval: 1000,
-    color: 'black',
+    color: "black",
     size: 8,
-    width: 1
-  }
+    width: 1,
+  },
 ];
 
 export type SeekPlayerProps = {};
-
 
 export const SeekPlayer = observer((_props: SeekPlayerProps) => {
   const store = useContext(StoreContext);
@@ -42,9 +41,13 @@ export const SeekPlayer = observer((_props: SeekPlayerProps) => {
         >
           <Icon size="40" className="text-gray-700 dark:text-gray-300"></Icon>
         </button>
-        <span className="font-mono text-gray-900 dark:text-white">{formattedTime}</span>
+        <span className="font-mono text-gray-900 dark:text-white">
+          {formattedTime}
+        </span>
         <div className="w-px h-[25px] bg-slate-300 dark:bg-gray-600 mx-[10px]"></div>
-        <span className="font-mono text-gray-900 dark:text-white">{formattedMaxTime}</span>
+        <span className="font-mono text-gray-900 dark:text-white">
+          {formattedMaxTime}
+        </span>
       </div>
       <ScaleRangeInput
         max={store.maxTime}

@@ -20,7 +20,7 @@ async function checkOrCreateDb() {
     const adminDb = client.db().admin();
     const { databases } = await adminDb.listDatabases();
 
-    const exists = databases.some(db => db.name === dbName);
+    const exists = databases.some((db) => db.name === dbName);
 
     if (!exists) {
       console.log(`⚠️ Database "${dbName}" does not exist. Creating it now...`);

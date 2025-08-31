@@ -37,5 +37,5 @@ export const TextResource = observer(
         </button>
       </div>
     );
-  }
+  },
 );

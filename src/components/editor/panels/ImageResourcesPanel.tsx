@@ -22,12 +22,11 @@ export const ImageResourcesPanel = observer(() => {
         className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold text-center mx-2 py-2 px-4 rounded-sm cursor-pointer"
         onChange={handleFileChange}
       />
-      <div >
+      <div>
         {store.images.map((image, index) => {
           return <ImageResource key={image} image={image} index={index} />;
         })}
       </div>
-
     </>
   );
 });
