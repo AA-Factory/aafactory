@@ -27,4 +27,4 @@ echo "Jupyter Lab started"
 python3 /comfyui/main.py --disable-auto-launch --disable-metadata --listen &
 
 echo "runpod-worker-comfy: Starting RunPod Handler PROD"
-python3 -u /rp_handler.py -—rp_debugger --rp_api_host=0.0.0.0
+python3 -u /rp_handler.py --rp_serve_api --rp_api_host=0.0.0.0
