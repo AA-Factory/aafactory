@@ -35,7 +35,7 @@ RUN /usr/bin/yes | comfy --workspace /comfyui install --cuda-version 11.8 --nvid
 WORKDIR /comfyui
 
 # Install runpod
-RUN pip install runpod requests poetry
+RUN pip install uv
 
 # Support for the network volume
 ADD src/extra_model_paths.yaml ./
@@ -46,8 +46,7 @@ WORKDIR /
 # Add scripts
 ADD server-requirements.txt pyproject.toml README.md src/start.sh src/restore_snapshot.sh src/rp_handler.py test_input.json ./
 RUN chmod +x /start.sh /restore_snapshot.sh
-RUN poetry install --no-root
-RUN pip install -r server-requirements.txt 
+RUN uv sync
 
 # Optionally copy the snapshot file
 ADD *snapshot*.json /
@@ -57,7 +56,6 @@ RUN /restore_snapshot.sh
 
 # Change working directory to ComfyUI
 WORKDIR /comfyui
-RUN pip install -r /comfyui/requirements.txt
 
 # Create necessary directories
 RUN mkdir -p models/checkpoints models/vae
@@ -66,11 +64,9 @@ RUN mkdir -p models/checkpoints models/vae
 RUN git clone https://github.com/BuffMcBigHuge/ComfyUI-Zonos /comfyui/custom_nodes/ComfyUI-Zonos
 RUN cd /comfyui/custom_nodes/ComfyUI-Zonos && git submodule update --init --recursive
 RUN cd /comfyui/custom_nodes/ComfyUI-Zonos && git clone https://github.com/Zyphra/Zonos.git
-RUN pip install -r /comfyui/custom_nodes/ComfyUI-Zonos/requirements.txt
 
 # Install civitdl and system dependencies
-RUN pip3 install civitdl && \
-    apt-get update -y && \
+RUN apt-get update -y && \
     apt-get install -y g++ build-essential libssl-dev libffi-dev python3-dev unzip && \
     rm -rf /var/lib/apt/lists/*
 
