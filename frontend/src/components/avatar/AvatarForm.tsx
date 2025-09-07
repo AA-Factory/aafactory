@@ -16,10 +16,10 @@ import {
 import {
   avatarFormSchema,
   AvatarFormData,
-  voiceModelOptions,
   categoryOptions,
 } from "@/utils/avatarValidation";
 import { ImageUploadSection } from "./ImageUploadSection";
+import { AudioUploadSection } from "./AudioUploadSection";
 import { generateFakeFormData } from "@/utils/fakeData";
 
 interface AvatarFormProps {
@@ -27,6 +27,8 @@ interface AvatarFormProps {
   defaultValues?: Partial<AvatarFormData>;
   isSubmitting?: boolean;
   existingImageUrl?: string | null;
+  existingAudioUrl?: string | null;
+  existingAudioFileName?: string | null;
   editMode?: boolean;
 }
 
@@ -119,17 +121,21 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       defaultValues,
       isSubmitting = false,
       existingImageUrl,
+      existingAudioUrl,
+      existingAudioFileName,
       editMode = false,
     },
     ref,
   ) => {
     const [expandedSections, setExpandedSections] = useState({
       avatarInfos: true,
-      voiceSettings: true,
     });
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedAudio, setSelectedAudio] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [isAudioDragging, setIsAudioDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const audioFileInputRef = useRef<HTMLInputElement>(null);
 
     const {
       register,
@@ -147,6 +153,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       const fakeData = generateFakeFormData();
       reset(fakeData);
       setSelectedImage(null); // Clear any existing image
+      setSelectedAudio(null); // Clear any existing audio
     };
 
     // Expose reset and fillWithFakeData functions to parent component
@@ -157,6 +164,9 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           reset(values || defaultValues);
           if (!values?.image) {
             setSelectedImage(null);
+          }
+          if (!values?.trainingAudio) {
+            setSelectedAudio(null);
           }
         },
         fillWithFakeData,
@@ -221,6 +231,41 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       reader.readAsDataURL(file);
     };
 
+    // Audio drag and drop handlers
+    const handleAudioDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsAudioDragging(true);
+    };
+
+    const handleAudioDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsAudioDragging(false);
+    };
+
+    const handleAudioDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsAudioDragging(false);
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleAudioFileSelect(files[0]);
+      }
+    };
+
+    const handleAudioFileInputChange = (
+      e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleAudioFileSelect(files[0]);
+      }
+    };
+
+    const handleAudioFileSelect = (file: File) => {
+      setValue("trainingAudio", file);
+      setSelectedAudio(file);
+    };
+
     const avatarFields = [
       {
         name: "name" as const,
@@ -266,7 +311,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
 
     return (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Avatar Infos Section */}
+        {/* Avatar Information Section */}
         <Section
           title="Avatar Information"
           expanded={expandedSections.avatarInfos}
@@ -298,22 +343,18 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
             error={errors.image?.message}
             existingImageUrl={existingImageUrl}
           />
-        </Section>
 
-        {/* Voice Settings Section */}
-        <Section
-          title="Voice Settings"
-          expanded={expandedSections.voiceSettings}
-          onToggle={() => toggleSection("voiceSettings")}
-        >
-          <FormField
-            name="voiceModel"
-            label="Voice Model"
-            type="select"
-            options={voiceModelOptions as any}
-            register={register}
-            error={errors.voiceModel?.message}
-            required={true}
+          <AudioUploadSection
+            selectedAudio={selectedAudio}
+            isDragging={isAudioDragging}
+            fileInputRef={audioFileInputRef}
+            onDragOver={handleAudioDragOver}
+            onDragLeave={handleAudioDragLeave}
+            onDrop={handleAudioDrop}
+            onFileSelect={handleAudioFileInputChange}
+            error={errors.trainingAudio?.message}
+            existingAudioUrl={existingAudioUrl}
+            existingAudioFileName={existingAudioFileName}
           />
         </Section>
 

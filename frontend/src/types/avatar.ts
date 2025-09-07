@@ -3,16 +3,16 @@ export interface Avatar {
   id: string;
   name: string;
   imageUrl: string;
-  voiceModel: string;
   createdAt: string;
   personality: string;
   backgroundKnowledge: string;
   description?: string;
   category?: "realistic" | "stylized" | "cartoon" | "fantasy";
   hasEncodedData?: boolean;
-  voiceTrainingData: string;
   fileName?: string;
   src?: string;
+  trainingAudioPath?: string;
+  trainingAudioFileName?: string;
 }
 
 export interface AvatarResponse {
