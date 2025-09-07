@@ -15,27 +15,13 @@ import { useGenerateAudio } from "@/hooks/useGenerateAudio";
 import { useGenerateVideo } from "@/hooks/useGenerateVideo";
 import { useNotification } from "@/contexts/NotificationContext";
 import { Avatar } from "@/types/avatar";
-
+import { DIALOG_SEEDS } from "@/utils/fakeData";
 const VIDEO_TYPES = [
   { id: "conversational", label: "Conversational Video" },
   { id: "first_last", label: "First Last Frame" },
   { id: "text_to_video", label: "Text to Video" },
 ];
 
-const DIALOG_SEEDS = [
-  "Hey there! This is pretty cool right? Let's have a conversation about the future of AI.",
-  "What's up everyone! Today we're going to talk about something really fascinating.",
-  "Greetings! I hope you're having an amazing day. Let me share something interesting with you.",
-  "Hello friends! Welcome back to another episode where we explore the unknown.",
-  "Hey, what's happening? I've got something mind-blowing to share with you today.",
-  "Good morning, afternoon, or evening wherever you are! Let's dive into something epic.",
-  "Yo! Ready for another adventure? This is going to be absolutely incredible.",
-  "Well hello there! I'm super excited to talk to you about this topic today.",
-  "Hey everyone! Thanks for joining me. This conversation is going to be legendary.",
-  "What's good? I've been thinking about this all day and I can't wait to share it.",
-  "Alright, alright, alright! Let's get into something that'll blow your mind.",
-  "Hey there, beautiful souls! Today's topic is something really close to my heart.",
-];
 
 const getRandomDialogSeed = () => {
   return DIALOG_SEEDS[Math.floor(Math.random() * DIALOG_SEEDS.length)];
@@ -80,6 +66,9 @@ export default function GenerateVideoWizard() {
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(
     null,
   );
+  const [generatedAudioBase64, setGeneratedAudioBase64] = useState<string | null>(
+    null,
+  );
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(
     null,
   );
@@ -122,10 +111,12 @@ export default function GenerateVideoWizard() {
       {
         dialog,
         avatar,
+        async: true,
       },
       {
         onSuccess: (result) => {
           setGeneratedAudioUrl(result.audioUrl);
+          setGeneratedAudioBase64(result.base64Audio || null);
           setGeneratedAudioFilename(result.filename);
           setAudioReady(true);
           showNotification("Audio generated successfully!", "success");
@@ -160,7 +151,8 @@ export default function GenerateVideoWizard() {
       {
         audioFilename: generatedAudioFilename,
         avatar,
-        async: false,
+        async: true,
+        audioBase64: generatedAudioBase64 || "",
       },
       {
         onSuccess: (result) => {
@@ -214,7 +206,7 @@ export default function GenerateVideoWizard() {
       content: (
         <div className="space-y-6">
           <h2 className="text-lg font-bold mb-4">Select video type</h2>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-3 overflow-scroll h-96">
             {VIDEO_TYPES.map((type) => (
               <button
                 key={type.id}
@@ -226,9 +218,9 @@ export default function GenerateVideoWizard() {
               >
                 <PiFileVideoBold className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 <span className="font-semibold">{type.label}</span>
-                {videoType === type.id && (
+                {/* {videoType === type.id && (
                   <FiCheckCircle className="w-4 h-4 text-green-500 mt-2" />
-                )}
+                )} */}
               </button>
             ))}
           </div>
@@ -246,12 +238,12 @@ export default function GenerateVideoWizard() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-3 overflow-scroll h-96">
               {avatars?.map((a) => (
                 <button
                   key={a.id}
                   onClick={() => setAvatar(a)}
-                  className={`rounded-lg border-2 flex flex-col items-center p-3 space-y-2 transition-all w-full ${avatar === a.id
+                  className={`rounded-lg border-2 flex flex-col items-center p-3 space-y-2 transition-all w-full ${avatar?.id === a.id
                     ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
                     : "border-gray-200 dark:border-gray-700 hover:border-blue-400"
                     }`}
@@ -263,9 +255,9 @@ export default function GenerateVideoWizard() {
                   />
                   <span className="font-semibold">{a.name}</span>
                   <span className="text-xs text-gray-500">{a.description}</span>
-                  {avatar?.id === a.id && (
+                  {/* {avatar?.id === a.id && (
                     <FiCheckCircle className="w-4 h-4 text-green-500 mt-2" />
-                  )}
+                  )} */}
                 </button>
               )) || []}
             </div>
@@ -470,50 +462,59 @@ export default function GenerateVideoWizard() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 transition-colors duration-300">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-400 dark:to-purple-500 rounded-lg flex items-center justify-center">
-              <PiFileVideoBold className="w-5 h-5 text-white dark:text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Generate Video
-            </h1>
-          </div>
+    <div className="flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
+      {/* Header with Stage Progress */}
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
+        <div className="max-w-4xl mx-auto">
+          {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+            Generate Video
+          </h1> */}
+
+          {/* Stage Progress Indicator */}
+
+          <ol className="flex items-center w-full p-3 space-x-2 text-sm font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-xs dark:text-gray-400 sm:text-base dark:bg-gray-800 dark:border-gray-700 sm:p-4 sm:space-x-4 rtl:space-x-reverse">
+            {steps.map((s, idx) => (
+              <li key={s.label} className={`flex items-center ${step === idx
+                ? "text-blue-600 dark:text-blue-500"
+                : step > idx
+                  ? "text-green-600 dark:text-green-500"
+                  : "text-gray-500 dark:text-gray-400"
+                }`}>
+                <span className={`flex items-center justify-center w-5 h-5 me-2 text-xs border rounded-full shrink-0 ${step === idx
+                  ? "border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                  : step > idx
+                    ? "border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/30"
+                    : "border-gray-500 dark:border-gray-400"
+                  }`}>
+                  {step > idx ? (
+                    <FiCheckCircle className="w-3 h-3" />
+                  ) : (
+                    idx + 1
+                  )}
+                </span>
+                <span className="hidden sm:inline-flex">
+                  {s.label}
+                </span>
+                <span className="sm:hidden">
+                  {idx + 1}
+                </span>
+                {idx < steps.length - 1 && (
+                  <svg className="w-3 h-3 ms-2 sm:ms-4 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 12 10">
+                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m7 9 4-4-4-4M1 9l4-4-4-4" />
+                  </svg>
+                )}
+              </li>
+            ))}
+          </ol>
+
+
         </div>
       </header>
 
       {/* Main layout: left panel (steps), center (player), bottom (gallery) */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-initial min-h-0">
         {/* Left panel: Stepper */}
         <aside className="w-80 min-w-[18rem] max-w-[22rem] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col p-6">
-          {/* Step indicators */}
-          <div className="flex flex-col space-y-6 mb-8">
-            {steps.map((s, idx) => (
-              <div key={s.label} className="flex items-center space-x-3">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-base border-2 ${step === idx
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : step > idx
-                      ? "bg-green-500 text-white border-green-500"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-500 border-gray-300 dark:border-gray-600"
-                    }`}
-                >
-                  {idx + 1}
-                </div>
-                <span
-                  className={`text-sm ${step === idx
-                    ? "text-blue-600 dark:text-blue-400 font-semibold"
-                    : "text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  {s.label}
-                </span>
-              </div>
-            ))}
-          </div>
           {/* Step content */}
           <div className="flex-1">{steps[step].content}</div>
           {/* Navigation buttons */}

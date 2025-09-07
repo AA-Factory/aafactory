@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const { db } = await connectToDatabase();
 
     const contentType = req.headers.get("content-type");
-    let avatarData;
+    let data;
     let uploadResult = null;
 
     // Handle form data (with file upload)
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData();
 
       // Extract avatar data from form
-      avatarData = {
+      data = {
         name: formData.get('name') as string | null,
         personality: formData.get('personality') as string | null,
         backgroundKnowledge: formData.get('backgroundKnowledge') as string | null,
@@ -44,16 +44,16 @@ export async function POST(req: NextRequest) {
 
         uploadResult = await uploadFile(fileEntry, fileName);
 
-        avatarData.src = uploadResult.filePath;
-        avatarData.fileName = uploadResult.fileName;
+        data.src = uploadResult.filePath;
+        data.fileName = uploadResult.fileName;
       }
     } else {
       // Handle JSON data (without file upload)
-      avatarData = await req.json();
+      data = await req.json();
     }
 
     // Validate required fields
-    if (!avatarData.name || !avatarData.personality) {
+    if (!data.name || !data.personality) {
       return NextResponse.json(
         {
           error: "Name and personality are required fields",
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     // Add timestamps
     const avatar = {
-      ...avatarData,
+      ...data,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

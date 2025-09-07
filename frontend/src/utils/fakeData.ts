@@ -58,3 +58,18 @@ export const generateFakeFormData = () => {
       | "google",
   };
 };
+
+export const DIALOG_SEEDS = [
+  "Hey there! This is pretty cool right? Let's have a conversation about the future of AI.",
+  "What's up everyone! Today we're going to talk about something really fascinating.",
+  "Greetings! I hope you're having an amazing day. Let me share something interesting with you.",
+  "Hello friends! Welcome back to another episode where we explore the unknown.",
+  "Hey, what's happening? I've got something mind-blowing to share with you today.",
+  "Good morning, afternoon, or evening wherever you are! Let's dive into something epic.",
+  "Yo! Ready for another adventure? This is going to be absolutely incredible.",
+  "Well hello there! I'm super excited to talk to you about this topic today.",
+  "Hey everyone! Thanks for joining me. This conversation is going to be legendary.",
+  "What's good? I've been thinking about this all day and I can't wait to share it.",
+  "Alright, alright, alright! Let's get into something that'll blow your mind.",
+  "Hey there, beautiful souls! Today's topic is something really close to my heart.",
+];

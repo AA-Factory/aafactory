@@ -29,10 +29,11 @@ export async function uploadFile(
 
     const timestamp = Date.now();
     const extension = path.extname(fileName);
+    console.log('✌️extension --->', extension);
     const baseName = path.basename(fileName, extension);
     const uniqueFileName = `${timestamp}-${Math.random()
       .toString(36)
-      .substring(7)}-${baseName}${extension}`;
+      .substring(7)}${extension}`;
 
     const filePath = path.join(uploadsDir, uniqueFileName);
     const relativePath = `/uploads/avatars/${uniqueFileName}`;

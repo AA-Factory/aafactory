@@ -4,6 +4,7 @@ import {
   COMFYUI_RUN_ASYNC,
   COMFYUI_RUN_SYNC,
   COMFYUI_SERVER_URL,
+  COMFYUI_STATUS
 } from "@/config/constants";
 import { Avatar } from "@/types/avatar";
 
@@ -17,12 +18,13 @@ export type GenerateAudioResponse = {
   audioUrl: string;
   filename: string;
   promptId: string;
+  base64Audio?: string;
 };
 
 type GenerateAudioOutPayload = {
   input: {
     workflow: Record<string, unknown>;
-    images: { name: string; image: string }[];
+    files: { name: string; audio: string }[];
   };
 };
 
@@ -51,6 +53,23 @@ export type GenerateResponse = BaseResponse & {
   };
 };
 
+// Convert base64 string to blob
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  console.log('✌️base64 --->', base64);
+  // Remove data URL prefix if present
+  const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+
+  const byteCharacters = atob(base64Data);
+  const byteNumbers = new Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+}
+
 // Extract audio file encoding to separate function
 async function encodeAudioFile(
   audioTrainingFile: string | File,
@@ -78,9 +97,7 @@ async function encodeAudioFile(
   const base64 = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
-      // Remove the data:audio/wav;base64, prefix
-      const base64Data = base64String.split(",")[1];
+      const base64Data = reader.result as string;
       resolve(base64Data);
     };
     reader.onerror = () => reject(new Error("Failed to encode audio file"));
@@ -88,6 +105,51 @@ async function encodeAudioFile(
   });
 
   return { base64, filename };
+}
+
+// Poll job status until completion
+async function pollJobStatus(jobId: string): Promise<GenerateResponse> {
+  const maxAttempts = 60; // 5 minutes with 5 second intervals
+  const pollInterval = 5000; // 5 seconds
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const statusResponse = await fetch(`${COMFYUI_STATUS}/${jobId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${process.env.NEXT_PUBLIC_RUNPOD_API_KEY}`
+        },
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error(`Status check failed: ${statusResponse.status}`);
+      }
+
+      const statusData = (await statusResponse.json()) as GenerateResponse;
+
+      if (statusData.status === "COMPLETED") {
+        return statusData;
+      }
+
+      if (statusData.status === "FAILED" || statusData.status === "CANCELLED") {
+        throw new Error(
+          `Job ${statusData.status.toLowerCase()}. ${statusData.error || ""}`
+        );
+      }
+
+      // Wait before next poll
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+    } catch (error) {
+      if (attempt === maxAttempts - 1) {
+        throw new Error(`Polling failed after ${maxAttempts} attempts: ${error}`);
+      }
+      // Wait before retry
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+    }
+  }
+
+  throw new Error(`Job polling timed out after ${maxAttempts * pollInterval / 1000} seconds`);
 }
 
 // Extract audio filename from history data
@@ -137,10 +199,10 @@ export function useGenerateAudio() {
         const outPayload: GenerateAudioOutPayload = {
           input: {
             workflow,
-            images: [
+            files: [
               {
                 name: audioFilename,
-                image: audioBase64,
+                audio: audioBase64,
               },
             ],
           },
@@ -149,6 +211,9 @@ export function useGenerateAudio() {
         // Make the request to ComfyUI
         const headers = new Headers();
         headers.append("Content-Type", "application/json");
+        //add authorization header if using runpod
+        headers.append("Authorization", `${process.env.NEXT_PUBLIC_RUNPOD_API_KEY}`);
+
         const url = payload.async ? COMFYUI_RUN_ASYNC : COMFYUI_RUN_SYNC;
 
         const res = await fetch(url, {
@@ -167,7 +232,11 @@ export function useGenerateAudio() {
           throw new Error(json.error);
         }
 
-        if (json.status !== "COMPLETED") {
+        // Handle async requests by polling status endpoint
+        let finalResponse = json;
+        if (payload.async && json.status !== "COMPLETED") {
+          finalResponse = await pollJobStatus(json.id);
+        } else if (json.status !== "COMPLETED") {
           throw new Error(
             `Audio generation failed. Status: ${json.status} Error: ${json.error}`,
           );
@@ -175,44 +244,63 @@ export function useGenerateAudio() {
 
         // Extract prompt_id
         const promptId =
-          "output" in json && json.output.prompt_id
-            ? json.output.prompt_id
-            : json.id;
+          "output" in finalResponse && finalResponse.output.prompt_id
+            ? finalResponse.output.prompt_id
+            : finalResponse.id;
 
         if (!promptId) {
           throw new Error("No prompt ID returned from generation");
         }
 
-        // Fetch history with delay
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Check if response has base64 audio in message field
+        let audioUrl: string;
+        let filename: string;
+        let base64Audio: string = "";
+        if ("output" in finalResponse && finalResponse.output.message) {
+          // Handle base64 audio from message field
+          base64Audio = finalResponse.output.message;
 
-        const historyResponse = await fetch(
-          `${COMFYUI_SERVER_URL}/history/${promptId}`,
-          {
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
+          // Convert base64 to blob URL
+          const audioBlob = base64ToBlob(base64Audio, 'audio/wav');
+          audioUrl = URL.createObjectURL(audioBlob);
+          filename = `generated_audio_${Date.now()}.wav`;
+
+          console.log("Using base64 audio from message field");
+        } else {
+          // Fallback to original history-based approach
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          const historyResponse = await fetch(
+            `${COMFYUI_SERVER_URL}/history/${promptId}`,
+            {
+              mode: "cors",
+              headers: {
+                "Content-Type": "application/json",
+              },
             },
-          },
-        );
+          );
 
-        if (!historyResponse.ok) {
-          throw new Error(`Failed to fetch history: ${historyResponse.status}`);
+          if (!historyResponse.ok) {
+            throw new Error(`Failed to fetch history: ${historyResponse.status}`);
+          }
+
+          const historyData = await historyResponse.json();
+
+          // Extract audio filename
+          const extractedFilename = extractAudioFilename(historyData, promptId);
+
+          if (!extractedFilename) {
+            throw new Error("No audio file generated");
+          }
+
+          filename = extractedFilename;
+
+          audioUrl = `${COMFYUI_SERVER_URL}/api/view?filename=${filename}`;
+          console.log("Generated audio filename:", filename);
         }
-
-        const historyData = await historyResponse.json();
-
-        // Extract audio filename
-        const filename = extractAudioFilename(historyData, promptId);
-
-        if (!filename) {
-          throw new Error("No audio file generated");
-        }
-
-        const audioUrl = `${COMFYUI_SERVER_URL}/api/view?filename=${filename}`;
-        console.log("Generated audio filename:", filename);
 
         return {
+          base64Audio,
           audioUrl,
           filename,
           promptId,

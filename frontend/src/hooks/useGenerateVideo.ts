@@ -10,6 +10,7 @@ import { Avatar } from "@/types/avatar";
 
 export type GenerateVideoPayload = {
   audioFilename: string; // Generated audio filename from useGenerateAudio
+  audioBase64: string; // Base64 audio data from useGenerateAudio
   avatar: Avatar | null; // Avatar object containing voice model and image
   async?: boolean;
 };
@@ -23,7 +24,10 @@ export type GenerateVideoResponse = {
 type GenerateVideoOutPayload = {
   input: {
     workflow: Record<string, unknown>;
-    images: { name: string; image: string }[];
+    files: Array<
+      | { name: string; audio: string }
+      | { name: string; image: string }
+    >;
   };
 };
 
@@ -52,27 +56,46 @@ export type GenerateResponse = BaseResponse & {
   };
 };
 
-// Encode audio file from ComfyUI server
-async function encodeAudioFromServer(filename: string): Promise<string> {
-  const audioResponse = await fetch(
-    `${COMFYUI_SERVER_URL}/api/view?filename=${filename}`,
-  );
-  if (!audioResponse.ok) {
-    throw new Error(`Failed to load audio file: ${filename}`);
+async function encodeImageFile(
+  imageFile: string | File,
+): Promise<{ base64: string; filename: string }> {
+  let imageBlob: Blob;
+  let filename: string;
+
+  if (imageFile instanceof File) {
+    // Handle uploaded file
+    imageBlob = imageFile;
+    filename = imageFile.name;
+  } else {
+    // Handle file path (existing functionality)
+    const imageResponse = await fetch(
+      `${imageFile}`,
+    );
+
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to load image file: ${imageFile}`);
+    }
+    imageBlob = await imageResponse.blob();
+    filename = imageFile;
   }
 
-  const audioBlob = await audioResponse.blob();
-  return new Promise<string>((resolve, reject) => {
+  const base64 = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
-      // Remove the data:audio/flac;base64, prefix (or whatever format)
-      const base64Data = base64String.split(",")[1];
+      let base64Data = reader.result as string;
+
+      // Fix MIME type if it's incorrect - detect JPEG signature in base64
+      if (base64Data.includes('data:image/png;base64,') && base64Data.includes('/9j/')) {
+        base64Data = base64Data.replace('data:image/png;base64,', 'data:image/jpeg;base64,');
+      }
+
       resolve(base64Data);
     };
-    reader.onerror = () => reject(new Error("Failed to encode audio file"));
-    reader.readAsDataURL(audioBlob);
+    reader.onerror = () => reject(new Error("Failed to encode image file"));
+    reader.readAsDataURL(imageBlob);
   });
+
+  return { base64, filename };
 }
 
 // Encode image from URL
@@ -87,9 +110,8 @@ async function encodeImageFromUrl(imageUrl: string): Promise<string> {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result as string;
-      // Remove the data:image/jpeg;base64, prefix (or whatever format)
-      const base64Data = base64String.split(",")[1];
-      resolve(base64Data);
+      // Return the full base64 string with prefix
+      resolve(base64String);
     };
     reader.onerror = () => reject(new Error("Failed to encode image file"));
     reader.readAsDataURL(imageBlob);
@@ -127,14 +149,14 @@ async function pollJobStatus(
 
   while (attempts < maxAttempts) {
     const res = await fetch(`${COMFYUI_STATUS}/${jobId}`, {
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `${process.env.NEXT_PUBLIC_RUNPOD_API_KEY}` },
+
       method: "POST",
     });
     if (!res.ok) {
       throw new Error(`Failed to fetch job status: ${res.status}`);
     }
     const json = (await res.json()) as GenerateResponse;
-    console.log("✌️ json --->", json);
 
     if (json.status === "COMPLETED") {
       return json;
@@ -157,18 +179,29 @@ export function useGenerateVideo() {
       payload: GenerateVideoPayload,
     ): Promise<GenerateVideoResponse> => {
       try {
-
-        // Encode audio file from ComfyUI server
-        const audioBase64 = await encodeAudioFromServer(payload.audioFilename);
+        // Format audio data with proper prefix - extract raw base64 and add proper prefix
+        const rawAudioBase64 = payload.audioBase64.includes(',')
+          ? payload.audioBase64.split(',')[1]
+          : payload.audioBase64;
+        // Add padding if needed to make length divisible by 4
+        const paddedAudioBase64 = rawAudioBase64 + '='.repeat((4 - rawAudioBase64.length % 4) % 4);
+        const audioBase64 = `data:audio/wav;base64,${paddedAudioBase64}`;
 
         // Encode avatar image from local file
-        console.log('✌️payload.avatar --->', payload.avatar);
         if (!payload.avatar?.src) {
           throw new Error("Avatar image source is missing.");
         }
-        const imageBase64 = await encodeImageFromUrl(payload.avatar.src);
-        const imageFilename = payload.avatar?.fileName;
-        console.log("✌️imageFilename --->", imageFilename);
+        // const rawImageBase64 = await encodeImageFromUrl(payload.avatar.src);
+        // // Format image data with proper prefix - extract raw base64 and add proper prefix
+        // const imageBase64Data = rawImageBase64.includes(',')
+        //   ? rawImageBase64.split(',')[1]
+        //   : rawImageBase64;
+        // // Add padding if needed to make length divisible by 4
+        // const paddedImageBase64 = imageBase64Data + '='.repeat((4 - imageBase64Data.length % 4) % 4);
+        // const imageBase64 = `data:image/png;base64,${paddedImageBase64}`;
+        // const imageFilename = 'avatar_image.png';
+        const { base64: imageBase64, filename: imageFilename } =
+          await encodeImageFile(payload.avatar.src);
 
         // Import and build workflow
         const baseWorkflow = await import(
@@ -183,14 +216,14 @@ export function useGenerateVideo() {
         const outPayload: GenerateVideoOutPayload = {
           input: {
             workflow,
-            images: [
+            files: [
               {
                 name: payload.audioFilename,
-                image: audioBase64,
+                audio: audioBase64,
               },
               {
-                name: imageFilename,
-                image: imageBase64,
+                name: payload.avatar.fileName || imageFilename,
+                image: imageBase64
               },
             ],
           },
@@ -199,6 +232,8 @@ export function useGenerateVideo() {
         // Make the request to ComfyUI
         const headers = new Headers();
         headers.append("Content-Type", "application/json");
+        headers.append("Authorization", `${process.env.NEXT_PUBLIC_RUNPOD_API_KEY}`);
+
         const url = payload.async ? COMFYUI_RUN_ASYNC : COMFYUI_RUN_SYNC;
 
         const res = await fetch(url, {

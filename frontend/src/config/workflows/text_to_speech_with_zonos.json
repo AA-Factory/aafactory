@@ -1,20 +1,12 @@
 {
   "12": {
     "inputs": {
-      "audio": "voice.wav"
+      "audio": "audio.mp3",
+      "audioUI": ""
     },
     "class_type": "LoadAudio",
     "_meta": {
       "title": "LoadAudio"
-    }
-  },
-  "13": {
-    "inputs": {
-      "audio": ["24", 0]
-    },
-    "class_type": "PreviewAudio",
-    "_meta": {
-      "title": "PreviewAudio"
     }
   },
   "22": {
@@ -24,9 +16,9 @@
       "disgust": 0,
       "fear": 0,
       "surprise": 0,
-      "anger": 0.02,
-      "other": 0.1,
-      "neutral": 0.2
+      "anger": 0.020000000000000004,
+      "other": 0.10000000000000002,
+      "neutral": 0.20000000000000004
     },
     "class_type": "ZonosEmotion",
     "_meta": {
@@ -36,20 +28,26 @@
   "24": {
     "inputs": {
       "speech": "Hey there! This is pretty cool right?",
-      "seed": 580,
+      "seed": 421,
       "model_type": "Zyphra/Zonos-v0.1-transformer",
       "language": "en-us",
+      "pitch_std": 20,
+      "speaking_rate": 15,
+      "dnsmos_ovrl": 4,
       "cfg_scale": 2,
-      "min_p": 0.15,
-      "speed": 1,
-      "speaking_rate": 5.0,
-      "pitch_std": 0.8,
-      "dnsmos_ovrl": 3.5,
+      "min_p": 0.15000000000000002,
+      "speed": 1.0000000000000002,
       "disable_compiler": true,
       "sample_text": "No, all that stuff, like you could have all the money in the world, all the followers, everything. It's just doesn't really make you happy.",
       "speaker_noised": true,
-      "sample_audio": ["12", 0],
-      "emotion": ["22", 0]
+      "sample_audio": [
+        "12",
+        0
+      ],
+      "emotion": [
+        "22",
+        0
+      ]
     },
     "class_type": "ZonosGenerate",
     "_meta": {
@@ -58,12 +56,16 @@
   },
   "25": {
     "inputs": {
-      "audio": ["24", 0],
-      "filename_prefix": "zonos_output"
+      "filename_prefix": "audio/ComfyUI",
+      "audioUI": "",
+      "audio": [
+        "24",
+        0
+      ]
     },
     "class_type": "SaveAudio",
     "_meta": {
-      "title": "Save Audio Output"
+      "title": "SaveAudio"
     }
   }
 }
