@@ -1,0 +1,75 @@
+"use client";
+
+import { fabric } from "fabric";
+import React, { useEffect, useState } from "react";
+import { StoreContext } from "@/store";
+import { observer } from "mobx-react";
+import { Resources } from "./Resources";
+import { ElementsPanel } from "./panels/ElementsPanel";
+import { Menu } from "./Menu";
+import { TimeLine } from "./TimeLine";
+import { Store } from "@/store/Store";
+import "@/utils/fabricUtils";
+
+export const EditorWithStore = () => {
+  const [store] = useState(new Store());
+  return (
+    <StoreContext.Provider value={store}>
+      <Editor></Editor>
+    </StoreContext.Provider>
+  );
+};
+
+export const Editor = observer(() => {
+  const store = React.useContext(StoreContext);
+
+  useEffect(() => {
+    const canvas = new fabric.Canvas("canvas", {
+      height: 500,
+      width: 800,
+      backgroundColor: "#ededed",
+    });
+    fabric.Object.prototype.transparentCorners = false;
+    fabric.Object.prototype.cornerColor = "#00a0f5";
+    fabric.Object.prototype.cornerStyle = "circle";
+    fabric.Object.prototype.cornerStrokeColor = "#0063d8";
+    fabric.Object.prototype.cornerSize = 10;
+    // canvas mouse down without target should deselect active object
+    canvas.on("mouse:down", function (e) {
+      if (!e.target) {
+        store.setSelectedElement(null);
+      }
+    });
+
+    store.setCanvas(canvas);
+    fabric.util.requestAnimFrame(function render() {
+      canvas.renderAll();
+      fabric.util.requestAnimFrame(render);
+    });
+  }, []);
+  return (
+    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh bg-white dark:bg-gray-900">
+      <div className="tile row-span-2 flex flex-col border-r border-gray-200 dark:border-gray-700">
+        <Menu />
+      </div>
+      <div className="row-span-2 flex flex-col overflow-scroll bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+        <Resources />
+      </div>
+      <div
+        id="grid-canvas-container"
+        className="col-start-3 bg-slate-100 dark:bg-gray-700 flex justify-center items-center border-r border-gray-200 dark:border-gray-700"
+      >
+        <canvas id="canvas" className="h-[500px] w-[800px] row" />
+      </div>
+      <div className="col-start-4 row-start-1 bg-white dark:bg-gray-800">
+        <ElementsPanel />
+      </div>
+      <div className="col-start-3 row-start-2 col-span-2 relative px-[10px] py-[4px] overflow-scroll bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <TimeLine />
+      </div>
+      <div className="col-span-4 text-right px-2 text-[0.5em] bg-black dark:bg-gray-900 text-white border-t border-gray-200 dark:border-gray-700">
+        Crafted By Amit Digga
+      </div>
+    </div>
+  );
+});
