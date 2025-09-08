@@ -1,7 +1,0 @@
-.DS_Store
-venv
-.env
-data
-models
-simulated_uploaded
-__pycache__

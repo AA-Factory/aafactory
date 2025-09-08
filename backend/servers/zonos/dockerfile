@@ -12,10 +12,12 @@ RUN apt-get update && \
 
 RUN pip install uv
 
-COPY README.md server_to_url_mapping.json main.py celery_worker.py pyproject.toml uv.lock /aafactory_backend/
+COPY README.md main.py pyproject.toml uv.lock /aafactory_backend/
 
 RUN uv sync
 
 ENV PYTHONBUFFERED=1
-EXPOSE 8000
+
+CMD ["uv", "run", "uvicorn", "--host", "0.0.0.0", "--port", "8002", "main:app"]
+
 

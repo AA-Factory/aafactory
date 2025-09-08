@@ -1,0 +1,4 @@
+{
+  "sonic": "http://sonic-server:8001/run_task/",
+  "zonos": "http://zonos-server:8002/run_task/"
+}
