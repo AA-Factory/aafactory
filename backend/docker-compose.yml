@@ -1,16 +1,83 @@
 services:
-  comfyui-worker:
-    build:
-      context: .
-      platforms:
-        - linux/amd64
+  redis:
+    image: redis:8.2.1-alpine
+    ports:
+      - "6379:6379"
+  db:
+    container_name: postgresql_db
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
     environment:
-      - SERVE_API_LOCALLY=true
-      - CIVITAI_API_KEY=${CIVITAI_API_KEY}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - 5050:80
+    depends_on:
+      - db
+
+  app:
+    container_name: app
+    build: .
+    command: uv run uvicorn --host 0.0.0.0 main:app
     ports:
       - "8000:8000"
-      - "8188:8188"
-      - "8888:8888"
-    volumes:
-      - ./data/comfyui/output:/comfyui/output
-      - ./data/runpod-volume:/runpod-volume
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    depends_on:
+      - redis
+
+  celery-worker:
+    container_name: celery_worker
+    build: .
+    command: uv run celery -A celery_worker worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    depends_on:
+      - redis
+      - app
+  flower:
+    container_name: flower
+    build: .
+    command: uv run celery -A celery_worker flower --port=5555
+    ports:
+      - 5556:5555
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+      - OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+    depends_on:
+      - app
+      - redis
+      - celery-worker
+  sonic-server:
+    build: ./servers/sonic
+    ports:
+      - "8001:8001"
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    depends_on:
+      - redis
+
+  zonos-server:
+    build: ./servers/zonos
+    ports:
+      - "8002:8002"
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    depends_on:
+      - redis
+# Add more fastapi-taskN services as needed
