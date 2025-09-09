@@ -10,13 +10,14 @@ app = FastAPI()
 
 
 class TaskRequest(BaseModel):
-    task_name: Literal["sonic", "zonos"]
+    server_name: Literal["infinite_talk", "zonos"]
+    task_name: Literal["prompt_image_audio_to_video", "custom_voice_to_audio"]
     payload: Dict[str, Any]
 
 
 @app.post("/run_task/")
 def run_task(request: TaskRequest) -> JSONResponse:
-    task = send_task_to_server.delay(task_name=request.task_name, payload=request.payload)
+    task = send_task_to_server.delay(server_name=request.server_name, task_name=request.task_name, payload=request.payload)
     return JSONResponse({"task_id": task.id, "status": task.status})
 
 @app.get("/task_status/{task_id}")
