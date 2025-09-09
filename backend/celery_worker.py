@@ -16,10 +16,10 @@ app = Celery(
 SERVER_TO_URL_MAPPING_PATH = Path("server_to_url_mapping.json")
 
 @app.task(name="send_task_to_server")
-def send_task_to_server(task_name: str, payload: dict) -> str:
+def send_task_to_server(server_name: str, task_name: str, payload: dict) -> str:
     with open(SERVER_TO_URL_MAPPING_PATH, "r") as f:
         server_to_url_mapping = json.load(f)
-    endpoint_url = server_to_url_mapping[task_name]
+    endpoint_url = server_to_url_mapping[server_name][task_name]
     logger.info(f"Sending task to {endpoint_url} with payload: {payload}")
-    response = requests.post(endpoint_url, json={"payload": payload})
+    response = requests.post(endpoint_url, json=payload)
     return response.json()

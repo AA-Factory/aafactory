@@ -61,8 +61,8 @@ services:
       - app
       - redis
       - celery-worker
-  sonic-server:
-    build: ./servers/sonic
+  infinite-talk-server:
+    build: ./servers/infinite_talk
     ports:
       - "8001:8001"
     environment:
