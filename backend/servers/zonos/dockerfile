@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
 
 WORKDIR /app
 
@@ -6,11 +6,15 @@ ARG BUILD_ENV=local
 ENV BUILD_ENV=${BUILD_ENV}
 
 RUN apt-get update && \
-    # necessary for legolas to run
     apt-get install -y poppler-utils \
-    python3-pip
+    python3-pip \
+    espeak-ng \
+    git && rm -rf /var/lib/apt/lists/*
 
 RUN pip install uv
+RUN git clone https://github.com/Zyphra/Zonos.git /tmp/zonos && \
+    mv /tmp/zonos/zonos /app/zonos && \
+    rm -rf /tmp/zonos
 
 COPY . /app/
 
