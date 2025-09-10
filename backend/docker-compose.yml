@@ -65,19 +65,13 @@ services:
     build: ./servers/infinite_talk
     ports:
       - "8001:8001"
-    environment:
-      - CELERY_BROKER_URL=$CELERY_BROKER_URL
-      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
-    depends_on:
-      - redis
 
   zonos-server:
+    image: elliotcarery/zonos-server:$ZONOS_SERVER_TAG
     build: ./servers/zonos
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
     ports:
       - "8002:8002"
-    environment:
-      - CELERY_BROKER_URL=$CELERY_BROKER_URL
-      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
-    depends_on:
-      - redis
 # Add more fastapi-taskN services as needed
