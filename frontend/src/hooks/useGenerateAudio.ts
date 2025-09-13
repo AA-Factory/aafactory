@@ -172,7 +172,7 @@ function createTaskRequest(payload: GenerateAudioPayload, audioBase64: string): 
 }
 
 function createAudioResponse(base64Audio: string, taskId: string): GenerateAudioResponse {
-  const audioBlob = base64ToBlob(base64Audio);
+  const audioBlob = base64ToBlob(base64Audio.message);
   const audioUrl = URL.createObjectURL(audioBlob);
   const filename = `generated_audio_${Date.now()}.wav`;
 
