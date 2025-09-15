@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+frontend/node_modules
 /.pnp
 .pnp.js
 
@@ -35,3 +35,6 @@ yarn-error.log*
 next-env.d.ts
 public/uploads/
 .vscode/settings.json
+backend/data/comfyui/output
+frontend/.next
+frontend/public
