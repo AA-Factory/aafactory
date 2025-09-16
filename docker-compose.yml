@@ -1,0 +1,168 @@
+services:
+  redis:
+    image: redis:8.2.1-alpine
+    ports:
+      - "6379:6379"
+    profiles:
+      - backend-local
+      - local
+  db:
+    container_name: postgresql_db
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    profiles:
+      - backend-local
+      - local
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - 5050:80
+    depends_on:
+      - db
+    profiles:
+      - backend-local
+      - local
+
+  backend-app:
+    container_name: backend-app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uv run uvicorn --host 0.0.0.0 main:app
+    ports:
+      - "8000:8000"
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    depends_on:
+      - redis
+    profiles:
+      - backend-local
+      - local
+
+  celery-worker:
+    container_name: celery_worker
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uv run celery -A celery_worker worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    depends_on:
+      - redis
+      - backend-app
+    profiles:
+      - backend-local
+      - local
+  flower:
+    container_name: flower
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uv run celery -A celery_worker flower --port=5555
+    ports:
+      - 5556:5555
+    environment:
+      - CELERY_BROKER_URL=$CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+      - OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+    depends_on:
+      - backend-app
+      - redis
+      - celery-worker
+    profiles:
+      - backend-local
+      - local
+  infinite-talk-server:
+    build:
+      context: ./backend/servers/infinite_talk
+    ports:
+      - "8001:8001"
+    profiles:
+      - servers
+
+  zonos-server:
+    image: elliotcarery/zonos-server:$ZONOS_SERVER_TAG
+    build:
+      context: ./backend/servers/zonos
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+    ports:
+      - "8002:8002"
+    profiles:
+      - servers
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mongodb-dev
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+    command: mongod --quiet --logpath /dev/null
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--username",
+          "admin",
+          "--password",
+          "password",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - frontend
+      - local
+
+  frontend-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=$MONGODB_URI
+      - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    profiles:
+      - frontend
+      - local
+
+volumes:
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge
