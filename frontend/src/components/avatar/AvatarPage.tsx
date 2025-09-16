@@ -57,6 +57,8 @@ export default function AvatarPage({
     null,
   );
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [existingAudioUrl, setExistingAudioUrl] = useState<string | null>(null);
+  const [existingAudioFileName, setExistingAudioFileName] = useState<string | null>(null);
 
   // ---- Load existing avatar into form when editing ----
   useEffect(() => {
@@ -74,12 +76,6 @@ export default function AvatarPage({
           | "fantasy") || "realistic",
       personality: existingAvatar.personality || "",
       backgroundKnowledge: existingAvatar.backgroundKnowledge || "",
-      voiceModel:
-        (existingAvatar.voiceModel as
-          | "elevenlabs"
-          | "openai"
-          | "azure"
-          | "google") || "elevenlabs",
     };
 
     setDefaultValues(avatarData);
@@ -97,6 +93,15 @@ export default function AvatarPage({
       setExistingImageUrl(existingAvatar.imageUrl);
     } else {
       setExistingImageUrl(null);
+    }
+
+    // Load existing audio if available
+    if (existingAvatar.trainingAudioPath) {
+      setExistingAudioUrl(existingAvatar.trainingAudioPath);
+      setExistingAudioFileName(existingAvatar.trainingAudioFileName || null);
+    } else {
+      setExistingAudioUrl(null);
+      setExistingAudioFileName(null);
     }
   }, [editMode, existingAvatar, isLoadingAvatar]);
 
@@ -134,11 +139,11 @@ export default function AvatarPage({
           category: formData.category,
           personality: formData.personality,
           backgroundKnowledge: formData.backgroundKnowledge,
-          voiceModel: formData.voiceModel,
         } as any;
 
         let file: File | null = formData.image || null;
         let fileName: string | null = null;
+        let trainingAudio: File | null = formData.trainingAudio || null;
 
         if (file) {
           const extension = file.type.split('/')[1];
@@ -152,14 +157,18 @@ export default function AvatarPage({
             updateData.file = file;
             updateData.fileName = fileName;
           }
+          if (trainingAudio) {
+            updateData.trainingAudio = trainingAudio;
+          }
           await updateAvatarMutation.mutateAsync(updateData);
           showNotification("Avatar data successfully updated!", "success");
         } else {
-          if (file) {
+          if (file || trainingAudio) {
             await createAvatarMutation.mutateAsync({
               formData: avatarData,
-              file,
-              fileName: fileName!,
+              file: file || undefined,
+              fileName: fileName || undefined,
+              trainingAudio: trainingAudio || undefined,
             });
           } else {
             await createAvatarMutation.mutateAsync({ jsonData: avatarData });
@@ -217,13 +226,19 @@ export default function AvatarPage({
         const fileName = `${formData.name || "avatar"}-encoded.png`;
         const avatarData = { ...formDataToEncode, hasEncodedData: true } as any;
 
+        let trainingAudio: File | null = formData.trainingAudio || null;
+
         if (editMode && avatarId) {
-          await updateAvatarMutation.mutateAsync({
+          const updateData: any = {
             id: avatarId,
             ...avatarData,
             file: new File([blob], fileName),
             fileName,
-          });
+          };
+          if (trainingAudio) {
+            updateData.trainingAudio = trainingAudio;
+          }
+          await updateAvatarMutation.mutateAsync(updateData);
           showNotification(
             "Avatar successfully updated and encoded!",
             "success",
@@ -233,6 +248,7 @@ export default function AvatarPage({
             formData: avatarData,
             file: new File([blob], fileName),
             fileName,
+            trainingAudio: trainingAudio || undefined,
           });
           showNotification("Avatar successfully saved and encoded!", "success");
         }
@@ -308,6 +324,8 @@ export default function AvatarPage({
             defaultValues={defaultValues}
             isSubmitting={isSubmitting}
             existingImageUrl={existingImageUrl}
+            existingAudioUrl={existingAudioUrl}
+            existingAudioFileName={existingAudioFileName}
             editMode={editMode}
           />
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiChevronRight,
   FiChevronLeft,
@@ -76,6 +76,9 @@ export default function GenerateVideoWizard() {
   const [generatedAudioFilename, setGeneratedAudioFilename] = useState<
     string | null
   >(null);
+  const [selectedAudioSource, setSelectedAudioSource] = useState<
+    'avatar' | 'rick_and_morty' | 'japanese'
+  >('rick_and_morty');
   const generateAudioMutation = useGenerateAudio();
   const generateVideoMutation = useGenerateVideo();
   // For image previews
@@ -87,6 +90,16 @@ export default function GenerateVideoWizard() {
   const { showNotification } = useNotification();
   // Video player state
   const [selectedVideo, setSelectedVideo] = useState(PREVIOUS_VIDEOS[0]);
+
+  // Auto-select avatar audio source if available when avatar changes
+  useEffect(() => {
+    if (avatar?.trainingAudioPath) {
+      setSelectedAudioSource('avatar');
+    } else if (selectedAudioSource === 'avatar') {
+      // Only change if user had avatar selected but new avatar has no audio
+      setSelectedAudioSource('rick_and_morty');
+    }
+  }, [avatar?.id, avatar?.trainingAudioPath]); // Only depend on avatar ID and audio path
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -112,6 +125,7 @@ export default function GenerateVideoWizard() {
         dialog,
         avatar,
         async: true,
+        audioSource: selectedAudioSource,
       },
       {
         onSuccess: (result) => {
@@ -341,6 +355,30 @@ export default function GenerateVideoWizard() {
       content: (
         <div className="space-y-6">
           <h2 className="text-lg font-bold mb-4">Write dialog</h2>
+          {/* Audio Source Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Training Audio Source
+            </label>
+            <select
+              value={selectedAudioSource}
+              onChange={(e) => setSelectedAudioSource(e.target.value as 'avatar' | 'rick_and_morty' | 'japanese')}
+              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
+            >
+              {avatar?.trainingAudioPath && (
+                <option value="avatar">
+                  Avatar's uploaded audio
+                </option>
+              )}
+              <option value="rick_and_morty">
+                Rick and Morty (default)
+              </option>
+              <option value="japanese">
+                Japanese Voice
+              </option>
+            </select>
+          </div>
+
           <textarea
             className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
             placeholder="Type the dialog for your video here..."

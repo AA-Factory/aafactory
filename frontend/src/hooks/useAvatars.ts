@@ -20,7 +20,6 @@ const mapAvatar = (avatar: any): Avatar => ({
   id: avatar._id,
   name: avatar.name || "Unnamed Avatar",
   imageUrl: avatar.src || "/placeholder-avatar.png",
-  voiceModel: avatar.voiceModel || "elevenlabs",
   createdAt: new Date(avatar.createdAt).toLocaleDateString(),
   personality: avatar.personality || "No personality defined",
   backgroundKnowledge:
@@ -29,8 +28,9 @@ const mapAvatar = (avatar: any): Avatar => ({
   category: avatar.category || "realistic",
   hasEncodedData: avatar.hasEncodedData || false,
   fileName: avatar.fileName,
-  voiceTrainingData: avatar.voiceTrainingData || "",
-  src: avatar.src
+  src: avatar.src,
+  trainingAudioPath: avatar.trainingAudioPath,
+  trainingAudioFileName: avatar.trainingAudioFileName,
 });
 
 const apiRequest = async <T>(
@@ -43,11 +43,11 @@ const apiRequest = async <T>(
     ...(isFormData
       ? {}
       : {
-        headers: {
-          "Content-Type": "application/json",
-          ...(options?.headers || {}),
-        },
-      }),
+          headers: {
+            "Content-Type": "application/json",
+            ...(options?.headers || {}),
+          },
+        }),
   });
 
   const responseText = await response.text();
@@ -103,16 +103,28 @@ const createAvatar = async (avatarData: {
   formData?: any;
   file?: File;
   fileName?: string;
+  trainingAudio?: File;
   jsonData?: Omit<Avatar, "id" | "createdAt">;
 }): Promise<Avatar> => {
   let data;
-  if (avatarData.file) {
+  if (avatarData.file || avatarData.trainingAudio) {
     const formData = new FormData();
     Object.entries(avatarData.formData || {}).forEach(([key, value]) =>
       formData.append(key, String(value)),
     );
-    formData.append("file", avatarData.file);
-    formData.append("fileName", avatarData.fileName ?? "");
+    if (avatarData.file) {
+      formData.append("file", avatarData.file);
+      formData.append("fileName", avatarData.fileName ?? "");
+    }
+    if (avatarData.trainingAudio) {
+      // Create a new File object with the correct MIME type to ensure proper detection
+      const audioFile = new File(
+        [avatarData.trainingAudio],
+        avatarData.trainingAudio.name,
+        { type: avatarData.trainingAudio.type || "audio/mpeg" },
+      );
+      formData.append("trainingAudio", audioFile);
+    }
 
     data = await apiRequest<{ avatar: any }>(
       "/api/avatars/create-avatar",
@@ -133,19 +145,31 @@ const updateAvatar = async (
     id: string;
     file?: File | Blob;
     fileName?: string;
+    trainingAudio?: File;
   } & Partial<Avatar>,
 ): Promise<Avatar> => {
-  const { id, file, fileName, ...rest } = avatarData;
+  const { id, file, fileName, trainingAudio, ...rest } = avatarData;
   let data;
 
-  if (file) {
+  if (file || trainingAudio) {
     const formData = new FormData();
     formData.append("id", id);
     Object.entries(rest).forEach(([key, value]) =>
       formData.append(key, String(value ?? "")),
     );
-    formData.append("file", file);
-    formData.append("fileName", fileName || "");
+    if (file) {
+      formData.append("file", file);
+      formData.append("fileName", fileName || "");
+    }
+    if (trainingAudio) {
+      // Create a new File object with the correct MIME type to ensure proper detection
+      const audioFile = new File(
+        [trainingAudio],
+        trainingAudio.name,
+        { type: trainingAudio.type || "audio/mpeg" },
+      );
+      formData.append("trainingAudio", audioFile);
+    }
 
     data = await apiRequest<{ avatar: any }>(
       "/api/avatars/update-avatar",
@@ -215,10 +239,6 @@ export const useCreateAvatar = () => {
           name:
             newData.jsonData?.name || newData.formData?.name || "New Avatar",
           imageUrl: "/placeholder-avatar.png",
-          voiceModel:
-            newData.jsonData?.voiceModel ||
-            newData.formData?.voiceModel ||
-            "elevenlabs",
           personality:
             newData.jsonData?.personality ||
             newData.formData?.personality ||
@@ -233,9 +253,14 @@ export const useCreateAvatar = () => {
             false,
           fileName: newData.fileName,
           createdAt: new Date().toLocaleDateString(),
-          description: newData.jsonData?.description || newData.formData?.description || "",
-          category: newData.jsonData?.category || newData.formData?.category || "realistic",
-          voiceTrainingData: newData.jsonData?.voiceTrainingData || "",
+          description:
+            newData.jsonData?.description ||
+            newData.formData?.description ||
+            "",
+          category:
+            newData.jsonData?.category ||
+            newData.formData?.category ||
+            "realistic",
         },
         ...(old ?? []),
       ]);

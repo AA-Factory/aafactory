@@ -1,7 +1,7 @@
 //app/api/avatars/create-avatar/route.js
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/utils/mongodb";
-import { uploadFile } from "@/utils/fileUtils";
+import { uploadFile, uploadTrainingAudio } from "@/utils/fileUtils";
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
 
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type");
     let data;
     let uploadResult = null;
+    let audioUploadResult = null;
 
     // Handle form data (with file upload)
     if (contentType?.includes("multipart/form-data")) {
@@ -26,26 +27,42 @@ export async function POST(req: NextRequest) {
 
       // Extract avatar data from form
       data = {
-        name: formData.get('name') as string | null,
-        personality: formData.get('personality') as string | null,
-        backgroundKnowledge: formData.get('backgroundKnowledge') as string | null,
-        description: formData.get('description') as string | null,
-        category: (formData.get('category') as string) || 'realistic',
-        voiceModel: (formData.get('voiceModel') as string) || 'elevenlabs',
-        hasEncodedData: formData.get('hasEncodedData') === 'true',
-        voiceTrainingData: 'rick_and_morty_voice_training.wav'
+        name: formData.get("name") as string | null,
+        personality: formData.get("personality") as string | null,
+        backgroundKnowledge: formData.get("backgroundKnowledge") as
+          | string
+          | null,
+        description: formData.get("description") as string | null,
+        category: (formData.get("category") as string) || "realistic",
+        hasEncodedData: formData.get("hasEncodedData") === "true",
+        src: null as string | null,
+        fileName: null as string | null,
+        trainingAudioPath: null as string | null,
+        trainingAudioFileName: null as string | null,
       };
 
-      // Handle file upload - Next.js way
-      const fileEntry = formData.get('file') as File | null;
+      // Handle image file upload - Next.js way
+      const fileEntry = formData.get("file") as File | null;
       if (fileEntry && fileEntry.size > 0) {
-        const fileNameEntry = formData.get('fileName') as string | null;
+        const fileNameEntry = formData.get("fileName") as string | null;
         const fileName = fileNameEntry || fileEntry.name;
 
-        uploadResult = await uploadFile(fileEntry, fileName);
+        uploadResult = await uploadFile(fileEntry, fileName, "avatars");
 
         data.src = uploadResult.filePath;
         data.fileName = uploadResult.fileName;
+      }
+
+      // Handle training audio file upload
+      const audioEntry = formData.get("trainingAudio") as File | null;
+      if (audioEntry && audioEntry.size > 0) {
+        audioUploadResult = await uploadTrainingAudio(
+          audioEntry,
+          audioEntry.name,
+        );
+
+        data.trainingAudioPath = audioUploadResult.filePath;
+        data.trainingAudioFileName = audioUploadResult.fileName;
       }
     } else {
       // Handle JSON data (without file upload)
@@ -77,14 +94,19 @@ export async function POST(req: NextRequest) {
       avatar: { ...avatar, _id: result.insertedId },
       uploadResult: uploadResult
         ? {
-          filePath: uploadResult.filePath,
-          fileName: uploadResult.fileName,
-        }
+            filePath: uploadResult.filePath,
+            fileName: uploadResult.fileName,
+          }
+        : null,
+      audioUploadResult: audioUploadResult
+        ? {
+            filePath: audioUploadResult.filePath,
+            fileName: audioUploadResult.fileName,
+          }
         : null,
     });
-
   } catch (error: any) {
-    console.error('Error saving avatar:', error);
+    console.error("Error saving avatar:", error);
 
     // Provide more specific error messages
     if (error.message.includes("upload")) {

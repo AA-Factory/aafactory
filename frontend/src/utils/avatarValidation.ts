@@ -32,9 +32,6 @@ export const avatarFormSchema = z.object({
     .min(10, "Background knowledge must be at least 10 characters")
     .max(1000, "Background knowledge must be no more than 1000 characters"),
 
-  voiceModel: z.enum(["elevenlabs", "openai", "azure", "google"], {
-    message: "Please select a valid voice model",
-  }),
 
   image: z
     .instanceof(File, { message: "Please select an image file" })
@@ -50,16 +47,29 @@ export const avatarFormSchema = z.object({
       "File must be a JPEG, PNG, or WebP image",
     )
     .optional(),
+
+  trainingAudio: z
+    .instanceof(File, { message: "Please select an audio file" })
+    .refine(
+      (file) => file.size <= 50 * 1024 * 1024,
+      "Audio file size must be less than 50MB",
+    )
+    .refine(
+      (file) =>
+        [
+          "audio/mp3",
+          "audio/wav",
+          "audio/m4a",
+          "audio/mpeg",
+          "audio/ogg",
+        ].includes(file.type),
+      "File must be an MP3, WAV, M4A, or OGG audio file",
+    )
+    .optional(),
 });
 
 export type AvatarFormData = z.infer<typeof avatarFormSchema>;
 
-export const voiceModelOptions = [
-  { value: "elevenlabs", label: "ElevenLabs" },
-  { value: "openai", label: "OpenAI" },
-  { value: "azure", label: "Azure" },
-  { value: "google", label: "Google" },
-] as const;
 
 export const categoryOptions = [
   { value: "realistic", label: "Realistic" },

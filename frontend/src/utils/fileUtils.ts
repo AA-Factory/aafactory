@@ -15,28 +15,33 @@ export interface DeleteResult {
   message: string;
 }
 /**
- * Upload a file to the uploads/avatars directory
+ * Upload a file to a specified destination directory
  * @param blob - The file Blob or Buffer to upload
  * @param fileName - The original file name
+ * @param destination - The destination directory (e.g., "avatars", "audio", "documents")
  */
 export async function uploadFile(
   blob: Blob | Buffer,
   fileName: string,
+  destination: string = "avatars",
 ): Promise<UploadResult> {
   try {
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "avatars");
+    const uploadsDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      destination,
+    );
     await mkdir(uploadsDir, { recursive: true });
 
     const timestamp = Date.now();
     const extension = path.extname(fileName);
-    console.log('✌️extension --->', extension);
-    const baseName = path.basename(fileName, extension);
     const uniqueFileName = `${timestamp}-${Math.random()
       .toString(36)
       .substring(7)}${extension}`;
 
     const filePath = path.join(uploadsDir, uniqueFileName);
-    const relativePath = `/uploads/avatars/${uniqueFileName}`;
+    const relativePath = `/uploads/${destination}/${uniqueFileName}`;
 
     let buffer: Buffer;
     if (blob instanceof Blob) {
@@ -47,7 +52,7 @@ export async function uploadFile(
       throw new Error("Invalid file type. Expected Blob or Buffer.");
     }
 
-    await writeFile(filePath, buffer);
+    await writeFile(filePath, buffer as any);
 
     return {
       success: true,
@@ -62,8 +67,8 @@ export async function uploadFile(
 }
 
 /**
- * Delete a file from the uploads/avatars directory
- * @param filePath - The relative file path (e.g., "/uploads/avatars/filename.png")
+ * Delete a file from the uploads directory
+ * @param filePath - The relative file path (e.g., "/uploads/avatars/filename.png", "/uploads/audio/filename.mp3")
  */
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
@@ -86,4 +91,28 @@ export async function deleteFile(filePath: string): Promise<DeleteResult> {
     console.error("Error deleting file:", error);
     throw new Error(`Failed to delete file: ${error.message}`);
   }
+}
+
+/**
+ * Upload an image file to the avatars directory
+ * @param blob - The image file Blob or Buffer to upload
+ * @param fileName - The original file name
+ */
+export async function uploadAvatarImage(
+  blob: Blob | Buffer,
+  fileName: string,
+): Promise<UploadResult> {
+  return uploadFile(blob, fileName, "avatars");
+}
+
+/**
+ * Upload an audio file to the audio directory
+ * @param blob - The audio file Blob or Buffer to upload
+ * @param fileName - The original file name
+ */
+export async function uploadTrainingAudio(
+  blob: Blob | Buffer,
+  fileName: string,
+): Promise<UploadResult> {
+  return uploadFile(blob, fileName, "audio");
 }

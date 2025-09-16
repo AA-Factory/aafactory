@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/utils/mongodb';
-import { uploadFile } from '@/utils/fileUtils';
+import { uploadFile, uploadTrainingAudio } from '@/utils/fileUtils';
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
 
@@ -17,6 +17,7 @@ export async function PUT(req: NextRequest) {
 
     let data;
     let uploadResult = null;
+    let audioUploadResult = null;
 
     if (contentType?.includes("multipart/form-data")) {
       const formData = await req.formData();
@@ -28,18 +29,27 @@ export async function PUT(req: NextRequest) {
         backgroundKnowledge: formData.get('backgroundKnowledge'),
         description: formData.get('description'),
         category: formData.get('category'),
-        voiceModel: formData.get('voiceModel'),
         hasEncodedData: formData.get('hasEncodedData') === 'true',
       };
 
       const file = formData.get('file');
       const fileName = formData.get('fileName') || `avatar-${Date.now()}.png`;
 
+      // Handle image file upload
       if (file?.size) {
-        uploadResult = await uploadFile(file, fileName);
+        uploadResult = await uploadFile(file, fileName, "avatars");
         data.fileName = uploadResult.fileName || fileName;
-        data.src = `/uploads/avatars/${data.fileName}`;
+        data.src = uploadResult.filePath;
         data.hasFileUpload = true;
+      }
+
+      // Handle training audio file upload
+      const audioEntry = formData.get('trainingAudio');
+      if (audioEntry && audioEntry.size > 0) {
+        audioUploadResult = await uploadTrainingAudio(audioEntry, audioEntry.name);
+        
+        data.trainingAudioPath = audioUploadResult.filePath;
+        data.trainingAudioFileName = audioUploadResult.fileName;
       }
     } else {
       data = await req.json();
@@ -77,6 +87,9 @@ export async function PUT(req: NextRequest) {
       avatar: updatedAvatar,
       uploadResult: uploadResult
         ? { filePath: uploadResult.filePath, fileName: uploadResult.fileName }
+        : null,
+      audioUploadResult: audioUploadResult
+        ? { filePath: audioUploadResult.filePath, fileName: audioUploadResult.fileName }
         : null,
     });
   } catch (error) {
