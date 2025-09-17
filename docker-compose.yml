@@ -56,7 +56,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: uv run celery -A celery_worker worker --loglevel=info
+    command: uv run celery -A celery_worker.app worker --loglevel=info -Q local
     environment:
       - CELERY_BROKER_URL=$CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
@@ -86,24 +86,28 @@ services:
       - backend-local
       - local
   infinite-talk-server:
-    build:
-      context: ./backend/servers/infinite_talk
-    ports:
-      - "8001:8001"
-    profiles:
-      - servers
-
-  zonos-server:
-    image: elliotcarery/zonos-server:$ZONOS_SERVER_TAG
-    build:
-      context: ./backend/servers/zonos
+    image: elliotcarery/infinite-talk-server:$INFINITE_TALK_SERVER_TAG
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=0
+    build:
+      context: ./backend/servers/infinite_talk
     ports:
-      - "8002:8002"
+      - "8000:8000"
     profiles:
       - servers
+
+  # zonos-server:
+  #   image: elliotcarery/zonos-server:$ZONOS_SERVER_TAG
+  #   build:
+  #     context: ./backend/servers/zonos
+  #   runtime: nvidia
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=0
+  #   ports:
+  #     - "8002:8002"
+  #   profiles:
+  #     - servers
 
   mongodb:
     image: mongo:7-jammy

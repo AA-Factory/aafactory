@@ -1,0 +1,7 @@
+{
+    "prompt": "A woman is passionately singing into a professional microphone in a recording studio. She wears large black headphones and a dark cardigan over a gray top. Her long, wavy brown hair frames her face as she looks slightly upwards, her mouth open mid-song. The studio is equipped with various audio equipment, including a mixing console and a keyboard, with soundproofing panels on the walls. The lighting is warm and focused on her, creating a professional and intimate atmosphere. A close-up shot captures her expressive performance.",
+    "cond_video": "examples/single/ref_image.png",
+    "cond_audio": {
+        "person1": "examples/single/1.wav"
+    }
+}

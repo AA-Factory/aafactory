@@ -1,8 +1,0 @@
-{
-  "infinite_talk": {
-    "prompt_image_audio_to_video": "http://infinite-talk-server:8001/prompt_image_audio_to_video/"
-  },
-  "zonos": {
-    "custom_voice_to_audio": "http://zonos-server:8002/custom_voice_to_audio/"
-  }
-}

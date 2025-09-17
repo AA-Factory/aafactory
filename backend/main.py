@@ -3,6 +3,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from celery.result import AsyncResult
 from pydantic import BaseModel
 
 from celery_worker import send_task_to_server
@@ -32,15 +33,21 @@ def run_task(request: TaskRequest) -> JSONResponse:
 @app.get("/task_status/{task_id}")
 def task_status(task_id: str) -> JSONResponse:
     task = send_task_to_server.AsyncResult(task_id)
-    
+
     response = {
         "task_id": task.id,
         "status": task.status,
     }
-    
+
     if task.status == "SUCCESS":
-        response["result"] = task.result  # result is available after success
-    
+        subtask_id = task.result
+        # Try to follow the sub-task if the result looks like a task id (UUID)
+        if isinstance(subtask_id, str) and len(subtask_id) >= 32:
+            subtask = AsyncResult(subtask_id)
+            response["result"] = subtask.result if subtask.status == "SUCCESS" else None
+        else:
+            response["result"] = subtask_id
+
     return JSONResponse(response)
 
 if __name__ == "__main__":

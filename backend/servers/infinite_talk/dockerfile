@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
 
 WORKDIR /app
 
@@ -6,18 +6,30 @@ ARG BUILD_ENV=local
 ENV BUILD_ENV=${BUILD_ENV}
 
 RUN apt-get update && \
-    # necessary for legolas to run
     apt-get install -y poppler-utils \
-    python3-pip
+    python3.10-dev \
+    build-essential \
+    python3-pip \
+    ffmpeg \
+    redis-server
 
 RUN pip install uv
 
 COPY . /app/
 
+# Copy entrypoint script and set permissions
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 RUN uv sync
+RUN uv pip install flash-attn==2.7.4.post1 --no-build-isolation
+
+RUN huggingface-cli download Wan-AI/Wan2.1-I2V-14B-480P --local-dir ./weights/Wan2.1-I2V-14B-480P && \
+    huggingface-cli download TencentGameMate/chinese-wav2vec2-base --local-dir ./weights/chinese-wav2vec2-base && \
+    huggingface-cli download TencentGameMate/chinese-wav2vec2-base model.safetensors --revision refs/pr/1 --local-dir ./weights/chinese-wav2vec2-base && \
+    huggingface-cli download MeiGen-AI/InfiniteTalk --local-dir ./weights/InfiniteTalk
+
 
 ENV PYTHONBUFFERED=1
 
-CMD ["uv", "run", "uvicorn", "--host", "0.0.0.0", "--port", "8001", "main:app"]
-
-
+ENTRYPOINT ["/app/entrypoint.sh"]

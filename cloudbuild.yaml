@@ -1,5 +1,5 @@
 steps:
-  # Setup buildx for multi-platform
+  # Setup buildx for multi-platform builds
   - name: "gcr.io/cloud-builders/docker"
     args: ["buildx", "create", "--name", "multiplatform", "--use"]
 
@@ -11,15 +11,61 @@ steps:
       - "docker login -u $$DOCKER_USERNAME -p $$DOCKER_PASSWORD"
     secretEnv: ["DOCKER_USERNAME", "DOCKER_PASSWORD"]
 
-  # Build all services in docker-compose.yml (equivalent to docker compose build)
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["compose", "build"]
-    dir: "backend"
+  # # Build backend-app image
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "buildx",
+  #       "build",
+  #       "--platform=linux/amd64",
+  #       "--tag=ellliotcarery/backend-app:$COMMIT_SHA",
+  #       "--push",
+  #       "-f",
+  #       "backend/Dockerfile",
+  #       "backend",
+  #     ]
 
-  # Push all images to the repository with the correct tag
+  # Build celery-worker image
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "buildx",
+  #       "build",
+  #       "--platform=linux/amd64",
+  #       "--tag=ellliotcarery/celery-worker:$COMMIT_SHA",
+  #       "--push",
+  #       "-f",
+  #       "backend/Dockerfile",
+  #       "backend",
+  #     ]
+
+  # # Build frontend-app image
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "buildx",
+  #       "build",
+  #       "--platform=linux/amd64",
+  #       "--tag=ellliotcarery/frontend-app:$COMMIT_SHA",
+  #       "--push",
+  #       "-f",
+  #       "frontend/dockerfile",
+  #       "frontend",
+  #     ]
+
+  # Build infinite-talk-server image
   - name: "gcr.io/cloud-builders/docker"
-    args: ["compose", "push"]
-    dir: "backend"
+    args:
+      [
+        "buildx",
+        "build",
+        "--platform=linux/amd64",
+        "--tag=ellliotcarery/infinite-talk-server:$INFINITE_TALK_SERVER_TAG",
+        "--push",
+        "-f",
+        "backend/servers/infinite_talk/dockerfile",
+        "backend/servers/infinite_talk",
+      ]
 
 # Configure secrets
 availableSecrets:
@@ -30,8 +76,8 @@ availableSecrets:
       env: "DOCKER_PASSWORD"
 
 options:
-  machineType: "E2_HIGHCPU_8" # Use larger machine for faster builds
-  diskSizeGb: 100 # Increase disk size for large builds
+  machineType: "E2_HIGHCPU_8"
+  diskSizeGb: 200
   logging: CLOUD_LOGGING_ONLY
 
 serviceAccount: "projects/caramel-duality-382403/serviceAccounts/techlistpair@caramel-duality-382403.iam.gserviceaccount.com"

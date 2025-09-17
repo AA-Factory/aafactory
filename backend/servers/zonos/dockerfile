@@ -20,8 +20,9 @@ COPY . /app/
 
 RUN uv sync
 
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 ENV PYTHONBUFFERED=1
 
-CMD ["uv", "run", "uvicorn", "--host", "0.0.0.0", "--port", "8002", "main:app"]
-
-
+ENTRYPOINT ["/app/entrypoint.sh"]
