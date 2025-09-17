@@ -1,7 +1,5 @@
-import json
 from celery import Celery
 import os
-import requests
 from loguru import logger
 from pathlib import Path
 from dotenv import load_dotenv
@@ -15,11 +13,12 @@ app = Celery(
 )
 SERVER_TO_URL_MAPPING_PATH = Path("server_to_url_mapping.json")
 
-@app.task(name="send_task_to_server")
+@app.task(name="send_task_to_server", queue="local")
 def send_task_to_server(server_name: str, task_name: str, payload: dict) -> str:
-    with open(SERVER_TO_URL_MAPPING_PATH, "r") as f:
-        server_to_url_mapping = json.load(f)
-    endpoint_url = server_to_url_mapping[server_name][task_name]
-    logger.info(f"Sending task to {endpoint_url} with payload: {payload}")
-    response = requests.post(endpoint_url, json=payload)
-    return response.json()
+    logger.info(f"Sending task to {server_name} for task: {task_name}")
+    task = app.send_task(
+        task_name,
+        kwargs=payload,
+        queue=server_name  # 👈 match the worker queue
+    )
+    return task.id

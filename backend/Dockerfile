@@ -12,7 +12,7 @@ RUN apt-get update && \
 
 RUN pip install uv
 
-COPY server_to_url_mapping.json main.py celery_worker.py pyproject.toml uv.lock /aafactory_backend/
+COPY main.py celery_worker.py pyproject.toml uv.lock /aafactory_backend/
 
 RUN uv sync
 
