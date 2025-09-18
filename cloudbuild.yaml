@@ -60,12 +60,13 @@ steps:
         "buildx",
         "build",
         "--platform=linux/amd64",
-        "--tag=ellliotcarery/infinite-talk-server:$INFINITE_TALK_SERVER_TAG",
+        "--tag=elliotcarery/infinite-talk-server:1.0",
         "--push",
         "-f",
-        "backend/servers/infinite_talk/dockerfile",
-        "backend/servers/infinite_talk",
+        "dockerfile",
+        ".",
       ]
+    dir: "backend/servers/infinite_talk"
 
 # Configure secrets
 availableSecrets:
