@@ -42,11 +42,11 @@ def task_status(task_id: str) -> JSONResponse:
     if task.status == "SUCCESS":
         subtask_id = task.result
         # Try to follow the sub-task if the result looks like a task id (UUID)
-        if isinstance(subtask_id, str) and len(subtask_id) >= 32:
-            subtask = AsyncResult(subtask_id)
-            response["result"] = subtask.result if subtask.status == "SUCCESS" else None
+        subtask = AsyncResult(subtask_id)
+        if subtask.status == "SUCCESS":
+            response["result"] = subtask.result
         else:
-            response["result"] = subtask_id
+            response["status"] = "PENDING"
 
     return JSONResponse(response)
 
