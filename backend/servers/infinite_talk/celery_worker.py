@@ -14,13 +14,6 @@ app = Celery(
     backend=f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
 )
 
-class TaskRequest(BaseModel):
-    prompt: str
-    image_bytes: str
-    audio_bytes: str
-
-
-
 @app.task(name="prompt_image_audio_to_video", queue="infinite_talk")
 def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str) -> str:
     image_path = f"examples/single/temp_image.png"
