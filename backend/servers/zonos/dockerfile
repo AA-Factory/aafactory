@@ -9,6 +9,7 @@ RUN apt-get update && \
     apt-get install -y poppler-utils \
     python3-pip \
     espeak-ng \
+    redis-server \
     git && rm -rf /var/lib/apt/lists/*
 
 RUN pip install uv

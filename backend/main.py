@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from celery.result import AsyncResult
 from pydantic import BaseModel
+from loguru import logger
 
 from celery_worker import send_task_to_server
 
@@ -38,15 +39,18 @@ def task_status(task_id: str) -> JSONResponse:
         "task_id": task.id,
         "status": task.status,
     }
-
+    logger.info(f"Task status: {task.status}")
     if task.status == "SUCCESS":
         subtask_id = task.result
+        logger.info(f"Subtask ID: {subtask_id}")
         # Try to follow the sub-task if the result looks like a task id (UUID)
         subtask = AsyncResult(subtask_id)
+        logger.info("Subtask status:", subtask.status)
         if subtask.status == "SUCCESS":
             response["result"] = subtask.result
         else:
             response["status"] = "PENDING"
+            logger.info("Subtask not ready yet.")
 
     return JSONResponse(response)
 
