@@ -84,15 +84,6 @@ const HeaderNav: React.FC = () => {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <div className="ml-6 flex items-center space-x-4">
-                            {/* Active Avatars Display - Left of Avatars menu */}
-                            {activeAvatarIds.length > 0 && (
-                                <div className="mr-2">
-                                    <Link href="/avatars">
-                                        <ActiveAvatarsDisplay size="sm" maxDisplay={6} />
-                                    </Link>
-                                </div>
-                            )}
-
                             {navLinks.map((link) => {
                                 const IconComponent = link.icon;
                                 if (link.submenu) {
@@ -168,19 +159,6 @@ const HeaderNav: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Active Avatars Display - Mobile (below main header) */}
-                {activeAvatarIds.length > 0 && (
-                    <div className="md:hidden pb-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
-                            <Link
-                                href="/avatars"
-                                className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                <ActiveAvatarsDisplay size="sm" maxDisplay={8} />
-                            </Link>
-                        </div>
-                    </div>
-                )}
             </div>
 
             {/* Mobile Navigation Menu */}
