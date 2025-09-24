@@ -1,12 +1,13 @@
 import json
 import base64
-from pydantic import BaseModel
 from infinite_talk.processing.compute_audio_to_video import run_audio_to_video
 
 from celery import Celery
 import os
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
+
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", 6379)
 
 app = Celery(
     "infinite_talk_worker",
