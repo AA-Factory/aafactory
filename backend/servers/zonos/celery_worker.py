@@ -1,12 +1,12 @@
-import json
-import base64
 from pydantic import BaseModel
 from processing.compute_tts import run_text_to_speech
 
 from celery import Celery
 import os
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
+
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", 6379)
 
 app = Celery(
     "zonos_worker",

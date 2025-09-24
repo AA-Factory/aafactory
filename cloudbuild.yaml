@@ -75,7 +75,7 @@ steps:
         "buildx",
         "build",
         "--platform=linux/amd64",
-        "--tag=elliotcarery/zonos-server:1.0.3",
+        "--tag=elliotcarery/zonos-server:1.0.4",
         "--push",
         "-f",
         "dockerfile",
