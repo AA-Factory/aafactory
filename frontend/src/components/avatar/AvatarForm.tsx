@@ -21,6 +21,8 @@ import {
 import { ImageUploadSection } from "./ImageUploadSection";
 import { AudioUploadSection } from "./AudioUploadSection";
 import { generateFakeFormData } from "@/utils/fakeData";
+import { useGenerateImage } from "@/hooks/useGenerateImage";
+import simpleImageWorkflow from "@/config/workflows/simple_image_generation.json";
 
 interface AvatarFormProps {
   onSubmit: (data: AvatarFormData) => void;
@@ -137,6 +139,17 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
     const fileInputRef = useRef<HTMLInputElement>(null);
     const audioFileInputRef = useRef<HTMLInputElement>(null);
 
+    // Avatar image source selection
+    const [imageSource, setImageSource] = useState<"upload" | "generate">("upload");
+    const [prompt, setPrompt] = useState("");
+    const [baseImageFile, setBaseImageFile] = useState<File | null>(null);
+    const [baseImagePreview, setBaseImagePreview] = useState<string | null>(null);
+    const [inferenceServer, setInferenceServer] = useState("Qwen Image");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generationError, setGenerationError] = useState<string | null>(null);
+
+    const generateImageMutation = useGenerateImage();
+
     const {
       register,
       handleSubmit,
@@ -227,6 +240,16 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Handle base image upload for generation
+    const handleBaseImageSelect = (file: File) => {
+      setBaseImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setBaseImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     };
@@ -332,17 +355,164 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
             />
           ))}
 
-          <ImageUploadSection
-            selectedImage={selectedImage}
-            isDragging={isDragging}
-            fileInputRef={fileInputRef}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onFileSelect={handleFileInputChange}
-            error={errors.image?.message}
-            existingImageUrl={existingImageUrl}
-          />
+          {/* Image Source Toggle */}
+          <div className="mb-3 flex gap-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="imageSource"
+                value="upload"
+                checked={imageSource === "upload"}
+                onChange={() => setImageSource("upload")}
+              />
+              <span>Upload Image</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="imageSource"
+                value="generate"
+                checked={imageSource === "generate"}
+                onChange={() => setImageSource("generate")}
+              />
+              <span>Generate Image</span>
+            </label>
+          </div>
+
+          {/* Upload Section */}
+          {imageSource === "upload" && (
+            <ImageUploadSection
+              selectedImage={selectedImage}
+              isDragging={isDragging}
+              fileInputRef={fileInputRef}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onFileSelect={handleFileInputChange}
+              error={errors.image?.message}
+              existingImageUrl={existingImageUrl}
+            />
+          )}
+
+          {/* Generation Section */}
+          {imageSource === "generate" && (
+            <div className="mb-4 space-y-3">
+              {/* Prompt input */}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Prompt <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe the avatar image you want to generate"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
+                required
+              />
+
+              {/* Optional base image upload */}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Base Image (optional)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleBaseImageSelect(e.target.files[0]);
+                  }
+                }}
+              />
+              {baseImagePreview && (
+                <img
+                  src={baseImagePreview}
+                  alt="Base Preview"
+                  className="mt-2 w-32 h-32 object-cover rounded border"
+                />
+              )}
+
+              {/* Inference server dropdown */}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Inference Server
+              </label>
+              <select
+                value={inferenceServer}
+                onChange={(e) => setInferenceServer(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 text-sm"
+              >
+                <option value="Qwen Image">Qwen Image</option>
+                {/* Future: add more servers here */}
+              </select>
+
+              {/* Generate button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsGenerating(true);
+                  setGenerationError(null);
+                  try {
+                    // Build workflowOverrides for prompt and (optionally) base image
+                    const workflowOverrides: Record<string, { inputs?: Record<string, any> }> = {
+                      "6": { inputs: { text: prompt } },
+                    };
+                    let images: any[] = [];
+                    if (baseImageFile) {
+                      // Read base image as base64
+                      const base64 = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(baseImageFile);
+                      });
+                      images = [{ name: baseImageFile.name, image: base64 }];
+                    }
+                    const result = await generateImageMutation.mutateAsync({
+                      workflow: simpleImageWorkflow,
+                      workflowOverrides,
+                      images,
+                      async: false,
+                    });
+                    if (result?.data?.imageString) {
+                      // Set as avatar image (simulate upload)
+                      const byteString = atob(result.data.imageString);
+                      const ab = new ArrayBuffer(byteString.length);
+                      const ia = new Uint8Array(ab);
+                      for (let i = 0; i < byteString.length; i++) {
+                        ia[i] = byteString.charCodeAt(i);
+                      }
+                      const blob = new Blob([ab], { type: "image/png" });
+                      const file = new File([blob], "generated-avatar.png", { type: "image/png" });
+                      setValue("image", file);
+                      setSelectedImage(URL.createObjectURL(blob));
+                    } else {
+                      setGenerationError("Image generation failed.");
+                    }
+                  } catch (err: any) {
+                    setGenerationError(err?.message || "Image generation failed.");
+                  } finally {
+                    setIsGenerating(false);
+                  }
+                }}
+                disabled={isGenerating || !prompt}
+                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? "Generating..." : "Generate Image"}
+              </button>
+              {generationError && (
+                <div className="text-red-600 text-xs mt-1">{generationError}</div>
+              )}
+              {selectedImage && (
+                <div className="mt-2">
+                  <span className="text-xs text-gray-500">Generated Image Preview:</span>
+                  <img
+                    src={selectedImage}
+                    alt="Generated Avatar"
+                    className="w-32 h-32 object-cover rounded border mt-1"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           <AudioUploadSection
             selectedAudio={selectedAudio}
