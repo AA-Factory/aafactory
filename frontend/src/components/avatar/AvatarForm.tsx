@@ -45,7 +45,8 @@ interface FormFieldProps {
   placeholder?: string;
   register: any;
   error?: string;
-  options?: { value: string; label: string }[];
+  options?: ReadonlyArray<{ label: string; value: string }> | undefined;
+  hidden?: boolean;
   required?: boolean;
 }
 
@@ -58,8 +59,10 @@ const FormField: React.FC<FormFieldProps> = ({
   register,
   error,
   options,
+  hidden,
   required = false,
 }) => {
+  if (hidden) return null;
   const baseClasses =
     "w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm";
   const errorClasses = error
@@ -67,6 +70,7 @@ const FormField: React.FC<FormFieldProps> = ({
     : "border-gray-300 dark:border-gray-600";
 
   return (
+
     <div className="mb-3">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
@@ -280,6 +284,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         rows: 2,
         placeholder: "Brief description of your avatar",
         required: false,
+        hidden: true,
       },
       {
         name: "category" as const,
@@ -288,6 +293,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         options: categoryOptions,
         placeholder: "Select avatar category",
         required: false,
+        hidden: true,
       },
       {
         name: "personality" as const,
@@ -297,6 +303,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         placeholder:
           "Describe your avatar's personality traits and characteristics",
         required: true,
+        hidden: true,
       },
       {
         name: "backgroundKnowledge" as const,
@@ -306,6 +313,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         placeholder:
           "Enter the background knowledge and expertise of your avatar",
         required: true,
+        hidden: true,
       },
     ];
 
@@ -329,6 +337,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
               error={errors[field.name]?.message}
               required={field.required}
               options={field.options}
+              hidden={field.hidden}
             />
           ))}
 

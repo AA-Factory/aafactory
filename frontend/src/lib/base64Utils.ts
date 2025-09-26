@@ -365,3 +365,19 @@ export function getBase64Size(base64String: string): number {
   // Base64 encoding adds ~33% overhead, so actual size is ~75% of base64 length
   return Math.floor((cleanedBase64.length * 3) / 4);
 }
+
+// Legacy compatibility functions - use the main functions above instead
+/**
+ * @deprecated Use fileToBase64 instead
+ */
+export function convertFileToBase64(file: File): Promise<string> {
+  return fileToBase64(file);
+}
+
+/**
+ * @deprecated Use encodeMediaFile instead
+ */
+export async function convertUrlToBase64(url: string): Promise<string> {
+  const result = await encodeMediaFile(url);
+  return result.base64;
+}

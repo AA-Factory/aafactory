@@ -21,11 +21,11 @@ const mapAvatar = (avatar: any): Avatar => ({
   name: avatar.name || "Unnamed Avatar",
   imageUrl: avatar.src || "/placeholder-avatar.png",
   createdAt: new Date(avatar.createdAt).toLocaleDateString(),
+  description: avatar.description || "",
+  category: avatar.category || "realistic",
   personality: avatar.personality || "No personality defined",
   backgroundKnowledge:
     avatar.backgroundKnowledge || "No background knowledge defined",
-  description: avatar.description || "",
-  category: avatar.category || "realistic",
   hasEncodedData: avatar.hasEncodedData || false,
   fileName: avatar.fileName,
   src: avatar.src,
@@ -43,11 +43,11 @@ const apiRequest = async <T>(
     ...(isFormData
       ? {}
       : {
-          headers: {
-            "Content-Type": "application/json",
-            ...(options?.headers || {}),
-          },
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(options?.headers || {}),
+        },
+      }),
   });
 
   const responseText = await response.text();

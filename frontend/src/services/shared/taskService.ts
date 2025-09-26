@@ -6,19 +6,7 @@ import {
   isCeleryTaskResponse,
   isCeleryTaskStatusResponse
 } from "@/types/celery";
-
-export const POLLING_CONFIG = {
-  AUDIO: {
-    INTERVAL: 5000, // 5 seconds
-    MAX_ATTEMPTS: 60, // 5 minutes total
-    TIMEOUT: 300000, // 5 minutes in ms
-  },
-  VIDEO: {
-    INTERVAL: 50000, // 50 seconds
-    MAX_ATTEMPTS: 400, // Total 400 attempts
-    TIMEOUT: 9000000, // 9000 seconds = 2.5 hours
-  }
-} as const;
+import { POLLING_CONFIG } from "@/config/constants";
 
 export class TaskError extends Error {
   constructor(message: string, public code: string) {

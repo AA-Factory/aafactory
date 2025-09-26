@@ -69,21 +69,19 @@ export type StatusResponse = BaseResponse & {
 
 export type ImageQueryResult = {
   data:
-    | ({ uploadUrl: string } & (
-        | BaseResponse
-        | GenerateResponse
-        | StatusResponse
-      ))
-    | null;
+  | ({ uploadUrl: string } & (
+    | BaseResponse
+    | GenerateResponse
+    | StatusResponse
+  ))
+  | null;
   error: unknown;
 };
 
 type JobStatus =
-  | "COMPLETED"
-  | "IN_QUEUE"
-  | "IN_PROGRESS"
-  | "FAILED"
-  | "CANCELLED";
+  | "SUCCESS"
+  | "PENDING"
+  | "FAILED";
 
 export function useGenerateImage() {
   return useMutation({

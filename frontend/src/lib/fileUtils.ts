@@ -35,7 +35,7 @@ export async function saveBase64File(
     const fileName = `${taskId}_${Date.now()}.${extension}`;
 
     // Create public directory path
-    const publicDir = path.join(process.cwd(), 'public', fileType);
+    const publicDir = path.join(process.cwd(), 'public/generations', fileType);
     const filePath = path.join(publicDir, fileName);
 
     // Ensure directory exists
@@ -46,7 +46,7 @@ export async function saveBase64File(
     await fs.promises.writeFile(filePath, buffer as any);
 
     // Return relative path for web access
-    const webPath = `/${fileType}/${fileName}`;
+    const webPath = `/generations/${fileType}/${fileName}`;
 
     return {
       filePath: webPath,

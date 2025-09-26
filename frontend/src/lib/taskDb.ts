@@ -9,7 +9,6 @@ export interface CreateTaskParams {
 }
 
 export async function createTask(params: CreateTaskParams): Promise<TaskDocument> {
-  console.log('✌️params --->', params);
   try {
     const collection = await getTasksCollection();
 
@@ -129,6 +128,19 @@ export async function getTasksByAvatar(avatarId: string): Promise<TaskDocument[]
   } catch (error) {
     console.error('Error getting tasks by avatar:', error);
     throw new Error(`Failed to get tasks by avatar: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function getPendingVideoTasks(): Promise<TaskDocument[]> {
+  try {
+    const collection = await getTasksCollection();
+    return await collection.find({
+      status: 'IN_PROGRESS',
+      taskType: 'VIDEO'
+    }).sort({ createdAt: 1 }).toArray();
+  } catch (error) {
+    console.error('Error getting pending video tasks:', error);
+    throw new Error(`Failed to get pending video tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
