@@ -6,7 +6,6 @@ import {
 import {
   type VideoGenerationTaskRequest
 } from "@/types/celery";
-import { startTask, pollTaskStatus } from "@/services/shared/taskService";
 
 // Types
 export type GenerateVideoPayload = {
@@ -23,14 +22,6 @@ export type GenerateVideoResponse = {
   base64Video: string;
 };
 
-
-export async function startVideoGenerationTask(requestData: VideoGenerationTaskRequest): Promise<string> {
-  return await startTask(requestData);
-}
-
-export async function pollVideoTaskStatus(taskId: string): Promise<string> {
-  return await pollTaskStatus(taskId, 'VIDEO');
-}
 
 export function createTaskRequest(payload: GenerateVideoPayload, imageBase64: string, audioBase64: string): VideoGenerationTaskRequest {
   return {
@@ -55,7 +46,7 @@ export function createVideoResponse(base64Video: string, taskId: string): Genera
 }
 
 // Main service function
-export async function generateVideo(payload: GenerateVideoPayload): Promise<GenerateVideoResponse> {
+export async function prepareVideoData(payload: GenerateVideoPayload): Promise<{ taskRequest: VideoGenerationTaskRequest; imageBase64: string; audioBase64: string }> {
   if (!payload.avatar) {
     throw new Error("No avatar provided for video generation");
   }
@@ -76,13 +67,8 @@ export async function generateVideo(payload: GenerateVideoPayload): Promise<Gene
     ? payload.audioBase64.split(',')[1]
     : (payload.audioBase64 || "");
 
-  // Create and start task
-  const requestData = createTaskRequest(payload, imageBase64, rawAudioBase64);
-  const taskId = await startVideoGenerationTask(requestData);
+  // Create task request
+  const taskRequest = createTaskRequest(payload, imageBase64, rawAudioBase64);
 
-  // Poll for result
-  const base64Video = await pollVideoTaskStatus(taskId);
-
-  // Create response
-  return createVideoResponse(base64Video, taskId);
+  return { taskRequest, imageBase64, audioBase64: rawAudioBase64 };
 }

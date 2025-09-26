@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import {
-  generateVideo,
+  prepareVideoData,
+  createVideoResponse,
   type GenerateVideoPayload,
   type GenerateVideoResponse
 } from "@/services/videoService";
+import { startTask, pollTaskStatus } from "@/services/shared/taskService";
 
 type UseGenerateVideoOptions = {
   onSuccess?: (data: GenerateVideoResponse) => void;
@@ -32,7 +34,17 @@ export function useGenerateVideo(options?: UseGenerateVideoOptions) {
 
   const mutation = useMutation({
     mutationFn: async (payload: GenerateVideoPayload): Promise<GenerateVideoResponse> => {
-      const result = await generateVideo(payload);
+      // Prepare video data
+      const { taskRequest } = await prepareVideoData(payload);
+
+      // Start task
+      const taskId = await startTask(taskRequest);
+
+      // Poll for result
+      const base64Video = await pollTaskStatus(taskId, 'VIDEO');
+
+      // Create response
+      const result = createVideoResponse(base64Video, taskId);
 
       // Track the video URL for cleanup
       videoUrlsRef.current.add(result.videoUrl);

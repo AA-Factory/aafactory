@@ -6,7 +6,6 @@ import {
 import {
   type AudioGenerationTaskRequest
 } from "@/types/celery";
-import { startTask, pollTaskStatus } from "@/services/shared/taskService";
 
 // Constants
 const DEFAULT_LANGUAGE = "en-us";
@@ -62,14 +61,6 @@ export async function getTrainingAudioForSource(
   return 'rick_and_morty_voice_training.wav';
 }
 
-export async function startAudioGenerationTask(requestData: AudioGenerationTaskRequest): Promise<string> {
-  return await startTask(requestData);
-}
-
-export async function pollAudioTaskStatus(taskId: string): Promise<string> {
-  return await pollTaskStatus(taskId, 'AUDIO');
-}
-
 export function createTaskRequest(payload: GenerateAudioPayload, audioBase64: string): AudioGenerationTaskRequest {
   const language = payload.language || DEFAULT_LANGUAGE;
 
@@ -95,7 +86,7 @@ export function createAudioResponse(base64Audio: string, taskId: string): Genera
 }
 
 // Main service function
-export async function generateAudio(payload: GenerateAudioPayload): Promise<GenerateAudioResponse> {
+export async function prepareAudioData(payload: GenerateAudioPayload): Promise<{ taskRequest: AudioGenerationTaskRequest; audioBase64: string }> {
   if (!payload.avatar) {
     throw new Error("No avatar provided for audio generation");
   }
@@ -117,13 +108,8 @@ export async function generateAudio(payload: GenerateAudioPayload): Promise<Gene
   // Encode audio
   const { base64: audioBase64 } = await encodeMediaFile(trainingAudio, '/test/training_audio/');
 
-  // Create and start task
-  const requestData = createTaskRequest(payload, audioBase64);
-  const taskId = await startAudioGenerationTask(requestData);
+  // Create task request
+  const taskRequest = createTaskRequest(payload, audioBase64);
 
-  // Poll for result
-  const base64Audio = await pollAudioTaskStatus(taskId);
-
-  // Create response
-  return createAudioResponse(base64Audio, taskId);
+  return { taskRequest, audioBase64 };
 }

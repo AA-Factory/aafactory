@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import {
-  generateAudio,
+  prepareAudioData,
+  createAudioResponse,
   type GenerateAudioPayload,
   type GenerateAudioResponse
 } from "@/services/audioService";
+import { startTask, pollTaskStatus } from "@/services/shared/taskService";
 
 type UseGenerateAudioOptions = {
   onSuccess?: (data: GenerateAudioResponse) => void;
@@ -32,7 +34,17 @@ export function useGenerateAudio(options?: UseGenerateAudioOptions) {
 
   const mutation = useMutation({
     mutationFn: async (payload: GenerateAudioPayload): Promise<GenerateAudioResponse> => {
-      const result = await generateAudio(payload);
+      // Prepare audio data
+      const { taskRequest } = await prepareAudioData(payload);
+
+      // Start task
+      const taskId = await startTask(taskRequest);
+
+      // Poll for result
+      const base64Audio = await pollTaskStatus(taskId, 'AUDIO');
+
+      // Create response
+      const result = createAudioResponse(base64Audio, taskId);
 
       // Track the audio URL for cleanup
       audioUrlsRef.current.add(result.audioUrl);
