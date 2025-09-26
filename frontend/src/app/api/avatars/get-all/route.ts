@@ -1,6 +1,6 @@
 // src/app/api/avatars/get-all/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/utils/mongodb";
+import clientPromise from "@/lib/mongodb";
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
 

@@ -1,5 +1,5 @@
 import { Db, Collection } from 'mongodb';
-import clientPromise from '@/utils/mongodb';
+import clientPromise from '@/lib/mongodb';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 

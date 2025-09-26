@@ -1,6 +1,6 @@
 // hooks/useVideo.ts
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/utils/apiClient";
+import { apiClient } from "@/lib/apiClient";
 
 export function useVideo(videoUrl: string) {
   return useQuery({

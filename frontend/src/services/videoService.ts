@@ -2,7 +2,7 @@ import { Avatar } from "@/types/avatar";
 import {
   encodeMediaFile,
   createMediaResponse
-} from "@/utils/base64Utils";
+} from "@/lib/base64Utils";
 import {
   type VideoGenerationTaskRequest
 } from "@/types/celery";

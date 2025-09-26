@@ -1,6 +1,6 @@
 //app/api/avatars/create-avatar/route.js
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/utils/mongodb";
+import clientPromise from "@/lib/mongodb";
 import { uploadFile, uploadTrainingAudio } from "@/lib/fileUtils";
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { buildWorkflow } from "../utils/workflow";
+import { buildWorkflow } from "@/lib/workflow";
 import {
   COMFYUI_RUN_ASYNC,
   COMFYUI_RUN_SYNC,

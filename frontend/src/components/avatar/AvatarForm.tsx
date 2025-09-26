@@ -17,7 +17,7 @@ import {
   avatarFormSchema,
   AvatarFormData,
   categoryOptions,
-} from "@/utils/avatarValidation";
+} from "@/lib/validation";
 import { ImageUploadSection } from "./ImageUploadSection";
 import { AudioUploadSection } from "./AudioUploadSection";
 import { generateFakeFormData } from "@/utils/fakeData";

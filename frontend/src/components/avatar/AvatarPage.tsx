@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { HiDownload, HiTrash, HiArrowLeft } from "react-icons/hi";
 import { AvatarForm, AvatarFormRef } from "./AvatarForm";
-import { AvatarFormData } from "@/utils/avatarValidation";
+import { AvatarFormData } from "@/lib/validation";
 import { useNotification } from "@/contexts/NotificationContext";
 import {
   useAvatar,
@@ -206,11 +206,10 @@ export default function AvatarPage({
 
         const formDataToEncode = {
           name: formData.name,
-          description: formData.description,
-          category: formData.category,
+          description: formData.description || "",
+          category: formData.category || "realistic",
           personality: formData.personality,
           backgroundKnowledge: formData.backgroundKnowledge,
-          voiceModel: formData.voiceModel,
         };
 
         const { blob, downloadUrl } = await encodeFormDataIntoImage(
