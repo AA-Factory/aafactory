@@ -14,3 +14,8 @@ dependencies = [
     "requests>=2.32.5",
     "uvicorn>=0.35.0",
 ]
+
+[tool.uv.workspace]
+members = [
+    "servers/mock_server",
+]

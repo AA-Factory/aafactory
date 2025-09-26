@@ -9,7 +9,7 @@ from pathlib import Path
 
 MODULE_PATH = Path(__file__).parent
 
-def run_text_to_speech(text: str, voice_sample: str,  language: str) -> bytes:
+def run_text_to_speech(prompt: str, voice_bytes: str,  language: str) -> bytes:
     """
     Run text-to-speech processing.
 
@@ -25,12 +25,12 @@ def run_text_to_speech(text: str, voice_sample: str,  language: str) -> bytes:
     # model = Zonos.from_pretrained("Zyphra/Zonos-v0.1-hybrid", device=device)
     model = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
 
-    voice_sample_bytes = base64.b64decode(voice_sample)
+    voice_sample_bytes = base64.b64decode(voice_bytes)
     voice_sample_buffer = io.BytesIO(voice_sample_bytes)
     wav, sampling_rate = torchaudio.load(voice_sample_buffer)
     speaker = model.make_speaker_embedding(wav, sampling_rate)
 
-    cond_dict = make_cond_dict(text=text, speaker=speaker, language=language)
+    cond_dict = make_cond_dict(text=prompt, speaker=speaker, language=language)
     conditioning = model.prepare_conditioning(cond_dict)
 
     codes = model.generate(conditioning)

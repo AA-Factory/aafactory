@@ -1,0 +1,25 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ARG BUILD_ENV=local
+ENV BUILD_ENV=${BUILD_ENV}
+
+RUN apt-get update && \
+    apt-get install -y poppler-utils \
+    python3-pip \
+    redis-server \
+    git && rm -rf /var/lib/apt/lists/*
+
+RUN pip install uv
+
+COPY . /app/
+
+RUN uv sync
+
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+ENV PYTHONBUFFERED=1
+
+ENTRYPOINT ["/app/entrypoint.sh"]
