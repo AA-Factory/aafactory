@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/utils/mongodb";
-import { deleteFile } from "@/utils/fileUtils";
+import { deleteFile } from "@/lib/fileUtils";
 
 const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
 
