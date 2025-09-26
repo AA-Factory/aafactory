@@ -54,34 +54,34 @@ steps:
   #     ]
 
   # Build infinite-talk-server image
-  # - name: "gcr.io/cloud-builders/docker"
-  #   args:
-  #     [
-  #       "buildx",
-  #       "build",
-  #       "--platform=linux/amd64",
-  #       "--tag=elliotcarery/infinite-talk-server:1.0",
-  #       "--push",
-  #       "-f",
-  #       "dockerfile",
-  #       ".",
-  #     ]
-  #   dir: "backend/servers/infinite_talk"
-
-  # Build zonos-server image
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "buildx",
         "build",
         "--platform=linux/amd64",
-        "--tag=elliotcarery/zonos-server:1.0.4",
+        "--tag=elliotcarery/infinite-talk-server:1.0.3",
         "--push",
         "-f",
         "dockerfile",
         ".",
       ]
-    dir: "backend/servers/zonos"
+    dir: "backend/servers/infinite_talk"
+
+  # Build zonos-server image
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "buildx",
+  #       "build",
+  #       "--platform=linux/amd64",
+  #       "--tag=elliotcarery/zonos-server:1.0.4",
+  #       "--push",
+  #       "-f",
+  #       "dockerfile",
+  #       ".",
+  #     ]
+  #   dir: "backend/servers/zonos"
 
 # Configure secrets
 availableSecrets:
@@ -93,7 +93,9 @@ availableSecrets:
 
 options:
   machineType: "E2_HIGHCPU_8"
-  diskSizeGb: 200
+  diskSizeGb: 1000
   logging: CLOUD_LOGGING_ONLY
+
+timeout: 14400s
 
 serviceAccount: "projects/caramel-duality-382403/serviceAccounts/techlistpair@caramel-duality-382403.iam.gserviceaccount.com"
