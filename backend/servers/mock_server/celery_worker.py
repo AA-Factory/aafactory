@@ -18,7 +18,7 @@ app = Celery(
 def custom_voice_to_audio(prompt: str, voice_bytes: str, language: str) -> str:
     with open("mock_responses.json", "r", encoding="utf-8") as f:
         responses = json.load(f)  # Parse JSON into a Python dict
-    sleep(120)
+    sleep(30)
     return responses["custom_voice_to_audio"]
 
 
