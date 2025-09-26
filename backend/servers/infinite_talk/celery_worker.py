@@ -16,7 +16,7 @@ app = Celery(
 )
 
 @app.task(name="prompt_image_audio_to_video", queue="infinite_talk")
-def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str) -> str:
+def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str, config: str = "lora") -> str:
     image_path = f"examples/single/temp_image.png"
     audio_path = f"examples/single/temp_audio.wav"
 
@@ -36,5 +36,5 @@ def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str)
 
     with open("single_example_image.json", "w") as f:
         json.dump(data, f, indent=2)
-    result = run_audio_to_video()
+    result = run_audio_to_video(config=config)
     return result.decode('utf-8')
