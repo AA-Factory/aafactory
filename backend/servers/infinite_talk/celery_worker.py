@@ -16,7 +16,7 @@ app = Celery(
 )
 
 @app.task(name="prompt_image_audio_to_video", queue="infinite_talk")
-def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str, config: str = "lora") -> str:
+def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str, config: str = "low_vram") -> str:
     image_path = f"examples/single/temp_image.png"
     audio_path = f"examples/single/temp_audio.wav"
 
