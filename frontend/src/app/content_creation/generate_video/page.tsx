@@ -81,6 +81,9 @@ export default function GenerateVideoWizard() {
   const [availableAudioTasks, setAvailableAudioTasks] = useState<any[]>([]);
   const [selectedAudioTask, setSelectedAudioTask] = useState<any | null>(null);
   const [loadingAudioTasks, setLoadingAudioTasks] = useState(false);
+  const [audioTab, setAudioTab] = useState<'generate' | 'upload'>('generate');
+  const [uploadedAudioFile, setUploadedAudioFile] = useState<File | null>(null);
+  const [uploadedAudioUrl, setUploadedAudioUrl] = useState<string | null>(null);
   const generateAudioMutation = useGenerateAudio();
   const generateVideoMutation = useGenerateVideo();
   // For image previews
@@ -146,6 +149,22 @@ export default function GenerateVideoWizard() {
     }
   };
 
+  const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setUploadedAudioFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setUploadedAudioUrl(url);
+      // Clear generated audio when uploading
+      setGeneratedAudioUrl(null);
+      setGeneratedAudioBase64(null);
+      setAudioReady(false);
+      setSelectedAudioTask(null);
+    } else {
+      setUploadedAudioUrl(null);
+    }
+  };
+
   const handleAudioGeneration = async () => {
     showNotification("Generating audio, this may take a minute...", "info");
 
@@ -163,6 +182,9 @@ export default function GenerateVideoWizard() {
           setGeneratedAudioFilename(result.filename);
           setAudioReady(true);
           setSelectedAudioTask(null); // Clear selected audio task when new audio is generated
+          // Clear uploaded audio when generating new audio
+          setUploadedAudioFile(null);
+          setUploadedAudioUrl(null);
           showNotification("Audio generated successfully!", "success");
           console.log("Generated audio URL:", result.audioUrl);
         },
@@ -186,9 +208,9 @@ export default function GenerateVideoWizard() {
       return;
     }
 
-    if (!selectedAudioTask && !generatedAudioBase64) {
+    if (!selectedAudioTask && !generatedAudioBase64 && !uploadedAudioFile) {
       showNotification(
-        "Please select an audio generation or generate new audio first.",
+        "Please select an audio generation, generate new audio, or upload an audio file first.",
         "error",
       );
       return;
@@ -201,8 +223,29 @@ export default function GenerateVideoWizard() {
 
     let audioToUse = generatedAudioBase64;
 
+    // If using uploaded audio file, convert to base64
+    if (uploadedAudioFile) {
+      try {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Remove data URL prefix to get pure base64
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+        });
+        reader.readAsDataURL(uploadedAudioFile);
+        audioToUse = await base64Promise;
+      } catch (error) {
+        console.error('Error converting uploaded audio to base64:', error);
+        showNotification("Failed to process uploaded audio. Please try again.", "error");
+        return;
+      }
+    }
     // If using a selected audio task, fetch the audio file and convert to base64
-    if (selectedAudioTask && !generatedAudioBase64) {
+    else if (selectedAudioTask && !generatedAudioBase64) {
       try {
         const audioResponse = await fetch(selectedAudioTask.filePath);
         const audioBlob = await audioResponse.blob();
@@ -421,63 +464,120 @@ export default function GenerateVideoWizard() {
       content: (
         <div className="space-y-6">
           <h2 className="text-lg font-bold mb-4 dark:text-white">Write dialog</h2>
-          {/* Audio Source Selection */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <div className="flex items-center space-x-2">
-                <span>Training Audio Source</span>
-                <div className="relative group">
-                  <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                    Choose the voice training audio for speech generation
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
+
+          {/* Audio Tabs */}
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                onClick={() => setAudioTab('generate')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  audioTab === 'generate'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Generate Audio
+              </button>
+              <button
+                onClick={() => setAudioTab('upload')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  audioTab === 'upload'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Upload Audio
+              </button>
+            </nav>
+          </div>
+
+          {audioTab === 'generate' ? (
+            <>
+              {/* Audio Source Selection */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <div className="flex items-center space-x-2">
+                    <span>Training Audio Source</span>
+                    <div className="relative group">
+                      <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        Choose the voice training audio for speech generation
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
+                      </div>
+                    </div>
                   </div>
+                </label>
+                <select
+                  value={selectedAudioSource}
+                  onChange={(e) => setSelectedAudioSource(e.target.value as 'avatar' | 'rick_and_morty' | 'japanese')}
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
+                >
+                  {avatar?.trainingAudioPath && (
+                    <option value="avatar">
+                      Avatar's uploaded audio
+                    </option>
+                  )}
+                  <option value="rick_and_morty">
+                    Rick and Morty (default)
+                  </option>
+                  <option value="japanese">
+                    Japanese Voice
+                  </option>
+                </select>
+              </div>
+
+              <textarea
+                className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
+                placeholder="Type the dialog for your video here..."
+                value={dialog}
+                onChange={(e) => setDialog(e.target.value)}
+                maxLength={500}
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {dialog.length}/500 characters
+                </span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleAudioGeneration}
+                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white text-xs font-medium rounded-md transition-colors flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="button"
+                    disabled={generateAudioMutation.isPending}
+                  >
+                    <TbSparkles className="w-3 h-3" />
+                    <span>Generate Audio</span>
+                  </button>
                 </div>
               </div>
-            </label>
-            <select
-              value={selectedAudioSource}
-              onChange={(e) => setSelectedAudioSource(e.target.value as 'avatar' | 'rick_and_morty' | 'japanese')}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
-            >
-              {avatar?.trainingAudioPath && (
-                <option value="avatar">
-                  Avatar's uploaded audio
-                </option>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-col items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                    </svg>
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Click to upload</span> an audio file
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">MP3, WAV, M4A, OGG (MAX. 50MB)</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="audio/*"
+                    onChange={handleAudioFileUpload}
+                  />
+                </label>
+              </div>
+              {uploadedAudioFile && (
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Selected: {uploadedAudioFile.name}
+                </div>
               )}
-              <option value="rick_and_morty">
-                Rick and Morty (default)
-              </option>
-              <option value="japanese">
-                Japanese Voice
-              </option>
-            </select>
-          </div>
-
-
-          <textarea
-            className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
-            placeholder="Type the dialog for your video here..."
-            value={dialog}
-            onChange={(e) => setDialog(e.target.value)}
-            maxLength={500}
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {dialog.length}/500 characters
-            </span>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleAudioGeneration}
-                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white text-xs font-medium rounded-md transition-colors flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                type="button"
-                disabled={generateAudioMutation.isPending}
-              >
-                <TbSparkles className="w-3 h-3" />
-                <span>Generate Audio</span>
-              </button>
             </div>
-          </div>
+          )}
           {/* Audio Selection */}
           {availableAudioTasks.length > 0 && (
             <div className="mt-4">
@@ -532,12 +632,14 @@ export default function GenerateVideoWizard() {
           )}
 
           {/* Single Audio Player */}
-          {(generatedAudioUrl || selectedAudioTask) && (
+          {(generatedAudioUrl || selectedAudioTask || uploadedAudioUrl) && (
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-500/50 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
                 <FiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                 <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                  {selectedAudioTask
+                  {uploadedAudioUrl
+                    ? "Uploaded Audio"
+                    : selectedAudioTask
                     ? `Selected Audio: ${availableAudioTasks.findIndex(task => task.taskId === selectedAudioTask.taskId) + 1}`
                     : "Generated Audio"
                   }
@@ -545,7 +647,7 @@ export default function GenerateVideoWizard() {
               </div>
               <audio
                 controls
-                src={selectedAudioTask ? selectedAudioTask.filePath : generatedAudioUrl}
+                src={uploadedAudioUrl || (selectedAudioTask ? selectedAudioTask.filePath : generatedAudioUrl)}
                 className="w-full"
                 preload="metadata"
               >
@@ -567,7 +669,7 @@ export default function GenerateVideoWizard() {
           </div> */}
         </div>
       ),
-      canNext: dialog.trim().length > 0 && (audioReady || !!selectedAudioTask),
+      canNext: dialog.trim().length > 0 && (audioReady || !!selectedAudioTask || !!uploadedAudioFile),
     },
     {
       label: "Generate",
@@ -596,14 +698,14 @@ export default function GenerateVideoWizard() {
               <strong>Dialog:</strong> {selectedAudioTask ? selectedAudioTask.userPrompt : dialog}
             </li>
             <li>
-              <strong>Audio:</strong> {selectedAudioTask ? "Selected from previous generation" : audioReady ? "Generated" : "Not ready"}
+              <strong>Audio:</strong> {uploadedAudioFile ? "Uploaded file" : selectedAudioTask ? "Selected from previous generation" : audioReady ? "Generated" : "Not ready"}
             </li>
           </ul>
           <button
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleVideoGeneration}
             disabled={
-              (!selectedAudioTask && !generatedAudioFilename) ||
+              (!selectedAudioTask && !generatedAudioFilename && !uploadedAudioFile) ||
               !avatar ||
               generateVideoMutation.isPending
             }
