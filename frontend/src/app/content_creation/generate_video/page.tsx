@@ -56,8 +56,6 @@ export default function GenerateVideoWizard() {
   const { data: avatars, isLoading: avatarsLoading } = useAvatars();
   const [step, setStep] = useState(0);
   const [videoType, setVideoType] = useState<string | null>(null);
-  //avatar will be object not id fix the type
-
   const [avatar, setAvatar] = useState<Avatar | null>(null);
   const [firstFrame, setFirstFrame] = useState<File | null>(null);
   const [lastFrame, setLastFrame] = useState<File | null>(null);
@@ -163,7 +161,7 @@ export default function GenerateVideoWizard() {
 
     generateVideoMutation.mutate(
       {
-        audioFilename: generatedAudioFilename,
+        prompt: dialog,
         avatar,
         async: true,
         audioBase64: generatedAudioBase64 || "",

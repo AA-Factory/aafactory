@@ -175,32 +175,40 @@ export function blobToBase64(blob: Blob): Promise<string> {
 }
 
 /**
- * Encodes an audio file (File or fetched from URL) to base64
+ * Generic function to encode media files (File or fetched from URL) to base64
  */
-export async function encodeAudioFile(
-  audioFile: string | File,
-  basePath: string = '/test/training_audio/'
+export async function encodeMediaFile(
+  mediaFile: string | File,
+  basePath?: string
 ): Promise<{ base64: string; filename: string; mimeType?: string }> {
   try {
     let blob: Blob;
     let filename: string;
     let mimeType: string | undefined;
 
-    if (audioFile instanceof File) {
-      blob = audioFile;
-      filename = audioFile.name;
-      mimeType = audioFile.type;
+    if (mediaFile instanceof File) {
+      blob = mediaFile;
+      filename = mediaFile.name;
+      mimeType = mediaFile.type;
     } else {
-      // Fetch from URL
-      const url = audioFile.startsWith('http') ? audioFile : `${basePath}${audioFile}`;
+      // Handle URL or path
+      let url: string;
+      if (mediaFile.startsWith('http')) {
+        url = mediaFile;
+      } else if (basePath) {
+        url = `${basePath}${mediaFile}`;
+      } else {
+        url = mediaFile;
+      }
+
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new EncodingError(`Failed to fetch audio file: ${audioFile} (${response.status})`);
+        throw new EncodingError(`Failed to fetch media file: ${mediaFile} (${response.status})`);
       }
 
       blob = await response.blob();
-      filename = audioFile;
+      filename = mediaFile;
       mimeType = response.headers.get('content-type') || undefined;
     }
 
@@ -213,7 +221,42 @@ export async function encodeAudioFile(
     };
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new EncodingError(`Audio encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new EncodingError(`Media encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * @deprecated Use encodeMediaFile instead
+ * Legacy function for backward compatibility
+ */
+export async function encodeAudioFile(
+  audioFile: string | File,
+  basePath: string = '/test/training_audio/'
+): Promise<{ base64: string; filename: string; mimeType?: string }> {
+  return encodeMediaFile(audioFile, basePath);
+}
+
+/**
+ * Encodes an image file (File or fetched from URL) to base64
+ */
+export async function encodeImageFile(
+  imageFile: string | File
+): Promise<{ base64: string; filename: string; mimeType?: string }> {
+  try {
+    const result = await encodeMediaFile(imageFile);
+
+    // Handle JPEG signature fix for images
+    if (result.base64 && result.mimeType?.includes('png')) {
+      // Check if the actual data is JPEG (starts with /9j/)
+      if (result.base64.startsWith('/9j/')) {
+        result.mimeType = 'image/jpeg';
+      }
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Base64Error) throw error;
+    throw new EncodingError(`Image encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -249,6 +292,61 @@ export function base64ToObjectUrl(base64String: string, mimeType: string = 'audi
 }
 
 /**
+ * Creates a standardized media response object from base64 data
+ */
+export function createMediaResponse(
+  base64Data: string,
+  taskId: string,
+  mediaType: 'audio' | 'video' | 'image',
+  customMimeType?: string
+): { base64: string; url: string; filename: string; promptId: string } {
+  try {
+    // Handle case where base64Data might be wrapped in an object
+    const cleanData = typeof base64Data === 'string' ? base64Data : (base64Data as any).message;
+
+    // Determine MIME type and file extension
+    let mimeType: string;
+    let extension: string;
+
+    if (customMimeType) {
+      mimeType = customMimeType;
+      extension = customMimeType.split('/')[1] || mediaType;
+    } else {
+      switch (mediaType) {
+        case 'audio':
+          mimeType = 'audio/wav';
+          extension = 'wav';
+          break;
+        case 'video':
+          mimeType = 'video/mp4';
+          extension = 'mp4';
+          break;
+        case 'image':
+          mimeType = 'image/png';
+          extension = 'png';
+          break;
+        default:
+          mimeType = 'application/octet-stream';
+          extension = 'bin';
+      }
+    }
+
+    const url = base64ToObjectUrl(cleanData, mimeType);
+    const filename = `generated_${mediaType}_${Date.now()}.${extension}`;
+
+    return {
+      base64: cleanData,
+      url,
+      filename,
+      promptId: taskId,
+    };
+  } catch (error) {
+    if (error instanceof Base64Error) throw error;
+    throw new DecodingError(`Failed to create media response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Utility to safely revoke object URLs
  */
 export function revokeObjectUrl(url: string): void {
@@ -266,73 +364,4 @@ export function getBase64Size(base64String: string): number {
   const cleanedBase64 = cleanBase64(base64String);
   // Base64 encoding adds ~33% overhead, so actual size is ~75% of base64 length
   return Math.floor((cleanedBase64.length * 3) / 4);
-}
-
-/**
- * Compresses base64 string by reducing quality (for images/audio)
- * Note: This is a simple implementation and may not work for all formats
- */
-export function compressBase64(
-  base64String: string,
-  quality: number = 0.8,
-  mimeType: string = 'audio/wav'
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    try {
-      if (quality < 0 || quality > 1) {
-        throw new EncodingError('Quality must be between 0 and 1');
-      }
-
-      // For audio files, we can't easily compress without specialized libraries
-      // This is a placeholder that could be enhanced with actual compression
-      if (mimeType.startsWith('audio/')) {
-        // For now, just return the original (could integrate with audio compression libraries)
-        resolve(base64String);
-        return;
-      }
-
-      // For images, we could use canvas compression
-      if (mimeType.startsWith('image/')) {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          if (!ctx) {
-            reject(new EncodingError('Failed to get canvas context'));
-            return;
-          }
-
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-
-          canvas.toBlob(
-            async (blob) => {
-              if (!blob) {
-                reject(new EncodingError('Failed to compress image'));
-                return;
-              }
-              try {
-                const compressedBase64 = await blobToBase64(blob);
-                resolve(compressedBase64);
-              } catch (error) {
-                reject(error);
-              }
-            },
-            mimeType,
-            quality
-          );
-        };
-
-        img.onerror = () => reject(new EncodingError('Failed to load image for compression'));
-        img.src = base64ToDataUrl(base64String, mimeType);
-      } else {
-        // For other types, return as-is
-        resolve(base64String);
-      }
-    } catch (error) {
-      reject(error instanceof Base64Error ? error : new EncodingError(`Compression failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
-    }
-  });
 }

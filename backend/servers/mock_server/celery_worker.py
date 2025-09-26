@@ -26,5 +26,5 @@ def custom_voice_to_audio(prompt: str, voice_bytes: str, language: str) -> str:
 def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str) -> str:
     with open("mock_responses.json", "r", encoding="utf-8") as f:
         responses = json.load(f)  # Parse JSON into a Python dict
-    sleep(480)
+    sleep(120)
     return responses["prompt_image_audio_to_video"]

@@ -158,6 +158,7 @@ services:
     environment:
       - MONGODB_URI=$MONGODB_URI
       - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
+      - NEXT_PUBLIC_MOCK_SERVER=$NEXT_PUBLIC_MOCK_SERVER
     volumes:
       - ./frontend:/app
       - /app/node_modules

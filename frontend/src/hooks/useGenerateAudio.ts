@@ -2,16 +2,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import {
   generateAudio,
-  AudioGenerationError,
-  TaskTimeoutError,
-  TrainingAudioError,
   type GenerateAudioPayload,
   type GenerateAudioResponse
 } from "@/services/audioService";
 
 type UseGenerateAudioOptions = {
   onSuccess?: (data: GenerateAudioResponse) => void;
-  onError?: (error: AudioGenerationError) => void;
+  onError?: (error: Error) => void;
   retry?: number;
 };
 
@@ -48,16 +45,11 @@ export function useGenerateAudio(options?: UseGenerateAudioOptions) {
       options?.onSuccess?.(data);
     },
     onError: (error: Error) => {
-      // Convert generic errors to AudioGenerationError if needed
-      const audioError = error instanceof AudioGenerationError
-        ? error
-        : new AudioGenerationError(error.message, 'UNKNOWN_ERROR');
-
-      options?.onError?.(audioError);
+      options?.onError?.(error);
     },
     retry: (failureCount, error) => {
-      // Don't retry on certain error types
-      if (error instanceof TaskTimeoutError || error instanceof TrainingAudioError) {
+      // Don't retry on timeout errors or training audio issues
+      if (error.message.includes('timed out') || error.message.includes('training audio')) {
         return false;
       }
       return failureCount < (options?.retry ?? 2);
@@ -69,8 +61,7 @@ export function useGenerateAudio(options?: UseGenerateAudioOptions) {
     cleanupAudioUrl,
     cleanupAllAudioUrls,
     // Helper to check error types
-    isTimeoutError: mutation.error instanceof TaskTimeoutError,
-    isTrainingAudioError: mutation.error instanceof TrainingAudioError,
-    errorCode: mutation.error instanceof AudioGenerationError ? mutation.error.code : undefined,
+    isTimeoutError: mutation.error?.message.includes('timed out') || false,
+    isTrainingAudioError: mutation.error?.message.includes('training audio') || false,
   };
 }
