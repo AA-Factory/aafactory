@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from processing.compute_tts import run_text_to_speech
 
 from celery import Celery
@@ -14,14 +13,8 @@ app = Celery(
     backend=f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
 )
 
-class TaskRequest(BaseModel):
-    voice_sample: str
-    text: str
-    language: str
-
-
 
 @app.task(name="custom_voice_to_audio", queue="zonos")
-def custom_voice_to_audio(text: str, voice_sample: str, language: str) -> str:
-    result = run_text_to_speech(text=text, voice_sample=voice_sample, language=language)
+def custom_voice_to_audio(prompt: str, voice_bytes: str, language: str) -> str:
+    result = run_text_to_speech(prompt=prompt, voice_bytes=voice_bytes, language=language)
     return result.decode('utf-8')

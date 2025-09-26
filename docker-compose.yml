@@ -85,17 +85,22 @@ services:
     profiles:
       - backend-local
       - local
-  infinite-talk-server:
-    image: elliotcarery/infinite-talk-server:$INFINITE_TALK_SERVER_TAG
-    runtime: nvidia
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=0
+  mock-server:
     build:
-      context: ./backend/servers/infinite_talk
-    ports:
-      - "8000:8000"
+      context: ./backend/servers/mock_server
     profiles:
-      - servers
+      - local
+  # infinite-talk-server:
+  #   image: elliotcarery/infinite-talk-server:$INFINITE_TALK_SERVER_TAG
+  #   runtime: nvidia
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=0
+  #   build:
+  #     context: ./backend/servers/infinite_talk
+  #   ports:
+  #     - "8000:8000"
+  #   profiles:
+  #     - servers
 
   # zonos-server:
   #   image: elliotcarery/zonos-server:$ZONOS_SERVER_TAG
