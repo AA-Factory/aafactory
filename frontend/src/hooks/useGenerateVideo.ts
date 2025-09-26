@@ -38,7 +38,7 @@ export function useGenerateVideo(options?: UseGenerateVideoOptions) {
       const { taskRequest } = await prepareVideoData(payload);
 
       // Start task
-      const taskId = await startTask(taskRequest);
+      const taskId = await startTask(taskRequest, payload.avatar?.id || '', 'VIDEO', payload.prompt);
 
       // Poll for result
       const base64Video = await pollTaskStatus(taskId, 'VIDEO');

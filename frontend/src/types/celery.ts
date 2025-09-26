@@ -39,7 +39,7 @@ export interface AudioGenerationPayload {
 }
 
 export interface AudioGenerationTaskRequest extends CeleryTaskRequest<AudioGenerationPayload> {
-  server_name: 'mock' | 'infinite_talk';
+  server_name: 'mock' | 'infinite_talk' | 'zonos';
   task_name: 'custom_voice_to_audio';
 }
 

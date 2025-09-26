@@ -7,6 +7,7 @@ import {
   FiEdit2,
   FiCheckCircle,
   FiPlayCircle,
+  FiInfo,
 } from "react-icons/fi";
 import { TbSparkles } from "react-icons/tb";
 import { PiFileVideoBold } from "react-icons/pi";
@@ -77,6 +78,9 @@ export default function GenerateVideoWizard() {
   const [selectedAudioSource, setSelectedAudioSource] = useState<
     'avatar' | 'rick_and_morty' | 'japanese'
   >('rick_and_morty');
+  const [availableAudioTasks, setAvailableAudioTasks] = useState<any[]>([]);
+  const [selectedAudioTask, setSelectedAudioTask] = useState<any | null>(null);
+  const [loadingAudioTasks, setLoadingAudioTasks] = useState(false);
   const generateAudioMutation = useGenerateAudio();
   const generateVideoMutation = useGenerateVideo();
   // For image previews
@@ -88,6 +92,33 @@ export default function GenerateVideoWizard() {
   const { showNotification } = useNotification();
   // Video player state
   const [selectedVideo, setSelectedVideo] = useState(PREVIOUS_VIDEOS[0]);
+
+  // Fetch available audio tasks when avatar changes
+  useEffect(() => {
+    if (avatar?.id) {
+      setLoadingAudioTasks(true);
+      fetch(`/api/tasks/audio/${avatar.id}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            setAvailableAudioTasks(data.audioTasks);
+            // Auto-select the most recent audio task
+            // if (data.audioTasks.length > 0) {
+            //   setSelectedAudioTask(data.audioTasks[0]);
+            // }
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching audio tasks:', error);
+        })
+        .finally(() => {
+          setLoadingAudioTasks(false);
+        });
+    } else {
+      setAvailableAudioTasks([]);
+      setSelectedAudioTask(null);
+    }
+  }, [avatar?.id, step, generatedAudioUrl]);
 
   // Auto-select avatar audio source if available when avatar changes
   useEffect(() => {
@@ -131,6 +162,7 @@ export default function GenerateVideoWizard() {
           setGeneratedAudioBase64(result.base64Audio || null);
           setGeneratedAudioFilename(result.filename);
           setAudioReady(true);
+          setSelectedAudioTask(null); // Clear selected audio task when new audio is generated
           showNotification("Audio generated successfully!", "success");
           console.log("Generated audio URL:", result.audioUrl);
         },
@@ -146,9 +178,17 @@ export default function GenerateVideoWizard() {
   };
 
   const handleVideoGeneration = async () => {
-    if (!generatedAudioFilename || !avatar) {
+    if (!avatar) {
       showNotification(
-        "Please generate audio and select an avatar first.",
+        "Please select an avatar first.",
+        "error",
+      );
+      return;
+    }
+
+    if (!selectedAudioTask && !generatedAudioBase64) {
+      showNotification(
+        "Please select an audio generation or generate new audio first.",
         "error",
       );
       return;
@@ -159,12 +199,40 @@ export default function GenerateVideoWizard() {
       "info",
     );
 
+    let audioToUse = generatedAudioBase64;
+
+    // If using a selected audio task, fetch the audio file and convert to base64
+    if (selectedAudioTask && !generatedAudioBase64) {
+      try {
+        const audioResponse = await fetch(selectedAudioTask.filePath);
+        const audioBlob = await audioResponse.blob();
+
+        // Convert blob to base64
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Remove data URL prefix to get pure base64
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+        });
+        reader.readAsDataURL(audioBlob);
+        audioToUse = await base64Promise;
+      } catch (error) {
+        console.error('Error converting selected audio to base64:', error);
+        showNotification("Failed to process selected audio. Please try again.", "error");
+        return;
+      }
+    }
+
     generateVideoMutation.mutate(
       {
-        prompt: dialog,
+        prompt: selectedAudioTask ? selectedAudioTask.userPrompt : dialog,
         avatar,
         async: true,
-        audioBase64: generatedAudioBase64 || "",
+        audioBase64: audioToUse || "",
       },
       {
         onSuccess: (result) => {
@@ -217,7 +285,7 @@ export default function GenerateVideoWizard() {
       label: "Select video type",
       content: (
         <div className="space-y-6">
-          <h2 className="text-lg font-bold mb-4">Select video type</h2>
+          <h2 className="text-lg font-bold mb-4 dark:text-white">Select video type</h2>
           <div className="grid grid-cols-1 gap-3 overflow-scroll h-96">
             {VIDEO_TYPES.map((type) => (
               <button
@@ -244,7 +312,7 @@ export default function GenerateVideoWizard() {
       label: "Select Avatar",
       content: (
         <div className="space-y-6">
-          <h2 className="text-lg font-bold mb-4">Select Avatar</h2>
+          <h2 className="text-lg font-bold mb-4 dark:text-white">Select Avatar</h2>
           {avatarsLoading ? (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -352,11 +420,20 @@ export default function GenerateVideoWizard() {
       label: "Write dialog",
       content: (
         <div className="space-y-6">
-          <h2 className="text-lg font-bold mb-4">Write dialog</h2>
+          <h2 className="text-lg font-bold mb-4 dark:text-white">Write dialog</h2>
           {/* Audio Source Selection */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Training Audio Source
+              <div className="flex items-center space-x-2">
+                <span>Training Audio Source</span>
+                <div className="relative group">
+                  <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                    Choose the voice training audio for speech generation
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
+                  </div>
+                </div>
+              </div>
             </label>
             <select
               value={selectedAudioSource}
@@ -377,6 +454,7 @@ export default function GenerateVideoWizard() {
             </select>
           </div>
 
+
           <textarea
             className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
             placeholder="Type the dialog for your video here..."
@@ -391,33 +469,83 @@ export default function GenerateVideoWizard() {
             <div className="flex space-x-2">
               <button
                 onClick={handleAudioGeneration}
-                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white text-xs font-medium rounded-md transition-colors flex items-center space-x-1"
+                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white text-xs font-medium rounded-md transition-colors flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="button"
+                disabled={generateAudioMutation.isPending}
               >
                 <TbSparkles className="w-3 h-3" />
                 <span>Generate Audio</span>
               </button>
-              <button
-                onClick={() => setDialog(getRandomDialogSeed())}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-medium rounded-md transition-colors flex items-center space-x-1"
-                type="button"
-              >
-                <FiEdit2 className="w-3 h-3" />
-                <span>Use AI suggestion</span>
-              </button>
             </div>
           </div>
-          {generatedAudioUrl && (
+          {/* Audio Selection */}
+          {availableAudioTasks.length > 0 && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="flex items-center space-x-2">
+                  <span>Select Audio For Video Generation</span>
+                  <div className="relative group">
+                    <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Select audio to be used for video generation either the latest generation or previous generations
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
+                    </div>
+                  </div>
+                </div>
+              </label>
+              {loadingAudioTasks ? (
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Loading audio generations...</span>
+                </div>
+              ) : (
+                <select
+                  value={selectedAudioTask?.taskId || (generatedAudioUrl && !selectedAudioTask ? 'generated' : '')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === 'generated') {
+                      setSelectedAudioTask(null);
+                      // Keep the generated audio URL as is
+                    } else {
+                      const task = availableAudioTasks.find(t => t.taskId === value);
+                      setSelectedAudioTask(task || null);
+                      if (task) {
+                        setGeneratedAudioUrl(task.filePath);
+                        setAudioReady(false); // Clear the manual audio ready flag
+                      }
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
+                >
+                  <option value="">Select an audio generation</option>
+                  {generatedAudioUrl && (
+                    <option value="generated">Generated Audio (Current)</option>
+                  )}
+                  {availableAudioTasks.map((task, index) => (
+                    <option key={task.taskId} value={task.taskId}>
+                      {index + 1}. "{task.userPrompt || 'Audio Generation'}"
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
+          {/* Single Audio Player */}
+          {(generatedAudioUrl || selectedAudioTask) && (
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-500/50 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
                 <FiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                 <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                  Generated Audio
+                  {selectedAudioTask
+                    ? `Selected Audio: ${availableAudioTasks.findIndex(task => task.taskId === selectedAudioTask.taskId) + 1}`
+                    : "Generated Audio"
+                  }
                 </span>
               </div>
               <audio
                 controls
-                src={generatedAudioUrl}
+                src={selectedAudioTask ? selectedAudioTask.filePath : generatedAudioUrl}
                 className="w-full"
                 preload="metadata"
               >
@@ -425,34 +553,30 @@ export default function GenerateVideoWizard() {
               </audio>
             </div>
           )}
-          <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-500/50 rounded-lg flex items-center space-x-2">
-            <FiEdit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-xs text-blue-700 dark:text-blue-300">
-              We need a way to create the audio before the video to make sure
-              the quality is good
-            </span>
-            <label className="ml-auto flex items-center space-x-1">
-              <input
-                type="checkbox"
-                checked={audioReady}
-                onChange={() => setAudioReady((v) => !v)}
-                className="rounded bg-gray-100 dark:bg-gray-600 border-gray-300 dark:border-gray-500 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
-              />
-              <span className="text-xs text-gray-600 dark:text-gray-400">
-                Audio ready
+
+          {/* <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-500/50 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <FiEdit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-xs text-blue-700 dark:text-blue-300">
+                {availableAudioTasks.length > 0
+                  ? "Generate new audio or select from previous generations above"
+                  : "Generate audio before creating video to ensure quality"
+                }
               </span>
-            </label>
-          </div>
+            </div>
+          </div> */}
         </div>
       ),
-      canNext: dialog.trim().length > 0 && audioReady,
+      canNext: dialog.trim().length > 0 && (audioReady || !!selectedAudioTask),
     },
     {
       label: "Generate",
       content: (
         <div className="flex flex-col items-center space-y-4">
           <TbSparkles className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-lg font-bold mb-2">Ready to generate!</h2>
+          <h2 className="text-lg font-bold mb-4 dark:text-white">Ready to generate!</h2>
+
+
           <ul className="text-left text-gray-700 dark:text-gray-200 space-y-1 text-xs">
             <li>
               <strong>Video type:</strong>{" "}
@@ -469,17 +593,17 @@ export default function GenerateVideoWizard() {
               <strong>Last frame:</strong> {lastFrame?.name}
             </li>
             <li>
-              <strong>Dialog:</strong> {dialog}
+              <strong>Dialog:</strong> {selectedAudioTask ? selectedAudioTask.userPrompt : dialog}
             </li>
             <li>
-              <strong>Audio ready:</strong> {audioReady ? "Yes" : "No"}
+              <strong>Audio:</strong> {selectedAudioTask ? "Selected from previous generation" : audioReady ? "Generated" : "Not ready"}
             </li>
           </ul>
           <button
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleVideoGeneration}
             disabled={
-              !generatedAudioFilename ||
+              (!selectedAudioTask && !generatedAudioFilename) ||
               !avatar ||
               generateVideoMutation.isPending
             }
@@ -550,7 +674,7 @@ export default function GenerateVideoWizard() {
       {/* Main layout: left panel (steps), center (player), bottom (gallery) */}
       <div className="flex flex-initial min-h-0">
         {/* Left panel: Stepper */}
-        <aside className="w-80 min-w-[18rem] max-w-[22rem] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col p-6">
+        <aside className="w-80 min-w-[18rem] max-w-[22rem] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col p-6 h-153">
           {/* Step content */}
           <div className="flex-1">{steps[step].content}</div>
           {/* Navigation buttons */}

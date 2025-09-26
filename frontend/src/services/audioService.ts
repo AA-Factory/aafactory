@@ -65,7 +65,7 @@ export function createTaskRequest(payload: GenerateAudioPayload, audioBase64: st
   const language = payload.language || DEFAULT_LANGUAGE;
 
   return {
-    server_name: process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? "mock" : "infinite_talk",
+    server_name: process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? "mock" : "zonos",
     task_name: "custom_voice_to_audio",
     payload: {
       text: payload.dialog,
