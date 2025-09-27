@@ -1,0 +1,19 @@
+# Minimal Jekyll configuration for AAFactory docs
+
+title: AAFactory Documentation
+description: Documentation for the AAFactory platform
+theme: jekyll-theme-primer
+
+# Include the assets directory for SCSS/CSS
+include:
+  - assets
+
+# Set the source directory (optional, but explicit)
+source: .
+
+# Exclude node_modules and other non-docs files
+exclude:
+  - node_modules
+  - README.md
+  - .env
+  - .gitignore
