@@ -56,6 +56,17 @@
    - **Infinite Talk Server**: http://localhost:8001 _(requires `--profile servers`)_
    - **Zonos Server**: http://localhost:8002 _(requires `--profile servers`)_
 
+### Connect with a remote server
+
+Every remote server comes with its own instance of Redis. To use it, you just have to copy the Redis URL from one of your remote server
+and share it locally and with the other running servers.
+
+You can find the Redis URL here when running the server on Runpod:
+![Select Remote URL Screenshot](https://github.com/AA-Factory/aafactory/tree/master/assets/select_remote_redis_url_in_running_pod.png?raw=true)
+
+Then you need to share the remote URL with remote instances (if any running):
+![Share URL to remote instances Screenshot](https://github.com/AA-Factory/aafactory/tree/master/assets/share_redis_url_to_remote_instances.png?raw=true)
+
 ## What's Available
 
 ### Core Services
@@ -83,7 +94,6 @@ docker-compose --profile local up --build
 ```
 
 Includes: Frontend, Backend API, MongoDB, Redis, Celery, Flower
-_Excludes AI servers (infinite-talk-server, zonos-server)_
 
 **Frontend Only**
 
