@@ -54,34 +54,34 @@ steps:
   #     ]
 
   # Build infinite-talk-server image
-  # - name: "gcr.io/cloud-builders/docker"
-  #   args:
-  #     [
-  #       "buildx",
-  #       "build",
-  #       "--platform=linux/amd64",
-  #       "--tag=elliotcarery/infinite-talk-server:1.0",
-  #       "--push",
-  #       "-f",
-  #       "dockerfile",
-  #       ".",
-  #     ]
-  #   dir: "backend/servers/infinite_talk"
-
-  # Build zonos-server image
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "buildx",
         "build",
         "--platform=linux/amd64",
-        "--tag=elliotcarery/zonos-server:1.0.4",
+        "--tag=elliotcarery/infinite-talk-server:1.0.4",
         "--push",
         "-f",
         "dockerfile",
         ".",
       ]
-    dir: "backend/servers/zonos"
+    dir: "backend/servers/infinite_talk"
+
+  # Build zonos-server image
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "buildx",
+  #       "build",
+  #       "--platform=linux/amd64",
+  #       "--tag=elliotcarery/zonos-server:1.0.4",
+  #       "--push",
+  #       "-f",
+  #       "dockerfile",
+  #       ".",
+  #     ]
+  #   dir: "backend/servers/zonos"
 
 # Configure secrets
 availableSecrets:
