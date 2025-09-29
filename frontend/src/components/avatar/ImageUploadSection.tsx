@@ -25,7 +25,7 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   existingImageUrl,
 }) => {
   return (
-    <div>
+    <div className="mb-3">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Avatar Image
       </label>

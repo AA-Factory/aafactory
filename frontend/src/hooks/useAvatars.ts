@@ -198,7 +198,7 @@ export const useAvatars = () =>
 
 export const useAvatar = (id?: string) =>
   useQuery({
-    queryKey: avatarKeys.detail(id || ""),
+    queryKey: avatarKeys.detail(id!),
     queryFn: () => fetchAvatarById(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
@@ -207,6 +207,7 @@ export const useAvatar = (id?: string) =>
 export const useDeleteAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['deleteAvatar'],
     mutationFn: deleteAvatar,
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: avatarKeys.lists() });
@@ -228,6 +229,7 @@ export const useDeleteAvatar = () => {
 export const useCreateAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['createAvatar'],
     mutationFn: createAvatar,
     onMutate: async (newData) => {
       await queryClient.cancelQueries({ queryKey: avatarKeys.lists() });
@@ -284,6 +286,7 @@ export const useCreateAvatar = () => {
 export const useUpdateAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['updateAvatar'],
     mutationFn: updateAvatar,
     onMutate: async (updated) => {
       await queryClient.cancelQueries({

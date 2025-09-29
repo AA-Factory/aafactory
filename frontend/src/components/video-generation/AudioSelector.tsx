@@ -41,10 +41,11 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
         </div>
       </label>
       <select
-        disabled={availableAudioTasks.length === 0 && !generatedAudioUrl || loadingAudioTasks}
+        name="audioTask"
         value={selectedAudioTask?.taskId || (generatedAudioUrl && !selectedAudioTask ? 'generated' : '')}
-        onChange={(e) => onAudioTaskSelect(e.target.value)}
         className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm  disabled:opacity-50 disabled:cursor-not-allowed"
+        onChange={(e) => onAudioTaskSelect(e.target.value)}
+        disabled={availableAudioTasks.length === 0 && !generatedAudioUrl || loadingAudioTasks}
       >
         <option value="null">Select an audio generation</option>
         {generatedAudioUrl && (

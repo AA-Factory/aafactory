@@ -3,14 +3,14 @@ import React, { useState } from "react";
 import {
   HiPencil,
   HiTrash,
-  HiMicrophone,
+  HiVideoCamera,
   HiCheck,
   HiX,
   HiPlus,
   HiMinus,
 } from "react-icons/hi";
 import { Avatar } from "../../types/avatar";
-import { AVATAR_CONSTANTS } from "@/config/constants";
+import { AVATAR_CONSTANTS } from "@/lib/celery/constants";
 import { useActiveAvatars } from "@/contexts/ActiveAvatarsContext";
 import Link from "next/link";
 
@@ -185,7 +185,14 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
             Created {avatar.createdAt}
           </div>
         </div>
-
+        {/* button linking to content_creation/generate_video */}
+        <Link
+          href={`/content_creation/generate_video`}
+          className="mt-3 w-full py-1 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
+        >
+          <HiVideoCamera className="w-4 h-4" />
+          Create Video
+        </Link>
         {/* Toggle Active Avatar Button */}
         {/* <button
           onClick={handleToggleActive}

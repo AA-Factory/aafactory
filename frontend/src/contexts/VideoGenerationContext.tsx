@@ -1,10 +1,10 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
 import { Avatar } from "@/types/avatar";
 import { VideoTask } from "@/types/tasks";
-import { fetchVideoTasks, pollPendingVideoTasks } from "@/lib/api/tasks";
+import { useVideoTasks, usePollPendingVideoTasks } from "@/lib/api/tasks";
 import { DIALOG_SEEDS } from "@/utils/fakeData";
-import { VIDEO_TYPES } from "@/config/constants";
+import { VIDEO_TYPES } from "@/lib/celery/constants";
 interface AudioTask {
   taskId: string;
   userPrompt: string;
@@ -26,10 +26,8 @@ interface VideoGenerationState {
   audioReady: boolean;
 
   // video data
-  videoTasks: VideoTask[];
   generatedVideoUrl: string | null;
   selectedVideoTask: VideoTask | null;
-  loadingVideoTasks: boolean;
 
   // UI state
   step: number;
@@ -56,6 +54,10 @@ interface VideoGenerationContextType {
   refreshVideoTasks: () => void;
   selectVideoTask: (task: VideoTask | null) => void;
 
+  // Video data from React Query
+  videoTasks: VideoTask[];
+  loadingVideoTasks: boolean;
+  videoTasksError: Error | null;
 
   // Computed values
   canProceedToNextStep: boolean;
@@ -77,34 +79,34 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
     uploadedAudioFile: null,
     dialog: getRandomDialogSeed(),
     audioReady: false,
-    videoTasks: [],
     generatedVideoUrl: null,
     selectedVideoTask: null,
-    loadingVideoTasks: false,
     step: 0,
   });
 
-  // Fetch video tasks when avatar changes
+  // React Query hooks for video tasks
+  const {
+    data: videoTasks = [],
+    isLoading: loadingVideoTasks,
+    error: videoTasksError,
+  } = useVideoTasks(state.avatar?.id || "");
+
+  const pollPendingVideoTasksMutation = usePollPendingVideoTasks();
+
+  // Process video tasks with default filePath
+  const processedVideoTasks = useMemo(() => {
+    return videoTasks.map(task => ({
+      ...task,
+      filePath: task.filePath ?? "",
+    }));
+  }, [videoTasks]);
+
+  // Poll pending video tasks when avatar changes
   useEffect(() => {
     if (state.avatar?.id) {
-      setState(prev => ({ ...prev, loadingVideoTasks: true }));
-      fetchVideoTasks(state.avatar.id)
-        .then(tasks => {
-          setState(prev => ({
-            ...prev,
-            videoTasks: tasks.map(task => ({
-              ...task,
-              filePath: task.filePath ?? "",
-            })),
-          }));
-        })
-        .finally(() => {
-          setState(prev => ({ ...prev, loadingVideoTasks: false }));
-        });
-    } else {
-      setState(prev => ({ ...prev, videoTasks: [] }));
+      pollPendingVideoTasksMutation.mutate(state.avatar.id);
     }
-  }, [state.avatar?.id, state.generatedVideoUrl]);
+  }, [state.avatar?.id]);
 
   const setVideoType = useCallback((type: { id: string; label: string }) => {
     setState(prev => ({ ...prev, videoType: type }));
@@ -137,23 +139,9 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
 
   const refreshVideoTasks = useCallback(() => {
     if (state.avatar?.id) {
-      pollPendingVideoTasks(state.avatar.id)
-      setState(prev => ({ ...prev, loadingVideoTasks: true }));
-      fetchVideoTasks(state.avatar.id)
-        .then(tasks => {
-          setState(prev => ({
-            ...prev,
-            videoTasks: tasks.map(task => ({
-              ...task,
-              filePath: task.filePath ?? "",
-            })),
-          }));
-        })
-        .finally(() => {
-          setState(prev => ({ ...prev, loadingVideoTasks: false }));
-        });
+      pollPendingVideoTasksMutation.mutate(state.avatar.id);
     }
-  }, [state.avatar?.id]);
+  }, [state.avatar?.id, pollPendingVideoTasksMutation]);
 
   const selectVideoTask = useCallback((task: VideoTask | null) => {
     setState(prev => ({ ...prev, selectedVideoTask: task }));
@@ -184,6 +172,9 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
     setAudioData,
     refreshVideoTasks,
     selectVideoTask,
+    videoTasks: processedVideoTasks,
+    loadingVideoTasks,
+    videoTasksError,
     canProceedToNextStep,
   };
 

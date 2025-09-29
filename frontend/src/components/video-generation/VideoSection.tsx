@@ -1,17 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TbSparkles } from "react-icons/tb";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAvatars } from "@/hooks/useAvatars";
 import { useGenerateVideo } from "@/hooks/useGenerateVideo";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useVideoGeneration } from "@/contexts/VideoGenerationContext";
+import { useVideoTasks } from "@/lib/api/tasks";
 import { fileToBase64, encodeMediaFile } from "@/lib/base64Utils";
 
 export const VideoSection: React.FC = () => {
+  const queryClient = useQueryClient();
   const { data: avatars } = useAvatars();
-  const { state, refreshVideoTasks } = useVideoGeneration();
+  const { state } = useVideoGeneration();
+
+
   const generateVideoMutation = useGenerateVideo();
+
   const { showNotification } = useNotification();
   const [videoPrompt, setVideoPrompt] = useState('An ultra-realistic video of the avatar speaking the provided dialog, with natural facial expressions and lip-syncing, set against a simple background.');
+
+  // Fetch video tasks to check pending count
+  const { data: videoTasks = [] } = useVideoTasks(state.avatar?.id || "", "PENDING");
+
+  // Count pending/in-progress tasks
+  const pendingTasksCount = useMemo(() => {
+    return videoTasks.filter(task =>
+      task.status === 'PENDING'
+    ).length;
+  }, [videoTasks]);
+
+  // Handle task status updates
+  // useEffect(() => {
+  //   if (taskStatus.data) {
+  //     showNotification("Video generation completed! Check the gallery.", "success");
+  //     // Invalidate video tasks query to refresh the list
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["tasks", "video", { avatarId: state.avatar?.id }]
+  //     });
+  //     setTaskId(null); // Clear taskId after completion
+  //   }
+  // }, [taskStatus.data, queryClient, state.avatar?.id]);
 
   const handleVideoGeneration = async () => {
     if (!state.avatar) {
@@ -24,6 +52,11 @@ export const VideoSection: React.FC = () => {
         "Please select an audio generation, generate new audio, or upload an audio file first.",
         "error"
       );
+      return;
+    }
+
+    if (pendingTasksCount >= 5) {
+      showNotification("Maximum of 5 videos can be generated at once. Please wait for some to complete.", "error");
       return;
     }
 
@@ -43,37 +76,21 @@ export const VideoSection: React.FC = () => {
         showNotification("No audio available for video generation.", "error");
         return;
       }
-
-      generateVideoMutation.mutate(
-        {
-          avatar: state.avatar,
-          audioBase64: audioToUse,
-          prompt: videoPrompt,
-        },
-        {
-          onSuccess: (result) => {
-            showNotification("Video generated successfully!", "success");
-            refreshVideoTasks();
-          },
-          onError: (error) => {
-            console.error("Video generation failed:", error);
-            showNotification("Video generation failed. Please try again.", "error");
-            refreshVideoTasks();
-          },
-          onSettled: () => {
-            // Always refresh when the mutation settles (success or error)
-            // This ensures we catch the pending task that should now be in the DB
-            setTimeout(() => {
-              refreshVideoTasks();
-            }, 2000);
-          }
+      const payload = {
+        avatar: state.avatar,
+        audioBase64: audioToUse,
+        prompt: videoPrompt,
+      };
+      generateVideoMutation.mutate(payload, {
+        onSuccess: (videoResponse) => {
+          showNotification("Video generation started", "info");
+          // Invalidate video tasks to refresh the list
+          queryClient.invalidateQueries({
+            queryKey: ["tasks", "video", { avatarId: state.avatar?.id }]
+          });
         }
-      );
+      });
 
-      // Refresh video tasks after a short delay to show the pending task
-      setTimeout(() => {
-        refreshVideoTasks();
-      }, 1500);
     } catch (error) {
       console.error('Error processing audio:', error);
       showNotification("Failed to process audio. Please try again.", "error");
@@ -87,6 +104,7 @@ export const VideoSection: React.FC = () => {
   };
 
   const canGenerate = (state.selectedAudioTask || state.uploadedAudioFile || state.audioReady) && state.avatar;
+  const isLimitReached = pendingTasksCount >= 5;
 
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -124,10 +142,17 @@ export const VideoSection: React.FC = () => {
           rows={3}
         />
       </div>
+
+      {isLimitReached && (
+        <p className="text-sm text-red-600 dark:text-red-400">
+          Maximum of 5 videos can be generated at once. Please wait for some to complete.
+        </p>
+      )}
+
       <button
         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={handleVideoGeneration}
-        disabled={!canGenerate || generateVideoMutation.isPending}
+        disabled={!canGenerate || generateVideoMutation.isPending || isLimitReached}
       >
         <TbSparkles className="w-4 h-4" />
         <span>

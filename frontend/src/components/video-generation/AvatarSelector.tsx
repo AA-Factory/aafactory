@@ -30,7 +30,7 @@ export const AvatarSelector: React.FC = () => {
                 className="w-14 h-14 object-cover rounded-full"
               />
               <span className="font-semibold dark:text-white">{avatar.name}</span>
-              <span className="text-xs text-gray-500 dark:text-white">{avatar.description}</span>
+              {/* <span className="text-xs text-gray-500 dark:text-white">{avatar.description}</span> */}
             </button>
           )) || []}
         </div>

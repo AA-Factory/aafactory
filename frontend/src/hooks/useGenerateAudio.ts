@@ -1,79 +1,84 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   prepareAudioData,
   createAudioResponse,
   type GenerateAudioPayload,
-  type GenerateAudioResponse
 } from "@/services/audioService";
-import { startTask, pollTaskStatus } from "@/services/shared/taskService";
+import { CELERY_RUN_TASK, CELERY_TASK_STATUS, POLLING_CONFIG } from "@/lib/celery/constants";
 
-type UseGenerateAudioOptions = {
-  onSuccess?: (data: GenerateAudioResponse) => void;
-  onError?: (error: Error) => void;
-  retry?: number;
-};
-
-export function useGenerateAudio(options?: UseGenerateAudioOptions) {
+export function useGenerateAudio() {
   const queryClient = useQueryClient();
-  const audioUrlsRef = useRef<Set<string>>(new Set());
-
-  // Cleanup function for audio URLs
-  const cleanupAudioUrl = useCallback((url: string) => {
-    if (audioUrlsRef.current.has(url)) {
-      URL.revokeObjectURL(url);
-      audioUrlsRef.current.delete(url);
-    }
-  }, []);
-
-  // Cleanup all audio URLs
-  const cleanupAllAudioUrls = useCallback(() => {
-    audioUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
-    audioUrlsRef.current.clear();
-  }, []);
-
-  const mutation = useMutation({
-    mutationFn: async (payload: GenerateAudioPayload): Promise<GenerateAudioResponse> => {
-      // Prepare audio data
+  return useMutation({
+    mutationKey: ['generateAudio'],
+    mutationFn: async (payload: GenerateAudioPayload) => {
+      // 1. Prepare audio data
       const { taskRequest } = await prepareAudioData(payload);
 
-      // Start task
-      const taskId = await startTask(taskRequest, payload.avatar?.id || '', 'audio', payload.dialog);
+      // 2. Call CELERY_RUN_TASK
+      const response = await fetch(CELERY_RUN_TASK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskRequest)
+      });
 
-      // Poll for result
-      const base64Audio = await pollTaskStatus(taskId, 'audio');
+      if (!response.ok) throw new Error('Failed to start task');
+      const { task_id } = await response.json();
 
-      // Create response
-      const result = createAudioResponse(base64Audio, taskId);
+      // 3. Create task in DB via /api/task
+      await fetch('/api/task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: task_id,
+          avatarId: payload.avatar?.id || '',
+          taskType: 'audio',
+          userPrompt: payload.dialog,
+          status: 'PENDING'
+        })
+      });
 
-      // Track the audio URL for cleanup
-      audioUrlsRef.current.add(result.audioUrl);
+      // 4. Poll for completion
+      const pollStatus = async (): Promise<any> => {
+        const data = await queryClient.fetchQuery({
+          queryKey: ['audioTaskStatus', task_id],
+          queryFn: async () => {
+            const response = await fetch(`${CELERY_TASK_STATUS}${task_id}`);
+            if (!response.ok) throw new Error('Failed to fetch task status');
+            return response.json();
+          },
+        });
 
-      return result;
-    },
-    onSuccess: (data) => {
-      // Invalidate related queries if needed
-      queryClient.invalidateQueries({ queryKey: ['avatar-audio'] });
-      options?.onSuccess?.(data);
-    },
-    onError: (error: Error) => {
-      options?.onError?.(error);
-    },
-    retry: (failureCount, error) => {
-      // Don't retry on timeout errors or training audio issues
-      if (error.message.includes('timed out') || error.message.includes('training audio')) {
-        return false;
-      }
-      return failureCount < (options?.retry ?? 2);
+        if (data.status === 'SUCCESS' && data.result) {
+          // Update DB on completion
+          await fetch(`/api/task/${task_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              base64Data: data.result,
+              status: 'SUCCESS'
+            })
+          });
+          return createAudioResponse(data.result, task_id);
+        } else if (data.status === 'FAILURE') {
+          await fetch(`/api/task/${task_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              status: 'FAILURE',
+              error: data.error || 'No result returned from task'
+            })
+          });
+          throw new Error(data.error || 'Audio generation failed');
+        }
+
+        // Still pending, wait and try again
+        await new Promise(resolve =>
+          setTimeout(resolve, POLLING_CONFIG['audio'].REFETCH_INTERVAL)
+        );
+        return pollStatus();
+      };
+
+      return await pollStatus();
     },
   });
-
-  return {
-    ...mutation,
-    cleanupAudioUrl,
-    cleanupAllAudioUrls,
-    // Helper to check error types
-    isTimeoutError: mutation.error?.message.includes('timed out') || false,
-    isTrainingAudioError: mutation.error?.message.includes('training audio') || false,
-  };
 }

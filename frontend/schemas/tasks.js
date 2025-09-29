@@ -12,11 +12,11 @@ module.exports = {
           description: "must be a string and is required"
         },
         taskType: {
-          enum: ["audio", "video"],
+          enum: ["audio", "video", "image", "text"],
           description: "can only be one of the enum values and is required"
         },
         status: {
-          enum: ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"],
+          enum: ["PENDING", "RECEIVED", "STARTED", "SUCCESS", "FAILURE"],
           description: "can only be one of the enum values and is required"
         },
         taskId: {
@@ -33,8 +33,6 @@ module.exports = {
   },
   // Optional: Add indexes for this collection
   indexes: [
-    { key: { taskId: 1 }, unique: true },
-    { key: { avatarId: 1, status: 1 } },
-    { key: { createdAt: -1 } }
+    { key: { taskId: 1 }, unique: true }
   ]
 };

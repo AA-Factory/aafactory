@@ -38,9 +38,10 @@ export const AudioGenerateTab: React.FC<AudioGenerateTabProps> = ({
           </div>
         </label>
         <select
+          name="audioSource"
           value={selectedAudioSource}
-          onChange={(e) => onAudioSourceChange(e.target.value as 'avatar' | 'rick_and_morty' | 'japanese')}
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
+          onChange={(e) => onAudioSourceChange(e.target.value as 'avatar' | 'rick_and_morty' | 'japanese')}
         >
           {avatar?.trainingAudioPath && (
             <option value="avatar">Avatar's uploaded audio</option>
@@ -51,10 +52,11 @@ export const AudioGenerateTab: React.FC<AudioGenerateTabProps> = ({
       </div>
 
       <textarea
-        className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
-        placeholder="Type the dialog for your video here..."
+        name="dialog"
         value={dialog}
+        className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
         onChange={(e) => onDialogChange(e.target.value)}
+        placeholder="Type the dialog for your video here..."
         maxLength={500}
       />
       <div className="flex items-center justify-between">

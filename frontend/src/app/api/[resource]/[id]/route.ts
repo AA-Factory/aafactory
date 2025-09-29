@@ -4,7 +4,7 @@ import { unlink } from 'fs/promises';
 import path from 'path';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { RESOURCE_CONFIG, ResourceType } from "@/config/resourceConfig";
+import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
@@ -36,7 +36,7 @@ export async function DELETE(
     const db = client.db(MONGODB_DB);
 
     // Find the resource in the database
-    const resourceDoc = await db.collection(config.collection).findOne({ filename: id });
+    const resourceDoc = await db.collection(config.collection).findOne({ _id: new ObjectId(id) });
 
     if (!resourceDoc) {
       return NextResponse.json(

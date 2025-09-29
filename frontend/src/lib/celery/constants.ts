@@ -17,14 +17,12 @@ export const VIDEO_TYPES = [
 
 export const POLLING_CONFIG = {
   audio: {
-    INTERVAL: 5000,
-    MAX_ATTEMPTS: 60,
-    TIMEOUT: 300000,
+    REFETCH_INTERVAL: 10000,
+    BACKGROUND_REFETCH: true,
   },
   video: {
-    INTERVAL: 50000,
-    MAX_ATTEMPTS: 400,
-    TIMEOUT: 9000000,
+    REFETCH_INTERVAL: 50000,
+    BACKGROUND_REFETCH: true,
   }
 };
 

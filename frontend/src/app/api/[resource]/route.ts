@@ -5,7 +5,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getCollection } from '@/lib/database';
-import { RESOURCE_CONFIG, ResourceType } from '@/config/resourceConfig';
+import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
 interface RouteParams {
   params: {

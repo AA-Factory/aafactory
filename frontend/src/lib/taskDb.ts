@@ -1,6 +1,6 @@
 import { TaskDocument, getCollection } from './database';
 import { saveBase64File, SaveFileResult, cleanAllDirectories } from './fileUtils';
-import { RESOURCE_CONFIG, ResourceType } from '@/config/resourceConfig';
+import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
 export interface CreateTaskParams {
   taskId: string;
@@ -33,7 +33,7 @@ export async function createTask(params: CreateTaskParams): Promise<TaskDocument
       _id: result.insertedId.toString()
     };
   } catch (error) {
-    // console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+    console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
 
     console.error('Error creating task:', error);
 
@@ -43,7 +43,7 @@ export async function createTask(params: CreateTaskParams): Promise<TaskDocument
 
 export async function updateTaskStatus(
   taskId: string,
-  status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE',
+  status: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE',
   error?: string
 ): Promise<void> {
   try {
@@ -67,6 +67,8 @@ export async function updateTaskStatus(
       throw new Error(`Task with ID ${taskId} not found`);
     }
   } catch (error) {
+    console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+
     console.error('Error updating task status:', error);
     throw new Error(`Failed to update task status: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -84,8 +86,8 @@ export async function createResource(taskId: string, fileResult: SaveFileResult)
     const config = RESOURCE_CONFIG[resourceType];
     const fileInfo = {
       filename: `${taskId}.${fileResult.fileType}`,
-      path: `/uploads/${resourceType}/${fileResult.fileName}`,
-      url: `/uploads/${resourceType}/${fileResult.fileName}`,
+      path: `/uploads/${resourceType}/${taskId}.${fileResult.fileType}`,
+      url: `/uploads/${resourceType}/${taskId}.${fileResult.fileType}`,
       type: fileResult.fileType,
       size: 1251304, // Placeholder size, replace with actual if available
       resourceType: resourceType,
@@ -154,6 +156,8 @@ export async function updateTaskWithFile(
     // await resourceCollection.insertOne(fileInfo);
     return fileResult;
   } catch (error) {
+    console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+
     console.error('Error updating task with file:', error);
     throw new Error(`Failed to update task with file: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -166,6 +170,19 @@ export async function getTask(taskId: string): Promise<TaskDocument | null> {
   } catch (error) {
     console.error('Error getting task:', error);
     throw new Error(`Failed to get task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function getTasks(avatarId: string, taskType?: 'audio' | 'video' | 'image', status?: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE'): Promise<TaskDocument[]> {
+  try {
+    const collection = await getCollection<TaskDocument>('tasks');
+    const query: any = { avatarId };
+    if (taskType) query.taskType = taskType;
+    if (status) query.status = status;
+    return await collection.find(query).sort({ createdAt: -1 }).toArray();
+  } catch (error) {
+    console.error('Error getting tasks:', error);
+    throw new Error(`Failed to get tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

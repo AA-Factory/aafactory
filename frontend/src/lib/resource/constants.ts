@@ -36,3 +36,10 @@ export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
     acceptString: 'image/jpeg,image/png,image/webp'
   },
 } as const;
+
+
+export const RESOURCE_ENDPOINTS = {
+  video: '/api/resources/video',
+  audio: '/api/resources/audio',
+  image: '/api/resources/image',
+} as const;

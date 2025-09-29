@@ -1,79 +1,86 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef } from "react";
 import {
   prepareVideoData,
   createVideoResponse,
   type GenerateVideoPayload,
-  type GenerateVideoResponse
 } from "@/services/videoService";
-import { startTask, pollTaskStatus } from "@/services/shared/taskService";
+import { CELERY_RUN_TASK, CELERY_TASK_STATUS, POLLING_CONFIG } from "@/lib/celery/constants";
 
-type UseGenerateVideoOptions = {
-  onSuccess?: (data: GenerateVideoResponse) => void;
-  onError?: (error: Error) => void;
-  retry?: number;
-};
-
-export function useGenerateVideo(options?: UseGenerateVideoOptions) {
+export function useGenerateVideo() {
   const queryClient = useQueryClient();
-  const videoUrlsRef = useRef<Set<string>>(new Set());
-
-  // Cleanup function for video URLs
-  const cleanupVideoUrl = useCallback((url: string) => {
-    if (videoUrlsRef.current.has(url)) {
-      URL.revokeObjectURL(url);
-      videoUrlsRef.current.delete(url);
-    }
-  }, []);
-
-  // Cleanup all video URLs
-  const cleanupAllVideoUrls = useCallback(() => {
-    videoUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
-    videoUrlsRef.current.clear();
-  }, []);
-
-  const mutation = useMutation({
-    mutationFn: async (payload: GenerateVideoPayload): Promise<GenerateVideoResponse> => {
-      // Prepare video data
+  return useMutation({
+    mutationKey: ['generateVideo'],
+    mutationFn: async (payload: GenerateVideoPayload) => {
+      // 1. Prepare video data
       const { taskRequest } = await prepareVideoData(payload);
 
-      // Start task
-      const taskId = await startTask(taskRequest, payload.avatar?.id || '', 'video', payload.prompt);
+      // 2. Call CELERY_RUN_TASK
+      const response = await fetch(CELERY_RUN_TASK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskRequest)
+      });
 
-      // Poll for result
-      const base64Video = await pollTaskStatus(taskId, 'video');
+      if (!response.ok) throw new Error('Failed to start task');
+      const { task_id } = await response.json();
 
-      // Create response
-      const result = createVideoResponse(base64Video, taskId);
+      // 3. Create task in DB via /api/task
+      await fetch('/api/task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: task_id,
+          avatarId: payload.avatar?.id || '',
+          taskType: 'video',
+          userPrompt: payload.prompt,
+          status: 'PENDING'
+        })
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "video", { avatarId: payload.avatar?.id }]
+      });
+      // 4. Poll for completion
+      const pollStatus = async (): Promise<any> => {
+        const data = await queryClient.fetchQuery({
+          queryKey: ['videoTaskStatus', task_id],
+          queryFn: async () => {
+            const response = await fetch(`${CELERY_TASK_STATUS}${task_id}`);
+            if (!response.ok) throw new Error('Failed to fetch task status');
+            return response.json();
+          },
+        });
 
-      // Track the video URL for cleanup
-      videoUrlsRef.current.add(result.videoUrl);
+        if (data.status === 'SUCCESS' && data.result) {
+          // Update DB on completion
+          await fetch(`/api/task/${task_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              base64Data: data.result,
+              status: 'SUCCESS'
+            })
+          });
+          return createVideoResponse(data.result, task_id);
+        } else if (data.status === 'FAILURE') {
+          await fetch(`/api/task/${task_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              status: 'FAILURE',
+              error: data.error || 'No result returned from task'
+            })
+          });
+          throw new Error(data.error || 'Video generation failed');
+        }
 
-      return result;
-    },
-    onSuccess: (data) => {
-      // Invalidate related queries if needed
-      queryClient.invalidateQueries({ queryKey: ['avatar-video'] });
-      options?.onSuccess?.(data);
-    },
-    onError: (error: Error) => {
-      options?.onError?.(error);
-    },
-    retry: (failureCount, error) => {
-      // Don't retry on timeout errors
-      if (error.message.includes('timed out')) {
-        return false;
-      }
-      return failureCount < (options?.retry ?? 2);
+        // Still pending, wait and try again
+        await new Promise(resolve =>
+          setTimeout(resolve, POLLING_CONFIG['video'].REFETCH_INTERVAL)
+        );
+        return pollStatus();
+      };
+
+      return await pollStatus();
     },
   });
-
-  return {
-    ...mutation,
-    cleanupVideoUrl,
-    cleanupAllVideoUrls,
-    // Helper to check error types
-    isTimeoutError: mutation.error?.message.includes('timed out') || false,
-    isVideoProcessingError: mutation.error?.message.includes('processing') || false,
-  };
 }

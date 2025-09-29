@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { cleanAllDirectories, cleanSpecificDirectories } from '@/lib/fileUtils';
-import { RESOURCE_CONFIG } from '@/config/resourceConfig';
+import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 

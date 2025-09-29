@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import {
   updateTaskStatus,
   updateTaskWithFile,
-  getTasksByType
+  getTasks
 } from "@/lib/taskDb";
-import { CELERY_TASK_STATUS_SERVER } from "@/config/constants";
+import { CELERY_TASK_STATUS_SERVER } from "@/lib/celery/constants";
 import { isCeleryTaskStatusResponse } from "@/types/celery";
 
 interface TaskCheckResult {
@@ -78,7 +78,7 @@ async function updateTaskBasedOnStatus(
     case 'STARTED':
     case 'PENDING':
     case 'RETRY':
-      await updateTaskStatus(taskId, 'IN_PROGRESS');
+      await updateTaskStatus(taskId, 'PENDING');
       console.log(`🔄 ${taskType} task ${taskId} is in progress`);
       return true;
 
@@ -108,7 +108,7 @@ export async function POST(request: Request, { params }: SyncParams) {
     console.log(`🔍 Starting ${tasktype} task status sync...`);
 
     // Get pending tasks for the specified type
-    const pendingTasks = await getTasksByType(avatarId, tasktype);
+    const pendingTasks = await getTasks(avatarId, tasktype, 'PENDING');
 
     if (pendingTasks.length === 0) {
       return NextResponse.json({

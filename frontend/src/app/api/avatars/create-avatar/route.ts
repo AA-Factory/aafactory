@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
         description: formData.get("description") as string | null,
         category: (formData.get("category") as string) || "realistic",
         hasEncodedData: formData.get("hasEncodedData") === "true",
-        src: null as string | null,
-        fileName: null as string | null,
+        src: '/placeholder-avatar.png',
+        fileName: 'placeholder-avatar.png',
         trainingAudioPath: null as string | null,
         trainingAudioFileName: null as string | null,
       };
@@ -62,6 +62,11 @@ export async function POST(req: NextRequest) {
     } else {
       // Handle JSON data (without file upload)
       data = await req.json();
+      data = {
+        ...data,
+        src: '/placeholder-avatar.png',
+        fileName: 'placeholder-avatar.png'
+      };
     }
 
     // Validate required fields

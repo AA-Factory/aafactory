@@ -23,10 +23,5 @@ const getCollectionNames = () => {
 module.exports = {
   collections,      // For bulk operations
   getSchema,        // For individual access
-  getCollectionNames,
-  // Direct exports for convenience
-  tasks,
-  videos,
-  timeline,
-  avatars
+  getCollectionNames
 };

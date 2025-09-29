@@ -1,7 +1,7 @@
 // src/utils/apiClient.ts
 import {
   BASE_URL,
-} from "@/config/constants";
+} from "@/lib/celery/constants";
 
 class ApiClient {
   private token: string | null = null;

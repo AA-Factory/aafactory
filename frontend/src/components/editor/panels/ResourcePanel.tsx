@@ -2,7 +2,7 @@
 import React from "react";
 import { UploadButton } from "../shared/UploadButton";
 import { useResourceAPI } from "@/hooks/useResourceAPI";
-import { RESOURCE_CONFIG, ResourceType } from "@/config/resourceConfig";
+import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
 interface ResourcePanelProps {
   resourceType: ResourceType;

@@ -5,7 +5,7 @@ import {
   COMFYUI_RUN_SYNC,
   COMFYUI_SERVER_URL,
   COMFYUI_STATUS,
-} from "@/config/constants";
+} from "@/lib/celery/constants";
 
 export type GenerateImagePayload = {
   workflow: Record<string, unknown>;
@@ -85,6 +85,7 @@ type JobStatus =
 
 export function useGenerateImage() {
   return useMutation({
+    mutationKey: ['generateImage'],
     mutationFn: async (payload: GenerateImagePayload) => {
       const headers = new Headers();
       headers.append("Content-Type", "application/json");

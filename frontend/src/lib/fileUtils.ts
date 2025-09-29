@@ -32,7 +32,7 @@ export async function saveBase64File(
 
     // Determine file extension based on type and data URL
     const extension = getFileExtension(base64Data, fileType);
-    const fileName = `${taskId}_${Date.now()}.${extension}`;
+    const fileName = `${taskId}.${extension}`;
 
     // Create public directory path
     const publicDir = path.join(process.cwd(), 'public/uploads', fileType);

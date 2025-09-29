@@ -27,7 +27,7 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
   existingAudioFileName,
 }) => {
   return (
-    <div>
+    <div className="mb-3">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Training Audio
       </label>
@@ -36,13 +36,12 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
       </p>
 
       <div
-        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-          isDragging
+        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${isDragging
             ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
             : selectedAudio
               ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
               : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50"
-        }`}
+          }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}

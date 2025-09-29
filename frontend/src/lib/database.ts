@@ -21,8 +21,8 @@ export interface TaskDocument {
   _id?: string;
   taskId: string;
   avatarId: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE';
-  taskType: 'audio' | 'video';
+  status: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE';
+  taskType: 'audio' | 'video' | 'image';
   createdAt: Date;
   updatedAt: Date;
   filePath?: string;

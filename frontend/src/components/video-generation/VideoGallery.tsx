@@ -3,7 +3,7 @@ import { useVideoGeneration } from "@/contexts/VideoGenerationContext";
 import { VideoTask } from "@/types/tasks";
 
 export const VideoGallery: React.FC = () => {
-  const { state, selectVideoTask } = useVideoGeneration();
+  const { state, selectVideoTask, videoTasks, loadingVideoTasks } = useVideoGeneration();
   const handleVideoClick = (task: VideoTask) => {
     if (task.status === 'SUCCESS' && task.filePath) {
       selectVideoTask(task);
@@ -27,9 +27,6 @@ export const VideoGallery: React.FC = () => {
         {task.status === 'PENDING' && (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
         )}
-        {task.status === 'IN_PROGRESS' && (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-        )}
         {task.status === 'FAILURE' && (
           <span className="text-xs text-red-500">Failed</span>
         )}
@@ -41,16 +38,16 @@ export const VideoGallery: React.FC = () => {
     switch (status) {
       case 'SUCCESS':
         return 'bg-green-500';
-      case 'IN_PROGRESS':
-        return 'bg-blue-500';
       case 'PENDING':
         return 'bg-yellow-500';
+      case 'FAILURE':
+        return 'bg-red-500';
       default:
         return 'bg-red-500';
     }
   };
 
-  if (state.loadingVideoTasks) {
+  if (loadingVideoTasks) {
     return (
       <div className="flex items-center space-x-2 min-w-[120px] p-2 justify-center h-full">
         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -59,7 +56,7 @@ export const VideoGallery: React.FC = () => {
     );
   }
 
-  if (state.videoTasks.length === 0) {
+  if (videoTasks.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
         No videos generated yet.
@@ -69,7 +66,7 @@ export const VideoGallery: React.FC = () => {
 
   return (
     <div className="flex items-center space-x-4 overflow-x-auto">
-      {state.videoTasks.map((task) => (
+      {videoTasks.map((task) => (
         <button
           key={task.taskId}
           onClick={() => handleVideoClick(task)}

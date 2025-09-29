@@ -38,7 +38,7 @@ export const useResourceAPI = (
 
       if (response.ok) {
         const resources = result.data.map((item: any) => ({
-          id: item.filename,
+          id: item._id,
           src: item.url,
           filename: item.filename,
           url: item.url,

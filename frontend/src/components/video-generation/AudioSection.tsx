@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { AudioGenerateTab } from "./AudioGenerateTab";
 import { AudioUploadTab } from "./AudioUploadTab";
 import { AudioSelector } from "./AudioSelector";
@@ -6,7 +6,7 @@ import { AudioPlayer } from "./AudioPlayer";
 import { useGenerateAudio } from "@/hooks/useGenerateAudio";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useVideoGeneration } from "@/contexts/VideoGenerationContext";
-import { fetchAudioTasks } from "@/lib/api/tasks";
+import { useAudioTasks } from "@/lib/api/tasks";
 import { AudioTask } from "@/types/tasks";
 import { DIALOG_SEEDS } from "@/utils/fakeData";
 
@@ -16,14 +16,11 @@ const getRandomDialogSeed = () => {
 
 export const AudioSection: React.FC = () => {
   const { state, setAudioData } = useVideoGeneration();
-
-  // Internal state
   const [audioTab, setAudioTab] = useState<'generate' | 'upload'>('generate');
   const [selectedAudioSource, setSelectedAudioSource] = useState<'avatar' | 'rick_and_morty' | 'japanese'>('avatar');
   const [dialog, setDialog] = useState(getRandomDialogSeed());
   const [uploadedAudioFile, setUploadedAudioFile] = useState<File | null>(null);
   const [uploadedAudioUrl, setUploadedAudioUrl] = useState<string | null>(null);
-  const [availableAudioTasks, setAvailableAudioTasks] = useState<AudioTask[]>([]);
   const [selectedAudioTask, setSelectedAudioTask] = useState<AudioTask | null>(null);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
   const [generatedAudioBase64, setGeneratedAudioBase64] = useState<string | null>(null);
@@ -31,26 +28,21 @@ export const AudioSection: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const generateAudioMutation = useGenerateAudio();
+
   const { showNotification } = useNotification();
+  const {
+    data: audioTasks = [],
+  } = useAudioTasks(state.avatar?.id || "", "SUCCESS");
 
-  // Fetch available audio tasks when avatar changes
+  // Memoize audioTasks to prevent unnecessary re-renders
+  const memoizedAudioTasks = useMemo(() => audioTasks, [audioTasks.length]);
+
+  // Clear audio selections when avatar changes
   useEffect(() => {
-    if (state.avatar?.id) {
-      setLoadingAudioTasks(true);
-      fetchAudioTasks(state.avatar.id)
-        .then(tasks => {
-          setAvailableAudioTasks(tasks);
-        })
-        .finally(() => {
-          setLoadingAudioTasks(false);
-        });
-
-    } else {
-      setAvailableAudioTasks([]);
+    if (!state.avatar?.id) {
       setSelectedAudioTask(null);
     }
   }, [state.avatar?.id]);
-
   // Auto-select avatar audio source if available when avatar changes
   useEffect(() => {
     if (state.avatar?.trainingAudioPath) {
@@ -60,18 +52,18 @@ export const AudioSection: React.FC = () => {
 
   // Initialize from context state (only once)
   useEffect(() => {
-    if (!isInitialized && state.selectedAudioTask && availableAudioTasks.length > 0) {
+    if (!isInitialized && state.selectedAudioTask && memoizedAudioTasks.length > 0) {
       // Check if the context task exists in available tasks
-      const contextTask = availableAudioTasks.find(task => task.taskId === state.selectedAudioTask?.taskId);
+      const contextTask = memoizedAudioTasks.find(task => task.taskId === state.selectedAudioTask?.taskId);
       if (contextTask) {
         setSelectedAudioTask(contextTask);
         setDialog(contextTask.userPrompt || getRandomDialogSeed());
       }
       setIsInitialized(true);
-    } else if (!isInitialized && availableAudioTasks.length > 0) {
+    } else if (!isInitialized && memoizedAudioTasks.length > 0) {
       setIsInitialized(true);
     }
-  }, [state.selectedAudioTask, availableAudioTasks, isInitialized]);
+  }, [state.selectedAudioTask, memoizedAudioTasks, isInitialized]);
 
   // Update context whenever audio-related state changes
   useEffect(() => {
@@ -84,7 +76,7 @@ export const AudioSection: React.FC = () => {
       dialog,
       audioReady: isReady,
     });
-  }, [selectedAudioTask, generatedAudioBase64, uploadedAudioFile, dialog, setAudioData]);
+  }, [selectedAudioTask, generatedAudioBase64, uploadedAudioFile, dialog]);
 
   const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -103,30 +95,24 @@ export const AudioSection: React.FC = () => {
   const handleAudioGeneration = async () => {
     showNotification("Generating audio, this may take a minute...", "info");
 
-    generateAudioMutation.mutate(
-      {
-        dialog: dialog,
-        avatar: state.avatar,
-        async: true,
-        audioSource: selectedAudioSource,
-      },
-      {
-        onSuccess: (result) => {
-          setGeneratedAudioUrl(result.audioUrl);
-          setGeneratedAudioBase64(result.base64Audio || null);
-          showNotification("Audio generated successfully!", "success");
-
-          // Clear other audio sources when generating new audio
-          setSelectedAudioTask(null);
-          setUploadedAudioFile(null);
-          setUploadedAudioUrl(null);
-        },
-        onError: (error) => {
-          console.error("Audio generation failed:", error);
-          showNotification("Audio generation failed. Please try again.", "error");
-        },
+    const payload = {
+      dialog: dialog,
+      avatar: state.avatar,
+      audioSource: selectedAudioSource,
+    };
+    generateAudioMutation.mutate(payload, {
+      onSuccess: (audioResponse) => {
+        setGeneratedAudioBase64(audioResponse.base64Audio);
+        setGeneratedAudioUrl(audioResponse.audioUrl);
+        showNotification("Audio generation started", "info");
+        setSelectedAudioTask(null);
+        setUploadedAudioFile(null);
+        setUploadedAudioUrl(null);
+        if (audioResponse.base64Audio && audioResponse.audioUrl) {
+          showNotification("Audio generation completed", "success");
+        }
       }
-    );
+    });
   };
 
   const handleAudioTaskSelect = (taskId: string) => {
@@ -139,7 +125,7 @@ export const AudioSection: React.FC = () => {
       clearAllAudioSelections();
     } else {
       // Select a specific audio task
-      const task = availableAudioTasks.find(t => t.taskId === taskId);
+      const task = memoizedAudioTasks.find(t => t.taskId === taskId);
       if (task) {
         setSelectedAudioTask(task);
         // Clear other audio sources when selecting a task
@@ -173,7 +159,7 @@ export const AudioSection: React.FC = () => {
       return {
         audioUrl: selectedAudioTask.filePath,
         audioSource: 'selected' as const,
-        selectedAudioTaskIndex: availableAudioTasks.findIndex(task => task.taskId === selectedAudioTask.taskId),
+        selectedAudioTaskIndex: memoizedAudioTasks.findIndex(task => task.taskId === selectedAudioTask.taskId),
       };
     }
 
@@ -235,7 +221,7 @@ export const AudioSection: React.FC = () => {
 
       {/* Audio Selection */}
       <AudioSelector
-        availableAudioTasks={availableAudioTasks}
+        availableAudioTasks={memoizedAudioTasks}
         selectedAudioTask={selectedAudioTask}
         generatedAudioUrl={generatedAudioUrl}
         onAudioTaskSelect={handleAudioTaskSelect}
