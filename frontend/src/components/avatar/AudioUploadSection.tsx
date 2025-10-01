@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface AudioUploadSectionProps {
+  register: any;
   selectedAudio: File | null;
   isDragging: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
@@ -14,6 +15,7 @@ interface AudioUploadSectionProps {
 }
 
 export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
+  register,
   selectedAudio,
   isDragging,
   fileInputRef,
@@ -47,6 +49,7 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
         onDrop={onDrop}
       >
         <input
+          {...register('trainingAudio')}
           ref={fileInputRef}
           type="file"
           accept="audio/*"

@@ -13,15 +13,11 @@ import {
   HiChevronUp,
   HiLightningBolt,
 } from 'react-icons/hi';
-import {
-  avatarFormSchema,
-  AvatarFormData,
-  categoryOptions,
-} from '@/lib/validation';
+import { avatarFormSchema, AvatarFormData } from '@/lib/types/avatar';
 import { ImageUploadSection } from './ImageUploadSection';
 import { AudioUploadSection } from './AudioUploadSection';
 import { generateFakeFormData } from '@/utils/fakeData';
-
+import { CATEGORY_OPTIONS } from '@/lib/avatar/constants';
 interface AvatarFormProps {
   onSubmit: (data: AvatarFormData) => void;
   defaultValues?: Partial<AvatarFormData>;
@@ -289,7 +285,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         name: 'category' as const,
         label: 'Category',
         type: 'select' as const,
-        options: categoryOptions,
+        options: CATEGORY_OPTIONS,
         placeholder: 'Select avatar category',
         required: false,
         hidden: true,
@@ -341,6 +337,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           ))}
 
           <ImageUploadSection
+            register={register}
             selectedImage={selectedImage}
             isDragging={isDragging}
             fileInputRef={fileInputRef}
@@ -353,6 +350,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           />
 
           <AudioUploadSection
+            register={register}
             selectedAudio={selectedAudio}
             isDragging={isAudioDragging}
             fileInputRef={audioFileInputRef}

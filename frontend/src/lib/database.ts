@@ -3,7 +3,7 @@ import clientPromise from '@/lib/mongodb';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
-export async function connectToDatabase(): Promise<Db> {
+async function connectToDatabase(): Promise<Db> {
   try {
     const client = await clientPromise;
     return client.db(MONGODB_DB);

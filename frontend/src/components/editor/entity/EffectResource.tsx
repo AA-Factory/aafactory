@@ -7,7 +7,7 @@ import {
   VideoEditorElement,
   ImageEditorElement,
   EffecType,
-} from '@/types/editor';
+} from '@/lib/types/editor';
 
 const EFFECT_TYPE_TO_LABEL: Record<string, string> = {
   blackAndWhite: 'Black and White',

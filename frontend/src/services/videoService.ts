@@ -1,13 +1,12 @@
-import { Avatar } from '@/types/avatar';
+import { Avatar } from '@/lib/types/avatar';
 import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
-import { type VideoGenerationTaskRequest } from '@/types/celery';
+import { type VideoGenerationTaskRequest } from '@/lib/types/tasks';
 
 // Types
 export type GenerateVideoPayload = {
-  prompt: string;
-  audioBase64?: string; // Optional - Base64 audio data from useGenerateAudio (not used in API)
   avatar: Avatar | null; // Avatar object containing image
-  async?: boolean;
+  audioBase64?: string; // Optional - Base64 audio data from useGenerateAudio (not used in API)
+  prompt: string;
 };
 
 export type GenerateVideoResponse = {
@@ -17,7 +16,7 @@ export type GenerateVideoResponse = {
   base64Video: string;
 };
 
-export function createTaskRequest(
+function createTaskRequest(
   payload: GenerateVideoPayload,
   imageBase64: string,
   audioBase64: string,

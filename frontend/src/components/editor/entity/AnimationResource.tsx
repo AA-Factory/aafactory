@@ -12,7 +12,7 @@ import {
   SlideInAnimation,
   SlideOutAnimation,
   SlideTextType,
-} from '@/types/editor';
+} from '@/lib/types/editor';
 
 const ANIMATION_TYPE_TO_LABEL: Record<string, string> = {
   fadeIn: 'Fade In',

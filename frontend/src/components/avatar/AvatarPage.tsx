@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { HiDownload, HiTrash, HiArrowLeft } from 'react-icons/hi';
 import { AvatarForm, AvatarFormRef } from './AvatarForm';
-import { AvatarFormData } from '@/lib/validation';
+import { AvatarFormData } from '@/lib/types/avatar';
 import { useNotification } from '@/contexts/NotificationContext';
 import {
   useAvatar,

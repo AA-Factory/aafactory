@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AudioTask, VideoTask } from '@/types/tasks';
+import { AudioTask, VideoTask } from '@/lib/types/tasks';
 
 /** -----------------
  * Query Keys
  * ----------------- */
-export const taskKeys = {
+const taskKeys = {
   all: ['tasks'] as const,
   audio: () => [...taskKeys.all, 'audio'] as const,
   video: () => [...taskKeys.all, 'video'] as const,
@@ -148,26 +148,26 @@ export const usePollPendingAudioTasks = () => {
 /** -----------------
  * Utility Hooks
  * ----------------- */
-export const useRefreshTasks = () => {
-  const queryClient = useQueryClient();
-  return {
-    refreshAllTasks: async () =>
-      queryClient.invalidateQueries({ queryKey: taskKeys.all }),
-    refreshAudioTasks: async (avatarId: string, status?: string) =>
-      queryClient.invalidateQueries({
-        queryKey: taskKeys.audioByAvatar(avatarId, status),
-      }),
-    refreshVideoTasks: async (avatarId: string, status?: string) =>
-      queryClient.invalidateQueries({
-        queryKey: taskKeys.videoByAvatar(avatarId, status),
-      }),
-    forceRefreshAudioTasks: async (avatarId: string, status?: string) =>
-      queryClient.refetchQueries({
-        queryKey: taskKeys.audioByAvatar(avatarId, status),
-      }),
-    forceRefreshVideoTasks: async (avatarId: string, status?: string) =>
-      queryClient.refetchQueries({
-        queryKey: taskKeys.videoByAvatar(avatarId, status),
-      }),
-  };
-};
+// export const useRefreshTasks = () => {
+//   const queryClient = useQueryClient();
+//   return {
+//     refreshAllTasks: async () =>
+//       queryClient.invalidateQueries({ queryKey: taskKeys.all }),
+//     refreshAudioTasks: async (avatarId: string, status?: string) =>
+//       queryClient.invalidateQueries({
+//         queryKey: taskKeys.audioByAvatar(avatarId, status),
+//       }),
+//     refreshVideoTasks: async (avatarId: string, status?: string) =>
+//       queryClient.invalidateQueries({
+//         queryKey: taskKeys.videoByAvatar(avatarId, status),
+//       }),
+//     forceRefreshAudioTasks: async (avatarId: string, status?: string) =>
+//       queryClient.refetchQueries({
+//         queryKey: taskKeys.audioByAvatar(avatarId, status),
+//       }),
+//     forceRefreshVideoTasks: async (avatarId: string, status?: string) =>
+//       queryClient.refetchQueries({
+//         queryKey: taskKeys.videoByAvatar(avatarId, status),
+//       }),
+//   };
+// };

@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNotification } from '@/contexts/NotificationContext';
-
-export type ResourceType = 'image' | 'video' | 'audio' | 'document';
-
-export interface ResourceData {
-  id: string;
-  src: string;
-  filename: string;
-  url: string;
-  // Add other properties that come from your API
-}
-
-export interface UseResourceAPIReturn {
+import { ResourceData, ResourceType } from '@/lib/types/resource';
+interface UseResourceAPIReturn {
   data: ResourceData[] | null;
   isLoading: boolean;
   error: string | null;

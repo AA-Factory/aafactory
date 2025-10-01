@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { uploadFile, uploadTrainingAudio } from '@/lib/fileUtils';
+import { DEFAULT_AVATAR_IMAGES } from '@/lib/avatar/constants';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
@@ -64,8 +65,8 @@ export async function POST(req: NextRequest) {
       data = await req.json();
       data = {
         ...data,
-        src: '/placeholder-avatar.png',
-        fileName: 'placeholder-avatar.png',
+        src: DEFAULT_AVATAR_IMAGES[Math.floor(Math.random() * DEFAULT_AVATAR_IMAGES.length)].src,
+        fileName: DEFAULT_AVATAR_IMAGES[Math.floor(Math.random() * DEFAULT_AVATAR_IMAGES.length)].filename
       };
     }
 
@@ -94,15 +95,15 @@ export async function POST(req: NextRequest) {
       avatar: { ...avatar, _id: result.insertedId },
       uploadResult: uploadResult
         ? {
-            filePath: uploadResult.filePath,
-            fileName: uploadResult.fileName,
-          }
+          filePath: uploadResult.filePath,
+          fileName: uploadResult.fileName,
+        }
         : null,
       audioUploadResult: audioUploadResult
         ? {
-            filePath: audioUploadResult.filePath,
-            fileName: audioUploadResult.fileName,
-          }
+          filePath: audioUploadResult.filePath,
+          fileName: audioUploadResult.fileName,
+        }
         : null,
     });
   } catch (error: any) {

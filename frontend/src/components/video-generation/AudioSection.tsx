@@ -7,7 +7,7 @@ import { useGenerateAudio } from '@/hooks/useGenerateAudio';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useAudioTasks } from '@/lib/api/tasks';
-import { AudioTask } from '@/types/tasks';
+import { AudioTask } from '@/lib/types/tasks';
 import { DIALOG_SEEDS } from '@/utils/fakeData';
 
 const getRandomDialogSeed = () => {

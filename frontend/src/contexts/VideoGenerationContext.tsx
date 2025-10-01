@@ -7,15 +7,15 @@ import React, {
   useMemo,
   useEffect,
 } from 'react';
-import { Avatar } from '@/types/avatar';
-import { VideoTask } from '@/types/tasks';
+import { Avatar } from '@/lib/types/avatar';
+import { VideoTask } from '@/lib/types/tasks';
 import {
   useVideoTasks,
   usePollPendingVideoTasks,
   usePollPendingAudioTasks,
 } from '@/lib/api/tasks';
 import { DIALOG_SEEDS } from '@/utils/fakeData';
-import { VIDEO_TYPES } from '@/lib/celery/constants';
+import { VIDEO_TYPES } from '@/lib/task/constants';
 interface AudioTask {
   taskId: string;
   userPrompt: string;

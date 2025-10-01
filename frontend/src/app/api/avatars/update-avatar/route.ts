@@ -25,10 +25,6 @@ export async function PUT(req: NextRequest) {
         backgroundKnowledge: formData.get('backgroundKnowledge'),
         description: formData.get('description'),
         category: formData.get('category'),
-        hasEncodedData: formData.get('hasEncodedData') === 'true',
-        fileName: '',
-        src: '',
-        hasFileUpload: false,
       };
 
       // Handle main file upload
@@ -93,9 +89,9 @@ export async function PUT(req: NextRequest) {
         : null,
       audioUploadResult: audioUploadResult
         ? {
-            filePath: audioUploadResult.filePath,
-            fileName: audioUploadResult.fileName,
-          }
+          filePath: audioUploadResult.filePath,
+          fileName: audioUploadResult.fileName,
+        }
         : null,
     });
   } catch (error: any) {

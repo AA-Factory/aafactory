@@ -1,7 +1,7 @@
 import React from 'react';
 import { PiFileVideoBold } from 'react-icons/pi';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
-import { VIDEO_TYPES } from '@/lib/celery/constants';
+import { VIDEO_TYPES } from '@/lib/task/constants';
 interface VideoType {
   id: string;
   label: string;

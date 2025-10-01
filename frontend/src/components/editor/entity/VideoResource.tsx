@@ -4,7 +4,7 @@ import { StoreContext } from '@/store';
 import { formatTimeToMinSec } from '@/utils';
 import { observer } from 'mobx-react';
 import { MdAdd } from 'react-icons/md';
-import { ResourceData } from '@/hooks/useResourceAPI';
+import { ResourceData } from '@/lib/types/resource';
 
 type VideoResourceProps = {
   video: ResourceData;

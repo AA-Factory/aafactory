@@ -1,7 +1,7 @@
 // Configuration for each resource type
 export type ResourceType = 'video' | 'audio' | 'image';
 
-export interface ResourceConfig {
+interface ResourceConfig {
   collection: string;
   uploadDir: string;
   allowedTypes: string[];
@@ -48,3 +48,5 @@ export const RESOURCE_ENDPOINTS = {
   audio: '/api/resources/audio',
   image: '/api/resources/image',
 } as const;
+
+export const RESOURCE_DIRECTORIES = ['video', 'audio', 'image']

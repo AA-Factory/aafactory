@@ -17,6 +17,7 @@ export function useGenerateVideo() {
     mutationFn: async (payload: GenerateVideoPayload) => {
       // 1. Prepare video data
       const { taskRequest } = await prepareVideoData(payload);
+      console.log('✌️taskRequest --->', taskRequest);
 
       // 2. Call CELERY_RUN_TASK
       const response = await fetch(CELERY_RUN_TASK, {

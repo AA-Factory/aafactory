@@ -3,7 +3,7 @@
  */
 
 // Custom Error Classes
-export class Base64Error extends Error {
+class Base64Error extends Error {
   constructor(
     message: string,
     public code: string,
@@ -13,13 +13,13 @@ export class Base64Error extends Error {
   }
 }
 
-export class EncodingError extends Base64Error {
+class EncodingError extends Base64Error {
   constructor(message: string) {
     super(message, 'ENCODING_ERROR');
   }
 }
 
-export class DecodingError extends Base64Error {
+class DecodingError extends Base64Error {
   constructor(message: string) {
     super(message, 'DECODING_ERROR');
   }
@@ -28,7 +28,7 @@ export class DecodingError extends Base64Error {
 /**
  * Cleans a base64 string by removing invalid characters and adding padding
  */
-export function cleanBase64(base64String: string): string {
+function cleanBase64(base64String: string): string {
   // Remove any characters that aren't valid base64
   let cleaned = base64String.replace(/[^A-Za-z0-9+/=]/g, '');
 
@@ -43,7 +43,7 @@ export function cleanBase64(base64String: string): string {
 /**
  * Validates if a string is a valid base64 format
  */
-export function isValidBase64(str: string): boolean {
+function isValidBase64(str: string): boolean {
   // Check if string matches base64 pattern
   const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
   return base64Pattern.test(str) && str.length % 4 === 0;
@@ -52,7 +52,7 @@ export function isValidBase64(str: string): boolean {
 /**
  * Converts a base64 string to a Blob
  */
-export function base64ToBlob(
+function base64ToBlob(
   base64String: string,
   mimeType = 'audio/wav',
 ): Blob {
@@ -75,33 +75,6 @@ export function base64ToBlob(
     if (error instanceof Base64Error) throw error;
     throw new DecodingError(
       `Failed to decode base64: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-/**
- * Converts a base64 string to an ArrayBuffer
- */
-export function base64ToArrayBuffer(base64String: string): ArrayBuffer {
-  try {
-    const cleanedBase64 = cleanBase64(base64String);
-
-    if (!isValidBase64(cleanedBase64)) {
-      throw new DecodingError('Invalid base64 string format');
-    }
-
-    const binaryString = atob(cleanedBase64);
-    const bytes = new Uint8Array(binaryString.length);
-
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    return bytes.buffer;
-  } catch (error) {
-    if (error instanceof Base64Error) throw error;
-    throw new DecodingError(
-      `Failed to decode base64 to ArrayBuffer: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }
@@ -137,8 +110,8 @@ export async function fileToBase64(file: File): Promise<string> {
           error instanceof EncodingError
             ? error
             : new EncodingError(
-                `File encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-              ),
+              `File encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            ),
         );
       }
     };
@@ -154,7 +127,7 @@ export async function fileToBase64(file: File): Promise<string> {
 /**
  * Converts a Blob to base64 string
  */
-export async function blobToBase64(blob: Blob): Promise<string> {
+async function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!blob) {
       reject(new EncodingError('No blob provided'));
@@ -182,8 +155,8 @@ export async function blobToBase64(blob: Blob): Promise<string> {
           error instanceof EncodingError
             ? error
             : new EncodingError(
-                `Blob encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-              ),
+              `Blob encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            ),
         );
       }
     };
@@ -252,69 +225,9 @@ export async function encodeMediaFile(
 }
 
 /**
- * @deprecated Use encodeMediaFile instead
- * Legacy function for backward compatibility
- */
-export async function encodeAudioFile(
-  audioFile: string | File,
-  basePath = '/test/training_audio/',
-): Promise<{ base64: string; filename: string; mimeType?: string }> {
-  return encodeMediaFile(audioFile, basePath);
-}
-
-/**
- * Encodes an image file (File or fetched from URL) to base64
- */
-export async function encodeImageFile(
-  imageFile: string | File,
-): Promise<{ base64: string; filename: string; mimeType?: string }> {
-  try {
-    const result = await encodeMediaFile(imageFile);
-
-    // Handle JPEG signature fix for images
-    if (result.base64 && result.mimeType?.includes('png')) {
-      // Check if the actual data is JPEG (starts with /9j/)
-      if (result.base64.startsWith('/9j/')) {
-        result.mimeType = 'image/jpeg';
-      }
-    }
-
-    return result;
-  } catch (error) {
-    if (error instanceof Base64Error) throw error;
-    throw new EncodingError(
-      `Image encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-/**
- * Creates a data URL from base64 string
- */
-export function base64ToDataUrl(
-  base64String: string,
-  mimeType = 'audio/wav',
-): string {
-  try {
-    const cleanedBase64 = cleanBase64(base64String);
-
-    if (!isValidBase64(cleanedBase64)) {
-      throw new DecodingError('Invalid base64 string format');
-    }
-
-    return `data:${mimeType};base64,${cleanedBase64}`;
-  } catch (error) {
-    if (error instanceof Base64Error) throw error;
-    throw new DecodingError(
-      `Failed to create data URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-/**
  * Creates an object URL from base64 string
  */
-export function base64ToObjectUrl(
+function base64ToObjectUrl(
   base64String: string,
   mimeType = 'audio/wav',
 ): string {
@@ -385,40 +298,4 @@ export function createMediaResponse(
       `Failed to create media response: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
-}
-
-/**
- * Utility to safely revoke object URLs
- */
-export function revokeObjectUrl(url: string): void {
-  try {
-    URL.revokeObjectURL(url);
-  } catch (error) {
-    console.warn('Failed to revoke object URL:', error);
-  }
-}
-
-/**
- * Gets the size of base64 encoded data in bytes
- */
-export function getBase64Size(base64String: string): number {
-  const cleanedBase64 = cleanBase64(base64String);
-  // Base64 encoding adds ~33% overhead, so actual size is ~75% of base64 length
-  return Math.floor((cleanedBase64.length * 3) / 4);
-}
-
-// Legacy compatibility functions - use the main functions above instead
-/**
- * @deprecated Use fileToBase64 instead
- */
-export async function convertFileToBase64(file: File): Promise<string> {
-  return fileToBase64(file);
-}
-
-/**
- * @deprecated Use encodeMediaFile instead
- */
-export async function convertUrlToBase64(url: string): Promise<string> {
-  const result = await encodeMediaFile(url);
-  return result.base64;
 }

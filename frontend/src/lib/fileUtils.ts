@@ -2,21 +2,19 @@ import { writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import fs from 'fs';
 import path from 'path';
-
+import { RESOURCE_DIRECTORIES } from './resource/constants';
 export interface SaveFileResult {
   filePath: string;
   fileName: string;
   fileType: string;
 }
-
-export interface UploadResult {
+interface UploadResult {
   success: boolean;
   filePath: string; // relative path for serving
   fileName: string; // unique generated file name
   fullPath: string; // absolute file path
 }
-
-export interface DeleteResult {
+interface DeleteResult {
   success: boolean;
   message: string;
 }
@@ -121,19 +119,6 @@ export async function deleteFile(filePath: string): Promise<DeleteResult> {
 }
 
 /**
- * Delete a file (legacy version for backward compatibility)
- */
-export async function deleteFileSimple(filePath: string): Promise<void> {
-  try {
-    const fullPath = path.join(process.cwd(), 'public/uploads', filePath);
-    await fs.promises.unlink(fullPath);
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    // Don't throw - file might already be deleted
-  }
-}
-
-/**
  * Upload a file to a specified destination directory
  * @param blob - The file Blob or Buffer to upload
  * @param fileName - The original file name
@@ -181,18 +166,6 @@ export async function uploadFile(
 }
 
 /**
- * Upload an image file to the image directory
- * @param blob - The image file Blob or Buffer to upload
- * @param fileName - The original file name
- */
-export async function uploadAvatarImage(
-  blob: Blob | Buffer,
-  fileName: string,
-): Promise<UploadResult> {
-  return uploadFile(blob, fileName, 'image');
-}
-
-/**
  * Upload an audio file to the audio directory
  * @param blob - The audio file Blob or Buffer to upload
  * @param fileName - The original file name
@@ -206,9 +179,8 @@ export async function uploadTrainingAudio(
 
 export async function cleanAllDirectories() {
   const baseDir = path.join(process.cwd(), 'public/uploads');
-  const directories = ['audio', 'image', 'video'];
 
-  for (const dir of directories) {
+  for (const dir of RESOURCE_DIRECTORIES) {
     const dirPath = path.join(baseDir, dir);
 
     try {
@@ -248,12 +220,12 @@ export async function cleanAllDirectories() {
 
 export async function cleanSpecificDirectories(directories: string[]) {
   const baseDir = path.join(process.cwd(), 'public/uploads');
-  const validDirectories = ['audio', 'image', 'video'];
+
 
   for (const dir of directories) {
-    if (!validDirectories.includes(dir)) {
+    if (!RESOURCE_DIRECTORIES.includes(dir)) {
       console.warn(
-        `Invalid directory: ${dir}. Valid directories: ${validDirectories.join(', ')}`,
+        `Invalid directory: ${dir}. Valid directories: ${RESOURCE_DIRECTORIES.join(', ')}`,
       );
       continue;
     }

@@ -18,7 +18,7 @@ import {
   ImageEditorElement,
   Effect,
   TextEditorElement,
-} from '../types/editor';
+} from '../lib/types/editor';
 import { FabricUitls } from '@/utils/fabricUtils';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
@@ -53,7 +53,7 @@ export class Store {
     this.audios = [];
     this.editorElements = [];
     this.backgroundColor = '#111111';
-    this.maxTime = 30 * 1000;
+    this.maxTime = 50 * 1000;
     this.playing = false;
     this.currentKeyFrame = 0;
     this.selectedElement = null;

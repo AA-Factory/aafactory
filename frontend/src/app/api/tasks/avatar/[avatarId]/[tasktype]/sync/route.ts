@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { updateTaskStatus, updateTaskWithFile, getTasks } from '@/lib/taskDb';
 import { CELERY_TASK_STATUS_SERVER } from '@/lib/celery/constants';
-import { isCeleryTaskStatusResponse } from '@/types/celery';
+import { isCeleryTaskStatusResponse } from '@/lib/types/celery';
+import { SUPPORTED_TASK_TYPES } from '@/lib/task/constants';
 
 interface TaskCheckResult {
   taskId: string;
@@ -19,7 +20,6 @@ interface SyncParams {
 }
 
 // Supported task types
-const SUPPORTED_TASK_TYPES = ['video', 'audio', 'image'] as const;
 type TaskType = (typeof SUPPORTED_TASK_TYPES)[number];
 
 function isValidTaskType(taskType: string): taskType is TaskType {

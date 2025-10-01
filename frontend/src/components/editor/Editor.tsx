@@ -66,7 +66,7 @@ export const Editor = observer(() => {
     loadTimelineFromDatabase();
   }, []);
   return (
-    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh bg-white dark:bg-gray-900">
+    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-200 bg-white dark:bg-gray-900">
       <div className="tile row-span-2 flex flex-col border-r border-gray-200 dark:border-gray-700">
         <Menu />
       </div>

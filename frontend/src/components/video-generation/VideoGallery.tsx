@@ -1,6 +1,6 @@
 import React from 'react';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
-import { VideoTask } from '@/types/tasks';
+import { VideoTask } from '@/lib/types/tasks';
 
 export const VideoGallery: React.FC = () => {
   const { state, selectVideoTask, videoTasks, loadingVideoTasks } =

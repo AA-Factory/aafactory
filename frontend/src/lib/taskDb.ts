@@ -2,7 +2,7 @@ import { TaskDocument, getCollection } from './database';
 import { saveBase64File, SaveFileResult } from './fileUtils';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
-export interface CreateTaskParams {
+interface CreateTaskParams {
   taskId: string;
   avatarId: string;
   taskType: 'audio' | 'video';
@@ -238,24 +238,6 @@ export async function getTasksByAvatar(
     console.error('Error getting tasks by avatar:', error);
     throw new Error(
       `Failed to get tasks by avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-export async function getTasksByType(
-  avatarId: string,
-  taskType: 'audio' | 'video' | 'image',
-): Promise<TaskDocument[]> {
-  try {
-    const collection = await getCollection<TaskDocument>('tasks');
-    return await collection
-      .find({ avatarId, taskType })
-      .sort({ createdAt: -1 })
-      .toArray();
-  } catch (error) {
-    console.error('Error getting tasks by type:', error);
-    throw new Error(
-      `Failed to get tasks by type: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }

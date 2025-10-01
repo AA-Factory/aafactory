@@ -1,9 +1,8 @@
 //api/tasks/avatar/[avatarId]/[tasktype]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getTasksByAvatar } from '@/lib/taskDb';
-
+import { SUPPORTED_TASK_TYPES } from '@/lib/task/constants';
 // Supported task types
-const SUPPORTED_TASK_TYPES = ['video', 'audio', 'image'] as const;
 type TaskType = (typeof SUPPORTED_TASK_TYPES)[number];
 
 function isValidTaskType(taskType: string): taskType is TaskType {

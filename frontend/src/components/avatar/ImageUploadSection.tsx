@@ -2,6 +2,7 @@ import React from 'react';
 import { HiCamera, HiUpload } from 'react-icons/hi';
 
 interface ImageUploadSectionProps {
+  register: any;
   selectedImage: string | null;
   isDragging: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
@@ -14,6 +15,7 @@ interface ImageUploadSectionProps {
 }
 
 export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
+  register,
   selectedImage,
   isDragging,
   fileInputRef,
@@ -30,8 +32,8 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
         Avatar Image
       </label>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-        Upload an image or drag and drop (supports decoding form data from
-        steganographic images)
+        Upload an image for the avatar (optional), If none is provided a default
+        will be used
       </p>
 
       <div
@@ -47,6 +49,7 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
         onDrop={onDrop}
       >
         <input
+          {...register('image')}
           ref={fileInputRef}
           type="file"
           accept="image/*"

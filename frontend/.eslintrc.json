@@ -8,11 +8,7 @@
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
-  "plugins": [
-    "prettier",
-    "@typescript-eslint",
-    "unused-imports"
-  ],
+  "plugins": ["prettier", "@typescript-eslint", "unused-imports"],
   "rules": {
     "prettier/prettier": "error",
     "@typescript-eslint/no-floating-promises": "error",

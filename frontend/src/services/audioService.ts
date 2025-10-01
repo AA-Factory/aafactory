@@ -1,29 +1,26 @@
-import { Avatar } from '@/types/avatar';
+import { Avatar } from '@/lib/types/avatar';
 import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
-import { type AudioGenerationTaskRequest } from '@/types/celery';
-
-// Constants
-const DEFAULT_LANGUAGE = 'en-us';
+import { type AudioGenerationTaskRequest } from '@/lib/types/tasks';
+import { DEFAULT_LANGUAGE } from '@/lib/task/constants';
 
 // Types
-export type AudioSource = 'avatar' | 'rick_and_morty' | 'japanese';
+type AudioSource = 'avatar' | 'rick_and_morty' | 'japanese';
 
 export type GenerateAudioPayload = {
   dialog: string;
   avatar: Avatar | null;
   language?: string;
-  async?: boolean;
   audioSource?: AudioSource;
 };
 
-export type GenerateAudioResponse = {
+type GenerateAudioResponse = {
   audioUrl: string;
   filename: string;
   promptId: string;
   base64Audio: string;
 };
 
-export async function getTrainingAudioForSource(
+async function getTrainingAudioForSource(
   avatar: Avatar | null,
   audioSource: AudioSource = 'avatar',
 ): Promise<string | File | null> {
@@ -57,7 +54,7 @@ export async function getTrainingAudioForSource(
   return 'rick_and_morty_voice_training.wav';
 }
 
-export function createTaskRequest(
+function createTaskRequest(
   payload: GenerateAudioPayload,
   audioBase64: string,
 ): AudioGenerationTaskRequest {
@@ -68,8 +65,8 @@ export function createTaskRequest(
       process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? 'mock' : 'zonos',
     task_name: 'custom_voice_to_audio',
     payload: {
-      text: payload.dialog,
-      voice_sample: audioBase64,
+      prompt: payload.dialog,
+      voice_bytes: audioBase64,
       language,
     },
   };

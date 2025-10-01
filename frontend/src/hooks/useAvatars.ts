@@ -5,7 +5,7 @@ import { Avatar } from '@/types/avatar';
 /** -----------------
  * Query Keys
  * ----------------- */
-export const avatarKeys = {
+const avatarKeys = {
   all: ['avatars'] as const,
   lists: () => [...avatarKeys.all, 'list'] as const,
   list: (filters: string) => [...avatarKeys.lists(), { filters }] as const,
@@ -43,11 +43,11 @@ const apiRequest = async <T>(
     ...(isFormData
       ? {}
       : {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(options?.headers || {}),
-          },
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options?.headers || {}),
+        },
+      }),
   });
 
   const responseText = await response.text();
