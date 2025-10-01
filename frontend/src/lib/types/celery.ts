@@ -3,12 +3,14 @@
  */
 
 // Base Celery Task Status
-type CeleryTaskStatus =
+export type CeleryTaskStatus =
   | 'PENDING'
   | 'STARTED'
   | 'SUCCESS'
   | 'FAILURE'
   | 'RETRY';
+
+export type ServerName = 'mock' | 'infinite_talk' | 'zonos';
 
 // Generic Celery Task Request
 export interface CeleryTaskRequest<T = Record<string, any>> {

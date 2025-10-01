@@ -30,7 +30,7 @@ const SettingsPage: React.FC = () => {
 
   const [saveStatus, setSaveStatus] = useState('');
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -38,14 +38,14 @@ const SettingsPage: React.FC = () => {
     }));
   };
 
-  const toggleSection = (section) => {
+  const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
   };
 
-  const togglePasswordVisibility = (field) => {
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
     setShowPasswords((prev) => ({
       ...prev,
       [field]: !prev[field],
@@ -62,7 +62,7 @@ const SettingsPage: React.FC = () => {
     }, 1000);
   };
 
-  const maskApiKey = (key, visible) => {
+  const maskApiKey = (key: string, visible: boolean) => {
     if (visible || !key) return key;
     const prefix = key.substring(0, 7);
     const masked = '*'.repeat(Math.max(0, key.length - 7));

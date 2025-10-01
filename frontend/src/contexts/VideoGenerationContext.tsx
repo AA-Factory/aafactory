@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { Avatar } from '@/lib/types/avatar';
 import { VideoTask } from '@/lib/types/tasks';
+import { AudioTask } from '@/lib/types/tasks';
 import {
   useVideoTasks,
   usePollPendingVideoTasks,
@@ -16,11 +17,6 @@ import {
 } from '@/lib/api/tasks';
 import { DIALOG_SEEDS } from '@/utils/fakeData';
 import { VIDEO_TYPES } from '@/lib/task/constants';
-interface AudioTask {
-  taskId: string;
-  userPrompt: string;
-  filePath: string;
-}
 interface VideoGenerationState {
   // video type and avatar
   videoType: {

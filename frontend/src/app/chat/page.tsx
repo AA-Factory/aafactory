@@ -31,7 +31,7 @@ const Chat: React.FC = () => {
   //set it in the state
 
   // Function to handle sending a message
-  const sendMessage = (e) => {
+  const sendMessage = (e: React.FormEvent<HTMLButtonElement>) => {
     if (e && e.preventDefault) e.preventDefault();
     if (newMessage.trim()) {
       const message = {
@@ -141,7 +141,6 @@ const Chat: React.FC = () => {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage(e)}
                   placeholder="Type a message..."
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white 

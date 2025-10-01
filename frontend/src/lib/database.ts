@@ -1,6 +1,6 @@
 import { Db, Collection } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-
+import { Document } from 'mongodb';
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 async function connectToDatabase(): Promise<Db> {
@@ -13,25 +13,9 @@ async function connectToDatabase(): Promise<Db> {
   }
 }
 
-export async function getCollection<T>(
+export async function getCollection<T extends Document>(
   collectionName: string,
 ): Promise<Collection<T>> {
   const database = await connectToDatabase();
   return database.collection<T>(collectionName);
-}
-export interface TaskDocument {
-  _id?: string;
-  taskId: string;
-  avatarId: string;
-  status: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE';
-  taskType: 'audio' | 'video' | 'image';
-  createdAt: Date;
-  updatedAt: Date;
-  filePath?: string;
-  error?: string;
-  userPrompt?: string;
-  metadata?: {
-    originalRequest?: any;
-    resultData?: any;
-  };
 }

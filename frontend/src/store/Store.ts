@@ -660,7 +660,7 @@ export class Store {
     }
   }
 
-  addAudio(index: number) {
+  addAudio(index: number, audio_id: string) {
     const audioElement = document.getElementById(`audio-${index}`);
     if (!isHtmlAudioElement(audioElement)) {
       return;

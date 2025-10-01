@@ -89,10 +89,10 @@ export default function AvatarPage({
 
     // Load existing image if available
     if (
-      existingAvatar.imageUrl &&
-      existingAvatar.imageUrl !== '/placeholder-avatar.png'
+      existingAvatar.src &&
+      existingAvatar.src !== '/placeholder-avatar.png'
     ) {
-      setExistingImageUrl(existingAvatar.imageUrl);
+      setExistingImageUrl(existingAvatar.src);
     } else {
       setExistingImageUrl(null);
     }

@@ -57,9 +57,9 @@ export const ActiveAvatarsDisplay: React.FC<ActiveAvatarsDisplayProps> = ({
             style={{ zIndex: displayAvatars.length - index }}
             title={avatar.name}
           >
-            {avatar.imageUrl ? (
+            {avatar.src ? (
               <img
-                src={avatar.imageUrl}
+                src={avatar.src}
                 alt={avatar.name}
                 className="w-full h-full rounded-full object-cover"
               />

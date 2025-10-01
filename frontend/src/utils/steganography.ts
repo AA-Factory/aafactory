@@ -189,7 +189,7 @@ export async function loadImageToCanvas(
   });
 }
 
-export const decodeDataFromImage = (imageData) => {
+export const decodeDataFromImage = (imageData: ImageData) => {
   const data = imageData.data;
   let binaryString = '';
 

@@ -11,7 +11,8 @@ export async function PUT(req: NextRequest) {
     const db = client.db(MONGODB_DB);
     const contentType = req.headers.get('content-type');
 
-    let data;
+    // Then use it:
+    let data: any = {};
     let uploadResult = null;
     let audioUploadResult = null;
 

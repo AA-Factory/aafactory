@@ -7,7 +7,6 @@ import DragableView from './DragableView';
 
 export const TimeFrameView = observer((props: { element: EditorElement }) => {
   const store = React.useContext(StoreContext);
-  // console.log('✌️store --->', store);
   const { element } = props;
   const disabled = element.type === 'audio';
   const isSelected = store.selectedElement?.id === element.id;

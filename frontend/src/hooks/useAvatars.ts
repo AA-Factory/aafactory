@@ -1,6 +1,6 @@
 // hooks/useAvatars.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Avatar } from '@/types/avatar';
+import { Avatar } from '@/lib/types/avatar';
 
 /** -----------------
  * Query Keys
@@ -19,8 +19,8 @@ const avatarKeys = {
 const mapAvatar = (avatar: any): Avatar => ({
   id: avatar._id,
   name: avatar.name || 'Unnamed Avatar',
-  imageUrl: avatar.src || '/placeholder-avatar.png',
   createdAt: new Date(avatar.createdAt).toLocaleDateString(),
+  updatedAt: new Date(avatar.updatedAt).toLocaleDateString(),
   description: avatar.description || '',
   category: avatar.category || 'realistic',
   personality: avatar.personality || 'No personality defined',
@@ -238,7 +238,7 @@ export const useCreateAvatar = () => {
           id: tempId,
           name:
             newData.jsonData?.name || newData.formData?.name || 'New Avatar',
-          imageUrl: '/placeholder-avatar.png',
+          src: '/placeholder-avatar.png',
           personality:
             newData.jsonData?.personality ||
             newData.formData?.personality ||
@@ -253,6 +253,7 @@ export const useCreateAvatar = () => {
             false,
           fileName: newData.fileName,
           createdAt: new Date().toLocaleDateString(),
+          updatedAt: new Date().toLocaleDateString(),
           description:
             newData.jsonData?.description ||
             newData.formData?.description ||

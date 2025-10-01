@@ -1,12 +1,6 @@
 import React from 'react';
 import { FiInfo } from 'react-icons/fi';
-
-interface AudioTask {
-  taskId: string;
-  userPrompt: string;
-  filePath: string;
-}
-
+import { AudioTask } from '@/lib/types/tasks';
 interface AudioSelectorProps {
   availableAudioTasks: AudioTask[];
   selectedAudioTask: AudioTask | null;

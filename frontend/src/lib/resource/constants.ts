@@ -4,7 +4,7 @@ export type ResourceType = 'video' | 'audio' | 'image';
 interface ResourceConfig {
   collection: string;
   uploadDir: string;
-  allowedTypes: string[];
+  allowedTypes: readonly string[];
   maxSize: number;
   displayName: string;
   acceptString: string;

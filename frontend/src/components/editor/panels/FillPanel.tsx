@@ -40,7 +40,6 @@ export const FillPanel = observer(() => {
           colors={professionalVideoColors}
           color={store.backgroundColor}
           onChangeComplete={(color: any) => {
-            console.log(color);
             store.setBackgroundColor(color.hex);
           }}
         ></BlockPicker>

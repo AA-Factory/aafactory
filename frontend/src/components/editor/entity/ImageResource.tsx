@@ -3,7 +3,7 @@ import React from 'react';
 import { StoreContext } from '@/store';
 import { observer } from 'mobx-react';
 import { MdAdd } from 'react-icons/md';
-import { ResourceData } from '@/hooks/useResourceAPI';
+import { ResourceData } from '@/lib/types/resource';
 
 type ImageResourceProps = {
   image: ResourceData;

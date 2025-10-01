@@ -3,7 +3,7 @@ import { updateTaskStatus, updateTaskWithFile, getTasks } from '@/lib/taskDb';
 import { CELERY_TASK_STATUS_SERVER } from '@/lib/celery/constants';
 import { isCeleryTaskStatusResponse } from '@/lib/types/celery';
 import { SUPPORTED_TASK_TYPES } from '@/lib/task/constants';
-
+import { TaskType } from '@/lib/types/tasks';
 interface TaskCheckResult {
   taskId: string;
   oldStatus: string;
@@ -18,9 +18,6 @@ interface SyncParams {
     avatarId: string;
   };
 }
-
-// Supported task types
-type TaskType = (typeof SUPPORTED_TASK_TYPES)[number];
 
 function isValidTaskType(taskType: string): taskType is TaskType {
   return SUPPORTED_TASK_TYPES.includes(taskType as TaskType);

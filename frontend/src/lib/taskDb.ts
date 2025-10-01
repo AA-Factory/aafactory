@@ -1,7 +1,9 @@
-import { TaskDocument, getCollection } from './database';
+import { getCollection } from './database';
 import { saveBase64File, SaveFileResult } from './fileUtils';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
+import { AudioTask, TaskDocument } from '@/lib/types/tasks';
+import { CeleryTaskStatus } from '@/lib/types/celery'
 interface CreateTaskParams {
   taskId: string;
   avatarId: string;
@@ -54,7 +56,7 @@ export async function createTask(
 
 export async function updateTaskStatus(
   taskId: string,
-  status: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE',
+  status: AudioTask['status'],
   error?: string,
 ): Promise<void> {
   try {
@@ -209,7 +211,7 @@ export async function getTask(taskId: string): Promise<TaskDocument | null> {
 export async function getTasks(
   avatarId: string,
   taskType?: 'audio' | 'video' | 'image',
-  status?: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE',
+  status?: CeleryTaskStatus,
 ): Promise<TaskDocument[]> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
