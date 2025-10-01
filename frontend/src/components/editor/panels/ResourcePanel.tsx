@@ -1,19 +1,28 @@
-"use client";
-import React from "react";
-import { UploadButton } from "../shared/UploadButton";
-import { useResourceAPI } from "@/hooks/useResourceAPI";
+'use client';
+import React from 'react';
+import { UploadButton } from '../shared/UploadButton';
+import { useResourceAPI } from '@/hooks/useResourceAPI';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
 interface ResourcePanelProps {
   resourceType: ResourceType;
-  children: (data: any[], refreshResources: () => Promise<void>) => React.ReactNode;
+  children: (
+    data: any[],
+    refreshResources: () => Promise<void>,
+  ) => React.ReactNode;
 }
 
-export const ResourcePanel = ({ resourceType, children }: ResourcePanelProps) => {
-  const { data, isLoading, error, uploadResource, refreshResources } = useResourceAPI(resourceType);
+export const ResourcePanel = ({
+  resourceType,
+  children,
+}: ResourcePanelProps) => {
+  const { data, isLoading, error, uploadResource, refreshResources } =
+    useResourceAPI(resourceType);
   const config = RESOURCE_CONFIG[resourceType];
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -23,7 +32,9 @@ export const ResourcePanel = ({ resourceType, children }: ResourcePanelProps) =>
       console.log(`✅ ${config.displayName} uploaded and saved:`, file.name);
     } catch (error) {
       console.error('❌ Upload error:', error);
-      window.alert(`Error uploading ${resourceType}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      window.alert(
+        `Error uploading ${resourceType}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 

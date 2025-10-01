@@ -2,8 +2,8 @@
 const nextConfig = {
   webpack: (config) => {
     config.externals.push({
-      sharp: "commonjs sharp",
-      canvas: "commonjs canvas",
+      sharp: 'commonjs sharp',
+      canvas: 'commonjs canvas',
     });
 
     // Suppress FFmpeg warnings
@@ -28,7 +28,7 @@ const nextConfig = {
 
   experimental: {
     esmExternals: 'loose',
-  }
+  },
 };
 
 module.exports = nextConfig;

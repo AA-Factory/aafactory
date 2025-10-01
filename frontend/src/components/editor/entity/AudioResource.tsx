@@ -1,10 +1,10 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { formatTimeToMinSec } from "@/utils";
-import { observer } from "mobx-react";
-import { MdAdd } from "react-icons/md";
-import { ResourceData } from "@/hooks/useResourceAPI";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { formatTimeToMinSec } from '@/utils';
+import { observer } from 'mobx-react';
+import { MdAdd } from 'react-icons/md';
+import { ResourceData } from '@/hooks/useResourceAPI';
 
 export type AudioResourceProps = {
   audio: ResourceData;
@@ -17,7 +17,7 @@ export const AudioResource = observer(
     const store = React.useContext(StoreContext);
     const ref = React.useRef<HTMLAudioElement>(null);
     const [formatedAudioLength, setFormatedAudioLength] =
-      React.useState("00:00");
+      React.useState('00:00');
 
     return (
       <div className="rounded-lg overflow-hidden items-center bg-slate-800 m-[15px] flex flex-col relative min-h-[100px]">

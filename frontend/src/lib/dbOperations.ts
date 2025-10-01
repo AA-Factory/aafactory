@@ -2,7 +2,7 @@ export async function safeDbOperation<T>(
   operation: string,
   collection: string,
   dbOperation: () => Promise<T>,
-  context?: any
+  context?: any,
 ): Promise<T> {
   try {
     return await dbOperation();
@@ -11,7 +11,8 @@ export async function safeDbOperation<T>(
 
     // Enhanced logging for MongoDB schema validation errors
     if (error.code === 121 && error.errInfo?.details?.schemaRulesNotSatisfied) {
-      const schemaError = error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied;
+      const schemaError =
+        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied;
       errorMessage = `Schema validation failed: ${JSON.stringify(schemaError, null, 2)}`;
 
       // console.error('🚨 MONGODB SCHEMA VALIDATION FAILURE:', {

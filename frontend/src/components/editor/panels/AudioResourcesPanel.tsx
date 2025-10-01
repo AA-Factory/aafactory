@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { AudioResource } from "../entity/AudioResource";
-import { ResourcePanel } from "./ResourcePanel";
+'use client';
+import React from 'react';
+import { AudioResource } from '../entity/AudioResource';
+import { ResourcePanel } from './ResourcePanel';
 
 export const AudioResourcesPanel = () => {
   return (
@@ -9,10 +9,10 @@ export const AudioResourcesPanel = () => {
       {(data, refreshResources) => (
         <>
           {data.map((audio, index) => (
-            <AudioResource 
-              key={audio.id} 
-              audio={audio} 
-              index={index} 
+            <AudioResource
+              key={audio.id}
+              audio={audio}
+              index={index}
               onDelete={refreshResources}
             />
           ))}

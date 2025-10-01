@@ -1,5 +1,9 @@
 import { TaskDocument, getCollection } from './database';
-import { saveBase64File, SaveFileResult, cleanAllDirectories } from './fileUtils';
+import {
+  saveBase64File,
+  SaveFileResult,
+  cleanAllDirectories,
+} from './fileUtils';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
 export interface CreateTaskParams {
@@ -9,7 +13,9 @@ export interface CreateTaskParams {
   userPrompt?: string;
 }
 
-export async function createTask(params: CreateTaskParams): Promise<TaskDocument> {
+export async function createTask(
+  params: CreateTaskParams,
+): Promise<TaskDocument> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
     const taskDoc: TaskDocument = {
@@ -25,55 +31,73 @@ export async function createTask(params: CreateTaskParams): Promise<TaskDocument
       'insertAvatar',
       'avatars',
       () => collection.insertOne(taskDoc),
-      taskDoc
+      taskDoc,
     );
 
     return {
       ...taskDoc,
-      _id: result.insertedId.toString()
+      _id: result.insertedId.toString(),
     };
   } catch (error) {
-    console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+    console.error(
+      'issue',
+      JSON.stringify(
+        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
+        null,
+        4,
+      ),
+    );
 
     console.error('Error creating task:', error);
 
-    return Promise.reject(`Failed to create task: ${JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4)}`);
+    return Promise.reject(
+      `Failed to create task: ${JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4)}`,
+    );
   }
 }
 
 export async function updateTaskStatus(
   taskId: string,
   status: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE',
-  error?: string
+  error?: string,
 ): Promise<void> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
 
     const updateDoc: Partial<TaskDocument> = {
       status,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     if (error) {
       updateDoc.error = error;
     }
 
-    const result = await collection.updateOne(
-      { taskId },
-      { $set: updateDoc }
-    );
+    const result = await collection.updateOne({ taskId }, { $set: updateDoc });
 
     if (result.matchedCount === 0) {
       throw new Error(`Task with ID ${taskId} not found`);
     }
   } catch (error) {
-    console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+    console.error(
+      'issue',
+      JSON.stringify(
+        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
+        null,
+        4,
+      ),
+    );
 
     console.error('Error updating task status:', error);
-    throw new Error(`Failed to update task status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to update task status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
-export async function createResource(taskId: string, fileResult: SaveFileResult) {
+export async function createResource(
+  taskId: string,
+  fileResult: SaveFileResult,
+) {
   try {
     const task = await getTask(taskId);
     if (!task) {
@@ -98,14 +122,16 @@ export async function createResource(taskId: string, fileResult: SaveFileResult)
     await resourceCollection.insertOne(fileInfo);
   } catch (error) {
     console.error('Error creating resource:', error);
-    throw new Error(`Failed to create resource: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to create resource: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
 export async function updateTaskWithFile(
   taskId: string,
   base64Data: string,
-  status: 'SUCCESS' | 'FAILURE' = 'SUCCESS'
+  status: 'SUCCESS' | 'FAILURE' = 'SUCCESS',
 ): Promise<SaveFileResult> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
@@ -120,7 +146,7 @@ export async function updateTaskWithFile(
     const fileResult = await saveBase64File(
       base64Data,
       taskId,
-      task.taskType.toLowerCase() as 'audio' | 'video'
+      task.taskType.toLowerCase() as 'audio' | 'video',
     );
 
     // Update task with file path
@@ -134,11 +160,11 @@ export async function updateTaskWithFile(
           metadata: {
             resultData: {
               fileName: fileResult.fileName,
-              fileType: fileResult.fileType
-            }
-          }
-        }
-      }
+              fileType: fileResult.fileType,
+            },
+          },
+        },
+      },
     );
     // const resourceType = task.taskType as ResourceType;
     // const config = RESOURCE_CONFIG[resourceType];
@@ -156,10 +182,19 @@ export async function updateTaskWithFile(
     // await resourceCollection.insertOne(fileInfo);
     return fileResult;
   } catch (error) {
-    console.error("issue", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+    console.error(
+      'issue',
+      JSON.stringify(
+        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
+        null,
+        4,
+      ),
+    );
 
     console.error('Error updating task with file:', error);
-    throw new Error(`Failed to update task with file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to update task with file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -169,11 +204,17 @@ export async function getTask(taskId: string): Promise<TaskDocument | null> {
     return await collection.findOne({ taskId });
   } catch (error) {
     console.error('Error getting task:', error);
-    throw new Error(`Failed to get task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
-export async function getTasks(avatarId: string, taskType?: 'audio' | 'video' | 'image', status?: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE'): Promise<TaskDocument[]> {
+export async function getTasks(
+  avatarId: string,
+  taskType?: 'audio' | 'video' | 'image',
+  status?: 'PENDING' | 'RECEIVED' | 'STARTED' | 'SUCCESS' | 'FAILURE',
+): Promise<TaskDocument[]> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
     const query: any = { avatarId };
@@ -182,27 +223,44 @@ export async function getTasks(avatarId: string, taskType?: 'audio' | 'video' | 
     return await collection.find(query).sort({ createdAt: -1 }).toArray();
   } catch (error) {
     console.error('Error getting tasks:', error);
-    throw new Error(`Failed to get tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get tasks: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
-export async function getTasksByAvatar(avatarId: string): Promise<TaskDocument[]> {
+export async function getTasksByAvatar(
+  avatarId: string,
+): Promise<TaskDocument[]> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
-    return await collection.find({ avatarId }).sort({ createdAt: -1 }).toArray();
+    return await collection
+      .find({ avatarId })
+      .sort({ createdAt: -1 })
+      .toArray();
   } catch (error) {
     console.error('Error getting tasks by avatar:', error);
-    throw new Error(`Failed to get tasks by avatar: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get tasks by avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
-export async function getTasksByType(avatarId: string, taskType: 'audio' | 'video' | 'image'): Promise<TaskDocument[]> {
+export async function getTasksByType(
+  avatarId: string,
+  taskType: 'audio' | 'video' | 'image',
+): Promise<TaskDocument[]> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
-    return await collection.find({ avatarId, taskType }).sort({ createdAt: -1 }).toArray();
+    return await collection
+      .find({ avatarId, taskType })
+      .sort({ createdAt: -1 })
+      .toArray();
   } catch (error) {
     console.error('Error getting tasks by type:', error);
-    throw new Error(`Failed to get tasks by type: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get tasks by type: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -224,6 +282,8 @@ export async function deleteTask(taskId: string): Promise<void> {
     await collection.deleteOne({ taskId });
   } catch (error) {
     console.error('Error deleting task:', error);
-    throw new Error(`Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }

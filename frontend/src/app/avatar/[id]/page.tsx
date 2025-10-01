@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import AvatarPage from "@/components/avatar/AvatarPage";
-import { useRouter } from "next/navigation"; // NOT 'next/router'
+import React, { useEffect } from 'react';
+import AvatarPage from '@/components/avatar/AvatarPage';
+import { useRouter } from 'next/navigation'; // NOT 'next/router'
 
 interface AvatarEditProps {
   params: {
@@ -16,7 +16,7 @@ const AvatarEdit: React.FC<AvatarEditProps> = ({ params }) => {
   useEffect(() => {
     // Redirect to avatars page if no ID provided
     if (!avatarId) {
-      router.push("/avatars");
+      router.push('/avatars');
     }
   }, [avatarId]);
 

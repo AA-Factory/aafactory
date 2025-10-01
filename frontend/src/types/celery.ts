@@ -3,7 +3,12 @@
  */
 
 // Base Celery Task Status
-export type CeleryTaskStatus = 'PENDING' | 'STARTED' | 'SUCCESS' | 'FAILURE' | 'RETRY';
+export type CeleryTaskStatus =
+  | 'PENDING'
+  | 'STARTED'
+  | 'SUCCESS'
+  | 'FAILURE'
+  | 'RETRY';
 
 // Generic Celery Task Request
 export interface CeleryTaskRequest<T = Record<string, any>> {
@@ -38,7 +43,8 @@ export interface AudioGenerationPayload {
   language: string;
 }
 
-export interface AudioGenerationTaskRequest extends CeleryTaskRequest<AudioGenerationPayload> {
+export interface AudioGenerationTaskRequest
+  extends CeleryTaskRequest<AudioGenerationPayload> {
   server_name: 'mock' | 'infinite_talk' | 'zonos';
   task_name: 'custom_voice_to_audio';
 }
@@ -50,7 +56,8 @@ export interface VideoGenerationPayload {
   audio_bytes: string;
 }
 
-export interface VideoGenerationTaskRequest extends CeleryTaskRequest<VideoGenerationPayload> {
+export interface VideoGenerationTaskRequest
+  extends CeleryTaskRequest<VideoGenerationPayload> {
   server_name: 'mock' | 'infinite_talk';
   task_name: 'prompt_image_audio_to_video';
 }
@@ -80,17 +87,37 @@ export type CeleryTaskName =
 
 // Type guards
 export function isCeleryTaskResponse(obj: any): obj is CeleryTaskResponse {
-  return obj && typeof obj.task_id === 'string' && typeof obj.status === 'string';
+  return (
+    obj && typeof obj.task_id === 'string' && typeof obj.status === 'string'
+  );
 }
 
-export function isCeleryTaskStatusResponse(obj: any): obj is CeleryTaskStatusResponse {
-  return obj && typeof obj.status === 'string' && ['PENDING', 'STARTED', 'SUCCESS', 'FAILURE', 'RETRY'].includes(obj.status);
+export function isCeleryTaskStatusResponse(
+  obj: any,
+): obj is CeleryTaskStatusResponse {
+  return (
+    obj &&
+    typeof obj.status === 'string' &&
+    ['PENDING', 'STARTED', 'SUCCESS', 'FAILURE', 'RETRY'].includes(obj.status)
+  );
 }
 
-export function isAudioGenerationResult(obj: any): obj is AudioGenerationResult {
-  return obj && typeof obj.audio_data === 'string' && typeof obj.filename === 'string';
+export function isAudioGenerationResult(
+  obj: any,
+): obj is AudioGenerationResult {
+  return (
+    obj &&
+    typeof obj.audio_data === 'string' &&
+    typeof obj.filename === 'string'
+  );
 }
 
-export function isVideoGenerationResult(obj: any): obj is VideoGenerationResult {
-  return obj && typeof obj.video_data === 'string' && typeof obj.filename === 'string';
+export function isVideoGenerationResult(
+  obj: any,
+): obj is VideoGenerationResult {
+  return (
+    obj &&
+    typeof obj.video_data === 'string' &&
+    typeof obj.filename === 'string'
+  );
 }

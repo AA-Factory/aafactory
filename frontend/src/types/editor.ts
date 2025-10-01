@@ -1,4 +1,4 @@
-import { fabric } from "fabric";
+import { fabric } from 'fabric';
 
 export type EditorElementBase<T extends string, P> = {
   readonly id: string;
@@ -10,11 +10,11 @@ export type EditorElementBase<T extends string, P> = {
   properties: P;
 };
 export type VideoEditorElement = EditorElementBase<
-  "video",
+  'video',
   { src: string; elementId: string; imageObject?: fabric.Image; effect: Effect }
 >;
 export type ImageEditorElement = EditorElementBase<
-  "image",
+  'image',
   {
     src: string;
     elementId: string;
@@ -24,11 +24,11 @@ export type ImageEditorElement = EditorElementBase<
 >;
 
 export type AudioEditorElement = EditorElementBase<
-  "audio",
+  'audio',
   { src: string; elementId: string }
 >;
 export type TextEditorElement = EditorElementBase<
-  "text",
+  'text',
   {
     text: string;
     fontSize: number;
@@ -63,13 +63,13 @@ export type EffectBase<T extends string> = {
 };
 
 export type BlackAndWhiteEffect =
-  | EffectBase<"none">
-  | EffectBase<"blackAndWhite">
-  | EffectBase<"sepia">
-  | EffectBase<"invert">
-  | EffectBase<"saturate">;
+  | EffectBase<'none'>
+  | EffectBase<'blackAndWhite'>
+  | EffectBase<'sepia'>
+  | EffectBase<'invert'>
+  | EffectBase<'saturate'>;
 export type Effect = BlackAndWhiteEffect;
-export type EffecType = Effect["type"];
+export type EffecType = Effect['type'];
 
 export type AnimationBase<T, P = {}> = {
   id: string;
@@ -79,24 +79,24 @@ export type AnimationBase<T, P = {}> = {
   properties: P;
 };
 
-export type FadeInAnimation = AnimationBase<"fadeIn">;
-export type FadeOutAnimation = AnimationBase<"fadeOut">;
+export type FadeInAnimation = AnimationBase<'fadeIn'>;
+export type FadeOutAnimation = AnimationBase<'fadeOut'>;
 
-export type BreatheAnimation = AnimationBase<"breathe">;
+export type BreatheAnimation = AnimationBase<'breathe'>;
 
-export type SlideDirection = "left" | "right" | "top" | "bottom";
-export type SlideTextType = "none" | "character";
+export type SlideDirection = 'left' | 'right' | 'top' | 'bottom';
+export type SlideTextType = 'none' | 'character';
 export type SlideInAnimation = AnimationBase<
-  "slideIn",
+  'slideIn',
   {
     direction: SlideDirection;
     useClipPath: boolean;
-    textType: "none" | "character";
+    textType: 'none' | 'character';
   }
 >;
 
 export type SlideOutAnimation = AnimationBase<
-  "slideOut",
+  'slideOut',
   {
     direction: SlideDirection;
     useClipPath: boolean;
@@ -112,11 +112,11 @@ export type Animation =
   | BreatheAnimation;
 
 export type MenuOption =
-  | "Video"
-  | "Audio"
-  | "Text"
-  | "Image"
-  | "Export"
-  | "Animation"
-  | "Effect"
-  | "Fill";
+  | 'Video'
+  | 'Audio'
+  | 'Text'
+  | 'Image'
+  | 'Export'
+  | 'Animation'
+  | 'Effect'
+  | 'Fill';

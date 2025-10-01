@@ -1,7 +1,5 @@
 // src/utils/apiClient.ts
-import {
-  BASE_URL,
-} from "@/lib/celery/constants";
+import { BASE_URL } from '@/lib/celery/constants';
 
 class ApiClient {
   private token: string | null = null;
@@ -21,8 +19,8 @@ class ApiClient {
     const url = `${BASE_URL}${endpoint}`;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...(options.headers as Record<string, string> || {}),
+      'Content-Type': 'application/json',
+      ...((options.headers as Record<string, string>) || {}),
     };
 
     if (this.token) {
@@ -41,7 +39,7 @@ class ApiClient {
     // Handle empty responses
     if (
       response.status === 204 ||
-      response.headers.get("content-length") === "0"
+      response.headers.get('content-length') === '0'
     ) {
       return {} as T;
     }
@@ -50,25 +48,25 @@ class ApiClient {
   }
 
   async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" });
+    return this.request<T>(endpoint, { method: 'GET' });
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
-      method: "POST",
+      method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
-      method: "PUT",
+      method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "DELETE" });
+    return this.request<T>(endpoint, { method: 'DELETE' });
   }
 }
 

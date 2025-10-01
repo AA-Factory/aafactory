@@ -15,10 +15,7 @@ interface RouteParams {
   };
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { resource, id } = params;
 
@@ -26,7 +23,7 @@ export async function DELETE(
     if (!Object.keys(RESOURCE_CONFIG).includes(resource)) {
       return NextResponse.json(
         { error: 'Invalid resource type' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -36,28 +33,37 @@ export async function DELETE(
     const db = client.db(MONGODB_DB);
 
     // Find the resource in the database
-    const resourceDoc = await db.collection(config.collection).findOne({ _id: new ObjectId(id) });
+    const resourceDoc = await db
+      .collection(config.collection)
+      .findOne({ _id: new ObjectId(id) });
 
     if (!resourceDoc) {
       return NextResponse.json(
         { error: 'Resource not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Delete the file from the filesystem in public/uploads
-    const filePath = path.join(process.cwd(), 'public/uploads', config.uploadDir, id);
+    const filePath = path.join(
+      process.cwd(),
+      'public/uploads',
+      config.uploadDir,
+      id,
+    );
     await unlink(filePath);
 
     // Delete the resource from the database
-    await db.collection(config.collection).deleteOne({ _id: new ObjectId(resourceDoc._id) });
+    await db
+      .collection(config.collection)
+      .deleteOne({ _id: new ObjectId(resourceDoc._id) });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

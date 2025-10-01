@@ -1,10 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   prepareAudioData,
   createAudioResponse,
   type GenerateAudioPayload,
-} from "@/services/audioService";
-import { CELERY_RUN_TASK, CELERY_TASK_STATUS, POLLING_CONFIG } from "@/lib/celery/constants";
+} from '@/services/audioService';
+import {
+  CELERY_RUN_TASK,
+  CELERY_TASK_STATUS,
+  POLLING_CONFIG,
+} from '@/lib/celery/constants';
 
 export function useGenerateAudio() {
   const queryClient = useQueryClient();
@@ -18,7 +22,7 @@ export function useGenerateAudio() {
       const response = await fetch(CELERY_RUN_TASK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskRequest)
+        body: JSON.stringify(taskRequest),
       });
 
       if (!response.ok) throw new Error('Failed to start task');
@@ -33,8 +37,8 @@ export function useGenerateAudio() {
           avatarId: payload.avatar?.id || '',
           taskType: 'audio',
           userPrompt: payload.dialog,
-          status: 'PENDING'
-        })
+          status: 'PENDING',
+        }),
       });
 
       // 4. Poll for completion
@@ -55,8 +59,8 @@ export function useGenerateAudio() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               base64Data: data.result,
-              status: 'SUCCESS'
-            })
+              status: 'SUCCESS',
+            }),
           });
           return createAudioResponse(data.result, task_id);
         } else if (data.status === 'FAILURE') {
@@ -65,15 +69,15 @@ export function useGenerateAudio() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               status: 'FAILURE',
-              error: data.error || 'No result returned from task'
-            })
+              error: data.error || 'No result returned from task',
+            }),
           });
           throw new Error(data.error || 'Audio generation failed');
         }
 
         // Still pending, wait and try again
-        await new Promise(resolve =>
-          setTimeout(resolve, POLLING_CONFIG['audio'].REFETCH_INTERVAL)
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG['audio'].REFETCH_INTERVAL),
         );
         return pollStatus();
       };

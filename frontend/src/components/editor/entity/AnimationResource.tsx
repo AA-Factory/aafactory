@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
 // import { formatTimeToMinSec } from "@/utils";
-import { observer } from "mobx-react";
-import { MdDelete } from "react-icons/md";
+import { observer } from 'mobx-react';
+import { MdDelete } from 'react-icons/md';
 import {
   Animation,
   FadeInAnimation,
@@ -12,14 +12,14 @@ import {
   SlideInAnimation,
   SlideOutAnimation,
   SlideTextType,
-} from "@/types/editor";
+} from '@/types/editor';
 
 const ANIMATION_TYPE_TO_LABEL: Record<string, string> = {
-  fadeIn: "Fade In",
-  fadeOut: "Fade Out",
-  slideIn: "Slide In",
-  slideOut: "Slide Out",
-  breath: "Breath",
+  fadeIn: 'Fade In',
+  fadeOut: 'Fade Out',
+  slideIn: 'Slide In',
+  slideOut: 'Slide Out',
+  breath: 'Breath',
 };
 export type AnimationResourceProps = {
   animation: Animation;
@@ -39,14 +39,14 @@ export const AnimationResource = observer((props: AnimationResourceProps) => {
           <MdDelete size="25" />
         </button>
       </div>
-      {props.animation.type === "fadeIn" ||
-      props.animation.type === "fadeOut" ? (
+      {props.animation.type === 'fadeIn' ||
+      props.animation.type === 'fadeOut' ? (
         <FadeAnimation
           animation={props.animation as FadeInAnimation | FadeOutAnimation}
         />
       ) : null}
-      {props.animation.type === "slideIn" ||
-      props.animation.type === "slideOut" ? (
+      {props.animation.type === 'slideIn' ||
+      props.animation.type === 'slideOut' ? (
         <SlideAnimation
           animation={props.animation as SlideInAnimation | SlideOutAnimation}
         />

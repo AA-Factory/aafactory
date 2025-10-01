@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -6,7 +6,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
-} from "react";
+} from 'react';
 
 interface ActiveAvatarsContextType {
   activeAvatarIds: string[];
@@ -33,7 +33,7 @@ export const ActiveAvatarsProvider: React.FC<ActiveAvatarsProviderProps> = ({
 
   // Load active avatars from localStorage on mount
   useEffect(() => {
-    const savedActiveAvatars = localStorage.getItem("activeAvatarIds");
+    const savedActiveAvatars = localStorage.getItem('activeAvatarIds');
     if (savedActiveAvatars) {
       try {
         const parsed = JSON.parse(savedActiveAvatars);
@@ -41,12 +41,12 @@ export const ActiveAvatarsProvider: React.FC<ActiveAvatarsProviderProps> = ({
           setActiveAvatarIds(parsed);
         }
       } catch (error) {
-        console.error("Error parsing active avatars from localStorage:", error);
+        console.error('Error parsing active avatars from localStorage:', error);
         // Fallback: check for old single avatar format
-        const oldSavedAvatar = localStorage.getItem("activeAvatarId");
+        const oldSavedAvatar = localStorage.getItem('activeAvatarId');
         if (oldSavedAvatar) {
           setActiveAvatarIds([oldSavedAvatar]);
-          localStorage.removeItem("activeAvatarId"); // Clean up old format
+          localStorage.removeItem('activeAvatarId'); // Clean up old format
         }
       }
     }
@@ -54,7 +54,7 @@ export const ActiveAvatarsProvider: React.FC<ActiveAvatarsProviderProps> = ({
 
   // Save to localStorage whenever activeAvatarIds changes
   useEffect(() => {
-    localStorage.setItem("activeAvatarIds", JSON.stringify(activeAvatarIds));
+    localStorage.setItem('activeAvatarIds', JSON.stringify(activeAvatarIds));
   }, [activeAvatarIds]);
 
   const addActiveAvatar = (avatarId: string) => {
@@ -113,7 +113,7 @@ export const useActiveAvatars = (): ActiveAvatarsContextType => {
   const context = useContext(ActiveAvatarsContext);
   if (!context) {
     throw new Error(
-      "useActiveAvatars must be used within an ActiveAvatarsProvider",
+      'useActiveAvatars must be used within an ActiveAvatarsProvider',
     );
   }
   return context;

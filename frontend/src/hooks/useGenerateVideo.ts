@@ -1,10 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   prepareVideoData,
   createVideoResponse,
   type GenerateVideoPayload,
-} from "@/services/videoService";
-import { CELERY_RUN_TASK, CELERY_TASK_STATUS, POLLING_CONFIG } from "@/lib/celery/constants";
+} from '@/services/videoService';
+import {
+  CELERY_RUN_TASK,
+  CELERY_TASK_STATUS,
+  POLLING_CONFIG,
+} from '@/lib/celery/constants';
 
 export function useGenerateVideo() {
   const queryClient = useQueryClient();
@@ -18,7 +22,7 @@ export function useGenerateVideo() {
       const response = await fetch(CELERY_RUN_TASK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskRequest)
+        body: JSON.stringify(taskRequest),
       });
 
       if (!response.ok) throw new Error('Failed to start task');
@@ -33,11 +37,11 @@ export function useGenerateVideo() {
           avatarId: payload.avatar?.id || '',
           taskType: 'video',
           userPrompt: payload.prompt,
-          status: 'PENDING'
-        })
+          status: 'PENDING',
+        }),
       });
       queryClient.invalidateQueries({
-        queryKey: ["tasks", "video", { avatarId: payload.avatar?.id }]
+        queryKey: ['tasks', 'video', { avatarId: payload.avatar?.id }],
       });
       // 4. Poll for completion
       const pollStatus = async (): Promise<any> => {
@@ -57,8 +61,8 @@ export function useGenerateVideo() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               base64Data: data.result,
-              status: 'SUCCESS'
-            })
+              status: 'SUCCESS',
+            }),
           });
           return createVideoResponse(data.result, task_id);
         } else if (data.status === 'FAILURE') {
@@ -67,15 +71,15 @@ export function useGenerateVideo() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               status: 'FAILURE',
-              error: data.error || 'No result returned from task'
-            })
+              error: data.error || 'No result returned from task',
+            }),
           });
           throw new Error(data.error || 'Video generation failed');
         }
 
         // Still pending, wait and try again
-        await new Promise(resolve =>
-          setTimeout(resolve, POLLING_CONFIG['video'].REFETCH_INTERVAL)
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG['video'].REFETCH_INTERVAL),
         );
         return pollStatus();
       };

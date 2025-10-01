@@ -7,7 +7,7 @@ const collections = {
   tasks,
   videos,
   timeline,
-  avatars
+  avatars,
 };
 
 // Helper function to get individual schema
@@ -21,7 +21,7 @@ const getCollectionNames = () => {
 };
 
 module.exports = {
-  collections,      // For bulk operations
-  getSchema,        // For individual access
-  getCollectionNames
+  collections, // For bulk operations
+  getSchema, // For individual access
+  getCollectionNames,
 };

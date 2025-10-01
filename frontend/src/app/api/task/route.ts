@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createTask } from "@/lib/taskDb";
+import { NextRequest, NextResponse } from 'next/server';
+import { createTask } from '@/lib/taskDb';
 
 // POST - Create new task
 export async function POST(req: NextRequest) {
@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
 
     if (!taskId || !avatarId || !taskType) {
       return NextResponse.json(
-        { error: "taskId, avatarId, and taskType are required" },
-        { status: 400 }
+        { error: 'taskId, avatarId, and taskType are required' },
+        { status: 400 },
       );
     }
 
@@ -17,17 +17,26 @@ export async function POST(req: NextRequest) {
       taskId,
       avatarId,
       taskType,
-      userPrompt
+      userPrompt,
     });
 
     return NextResponse.json({ success: true, task });
   } catch (error) {
-    console.error("Error creating task:", error);
-    console.log("issuddddddd", JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4));
+    console.error('Error creating task:', error);
+    console.log(
+      'issuddddddd',
+      JSON.stringify(
+        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
+        null,
+        4,
+      ),
+    );
 
     return NextResponse.json(
-      { error: `Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}` },
-      { status: 500 }
+      {
+        error: `Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      },
+      { status: 500 },
     );
   }
 }

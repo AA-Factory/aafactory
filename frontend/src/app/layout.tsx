@@ -1,18 +1,19 @@
-import "./globals.css";
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import Script from "next/script";
-import HeaderNav from "@/components/Header";
-import Providers from "@/providers/react-query-provider";
-import { NotificationProvider } from "@/contexts/NotificationContext";
-import { ActiveAvatarsProvider } from "@/contexts/ActiveAvatarsContext";
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import Script from 'next/script';
+import HeaderNav from '@/components/Header';
+import Providers from '@/providers/react-query-provider';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { ActiveAvatarsProvider } from '@/contexts/ActiveAvatarsContext';
 
-import Notification from "@/components/Notification";
-const inter = Inter({ subsets: ["latin"] });
+import Notification from '@/components/Notification';
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "AA Factory",
-  description: "AI Avatar Factory - Create, Customize, and Animate AI-Driven Avatars",
+  title: 'AA Factory',
+  description:
+    'AI Avatar Factory - Create, Customize, and Animate AI-Driven Avatars',
 };
 
 export default function RootLayout({

@@ -4,7 +4,10 @@
 
 // Custom Error Classes
 export class Base64Error extends Error {
-  constructor(message: string, public code: string) {
+  constructor(
+    message: string,
+    public code: string,
+  ) {
     super(message);
     this.name = 'Base64Error';
   }
@@ -49,7 +52,10 @@ export function isValidBase64(str: string): boolean {
 /**
  * Converts a base64 string to a Blob
  */
-export function base64ToBlob(base64String: string, mimeType: string = 'audio/wav'): Blob {
+export function base64ToBlob(
+  base64String: string,
+  mimeType: string = 'audio/wav',
+): Blob {
   try {
     const cleanedBase64 = cleanBase64(base64String);
 
@@ -67,7 +73,9 @@ export function base64ToBlob(base64String: string, mimeType: string = 'audio/wav
     return new Blob([bytes], { type: mimeType });
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new DecodingError(`Failed to decode base64: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new DecodingError(
+      `Failed to decode base64: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -92,7 +100,9 @@ export function base64ToArrayBuffer(base64String: string): ArrayBuffer {
     return bytes.buffer;
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new DecodingError(`Failed to decode base64 to ArrayBuffer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new DecodingError(
+      `Failed to decode base64 to ArrayBuffer: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -123,7 +133,13 @@ export function fileToBase64(file: File): Promise<string> {
 
         resolve(base64Data);
       } catch (error) {
-        reject(error instanceof EncodingError ? error : new EncodingError(`File encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        reject(
+          error instanceof EncodingError
+            ? error
+            : new EncodingError(
+                `File encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ),
+        );
       }
     };
 
@@ -162,7 +178,13 @@ export function blobToBase64(blob: Blob): Promise<string> {
 
         resolve(base64Data);
       } catch (error) {
-        reject(error instanceof EncodingError ? error : new EncodingError(`Blob encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        reject(
+          error instanceof EncodingError
+            ? error
+            : new EncodingError(
+                `Blob encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ),
+        );
       }
     };
 
@@ -179,7 +201,7 @@ export function blobToBase64(blob: Blob): Promise<string> {
  */
 export async function encodeMediaFile(
   mediaFile: string | File,
-  basePath?: string
+  basePath?: string,
 ): Promise<{ base64: string; filename: string; mimeType?: string }> {
   try {
     let blob: Blob;
@@ -204,7 +226,9 @@ export async function encodeMediaFile(
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new EncodingError(`Failed to fetch media file: ${mediaFile} (${response.status})`);
+        throw new EncodingError(
+          `Failed to fetch media file: ${mediaFile} (${response.status})`,
+        );
       }
 
       blob = await response.blob();
@@ -217,11 +241,13 @@ export async function encodeMediaFile(
     return {
       base64,
       filename,
-      mimeType
+      mimeType,
     };
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new EncodingError(`Media encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new EncodingError(
+      `Media encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -231,7 +257,7 @@ export async function encodeMediaFile(
  */
 export async function encodeAudioFile(
   audioFile: string | File,
-  basePath: string = '/test/training_audio/'
+  basePath: string = '/test/training_audio/',
 ): Promise<{ base64: string; filename: string; mimeType?: string }> {
   return encodeMediaFile(audioFile, basePath);
 }
@@ -240,7 +266,7 @@ export async function encodeAudioFile(
  * Encodes an image file (File or fetched from URL) to base64
  */
 export async function encodeImageFile(
-  imageFile: string | File
+  imageFile: string | File,
 ): Promise<{ base64: string; filename: string; mimeType?: string }> {
   try {
     const result = await encodeMediaFile(imageFile);
@@ -256,14 +282,19 @@ export async function encodeImageFile(
     return result;
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new EncodingError(`Image encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new EncodingError(
+      `Image encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
 /**
  * Creates a data URL from base64 string
  */
-export function base64ToDataUrl(base64String: string, mimeType: string = 'audio/wav'): string {
+export function base64ToDataUrl(
+  base64String: string,
+  mimeType: string = 'audio/wav',
+): string {
   try {
     const cleanedBase64 = cleanBase64(base64String);
 
@@ -274,20 +305,27 @@ export function base64ToDataUrl(base64String: string, mimeType: string = 'audio/
     return `data:${mimeType};base64,${cleanedBase64}`;
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new DecodingError(`Failed to create data URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new DecodingError(
+      `Failed to create data URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
 /**
  * Creates an object URL from base64 string
  */
-export function base64ToObjectUrl(base64String: string, mimeType: string = 'audio/wav'): string {
+export function base64ToObjectUrl(
+  base64String: string,
+  mimeType: string = 'audio/wav',
+): string {
   try {
     const blob = base64ToBlob(base64String, mimeType);
     return URL.createObjectURL(blob);
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new DecodingError(`Failed to create object URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new DecodingError(
+      `Failed to create object URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -298,11 +336,12 @@ export function createMediaResponse(
   base64Data: string,
   taskId: string,
   mediaType: 'audio' | 'video' | 'image',
-  customMimeType?: string
+  customMimeType?: string,
 ): { base64: string; url: string; filename: string; promptId: string } {
   try {
     // Handle case where base64Data might be wrapped in an object
-    const cleanData = typeof base64Data === 'string' ? base64Data : (base64Data as any).message;
+    const cleanData =
+      typeof base64Data === 'string' ? base64Data : (base64Data as any).message;
 
     // Determine MIME type and file extension
     let mimeType: string;
@@ -342,7 +381,9 @@ export function createMediaResponse(
     };
   } catch (error) {
     if (error instanceof Base64Error) throw error;
-    throw new DecodingError(`Failed to create media response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new DecodingError(
+      `Failed to create media response: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 

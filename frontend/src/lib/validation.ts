@@ -1,69 +1,69 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Avatar validation schema using Zod (modern approach)
 export const avatarFormSchema = z.object({
   name: z
     .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be no more than 50 characters")
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be no more than 50 characters')
     .regex(
       /^[a-zA-Z0-9_\s-]+$/,
-      "Name must contain only letters, numbers, underscores, spaces, and hyphens",
+      'Name must contain only letters, numbers, underscores, spaces, and hyphens',
     ),
 
   description: z
     .string()
-    .min(5, "Description must be at least 5 characters")
-    .max(200, "Description must be no more than 200 characters")
+    .min(5, 'Description must be at least 5 characters')
+    .max(200, 'Description must be no more than 200 characters')
     .optional(),
 
   category: z
-    .enum(["realistic", "stylized", "cartoon", "fantasy"], {
-      message: "Please select a valid category",
+    .enum(['realistic', 'stylized', 'cartoon', 'fantasy'], {
+      message: 'Please select a valid category',
     })
     .optional(),
 
   personality: z
     .string()
-    .min(10, "Personality must be at least 10 characters")
-    .max(500, "Personality must be no more than 500 characters"),
+    .min(10, 'Personality must be at least 10 characters')
+    .max(500, 'Personality must be no more than 500 characters'),
 
   backgroundKnowledge: z
     .string()
-    .min(10, "Background knowledge must be at least 10 characters")
-    .max(1000, "Background knowledge must be no more than 1000 characters"),
+    .min(10, 'Background knowledge must be at least 10 characters')
+    .max(1000, 'Background knowledge must be no more than 1000 characters'),
 
   image: z
-    .instanceof(File, { message: "Please select an image file" })
+    .instanceof(File, { message: 'Please select an image file' })
     .refine(
       (file) => file.size <= 5 * 1024 * 1024,
-      "File size must be less than 5MB",
+      'File size must be less than 5MB',
     )
     .refine(
       (file) =>
-        ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
+        ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
           file.type,
         ),
-      "File must be a JPEG, PNG, or WebP image",
+      'File must be a JPEG, PNG, or WebP image',
     )
     .optional(),
 
   trainingAudio: z
-    .instanceof(File, { message: "Please select an audio file" })
+    .instanceof(File, { message: 'Please select an audio file' })
     .refine(
       (file) => file.size <= 50 * 1024 * 1024,
-      "Audio file size must be less than 50MB",
+      'Audio file size must be less than 50MB',
     )
     .refine(
       (file) =>
         [
-          "audio/mp3",
-          "audio/wav",
-          "audio/m4a",
-          "audio/mpeg",
-          "audio/ogg",
+          'audio/mp3',
+          'audio/wav',
+          'audio/m4a',
+          'audio/mpeg',
+          'audio/ogg',
         ].includes(file.type),
-      "File must be an MP3, WAV, M4A, or OGG audio file",
+      'File must be an MP3, WAV, M4A, or OGG audio file',
     )
     .optional(),
 });
@@ -71,10 +71,10 @@ export const avatarFormSchema = z.object({
 export type AvatarFormData = z.infer<typeof avatarFormSchema>;
 
 export const categoryOptions = [
-  { value: "realistic", label: "Realistic" },
-  { value: "stylized", label: "Stylized" },
-  { value: "cartoon", label: "Cartoon" },
-  { value: "fantasy", label: "Fantasy" },
+  { value: 'realistic', label: 'Realistic' },
+  { value: 'stylized', label: 'Stylized' },
+  { value: 'cartoon', label: 'Cartoon' },
+  { value: 'fantasy', label: 'Fantasy' },
 ] as const;
 
 // Legacy validation schema (for backward compatibility)
@@ -85,59 +85,71 @@ export const avatarSchema = {
     maxLength: 50,
     pattern: /^[a-zA-Z0-9_\s-]+$/,
     message:
-      "Name must be 2-50 characters, alphanumeric with underscores, spaces, and hyphens only",
+      'Name must be 2-50 characters, alphanumeric with underscores, spaces, and hyphens only',
   },
   personality: {
     required: true,
     minLength: 10,
     maxLength: 500,
-    message: "Personality must be 10-500 characters",
+    message: 'Personality must be 10-500 characters',
   },
   backgroundKnowledge: {
     required: true,
     minLength: 10,
     maxLength: 1000,
-    message: "Background knowledge must be 10-1000 characters",
+    message: 'Background knowledge must be 10-1000 characters',
   },
   voiceModel: {
     required: true,
-    enum: ["elevenlabs", "openai", "azure", "google"],
-    message: "Voice model must be one of: elevenlabs, openai, azure, google",
+    enum: ['elevenlabs', 'openai', 'azure', 'google'],
+    message: 'Voice model must be one of: elevenlabs, openai, azure, google',
   },
 };
 
 // File validation schema
 export const fileSchema = {
   maxSize: 5 * 1024 * 1024, // 5MB
-  allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
-  allowedExtensions: [".jpg", ".jpeg", ".png", ".webp"],
+  allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
 };
 
 // Validate a single field (legacy function)
-export function validateField(fieldName: string, value: any, schema = avatarSchema) {
+export function validateField(
+  fieldName: string,
+  value: any,
+  schema = avatarSchema,
+) {
   const rules = schema[fieldName as keyof typeof schema];
   if (!rules) return { isValid: true, error: null };
 
   const errors: string[] = [];
 
   // Required validation
-  if (rules.required && (!value || value.toString().trim() === "")) {
+  if (rules.required && (!value || value.toString().trim() === '')) {
     errors.push(`${fieldName} is required`);
   }
 
   // Skip other validations if field is empty and not required
-  if (!value || value.toString().trim() === "") {
+  if (!value || value.toString().trim() === '') {
     return { isValid: errors.length === 0, error: errors[0] || null };
   }
 
   const stringValue = value.toString().trim();
 
   // Length validations
-  if ('minLength' in rules && rules.minLength && stringValue.length < rules.minLength) {
+  if (
+    'minLength' in rules &&
+    rules.minLength &&
+    stringValue.length < rules.minLength
+  ) {
     errors.push(`${fieldName} must be at least ${rules.minLength} characters`);
   }
 
-  if ('maxLength' in rules && rules.maxLength && stringValue.length > rules.maxLength) {
+  if (
+    'maxLength' in rules &&
+    rules.maxLength &&
+    stringValue.length > rules.maxLength
+  ) {
     errors.push(
       `${fieldName} must be no more than ${rules.maxLength} characters`,
     );
@@ -151,7 +163,7 @@ export function validateField(fieldName: string, value: any, schema = avatarSche
   // Enum validation
   if ('enum' in rules && rules.enum && !rules.enum.includes(stringValue)) {
     errors.push(
-      rules.message || `${fieldName} must be one of: ${rules.enum.join(", ")}`,
+      rules.message || `${fieldName} must be one of: ${rules.enum.join(', ')}`,
     );
   }
 
@@ -183,7 +195,7 @@ export function validateFile(file: File) {
   const errors: string[] = [];
 
   if (!file) {
-    errors.push("File is required");
+    errors.push('File is required');
     return { isValid: false, error: errors[0] };
   }
 
@@ -197,7 +209,7 @@ export function validateFile(file: File) {
   // Check file type
   if (!fileSchema.allowedTypes.includes(file.type)) {
     errors.push(
-      `File type must be one of: ${fileSchema.allowedTypes.join(", ")}`,
+      `File type must be one of: ${fileSchema.allowedTypes.join(', ')}`,
     );
   }
 
@@ -209,7 +221,7 @@ export function validateFile(file: File) {
 
   if (!hasValidExtension) {
     errors.push(
-      `File extension must be one of: ${fileSchema.allowedExtensions.join(", ")}`,
+      `File extension must be one of: ${fileSchema.allowedExtensions.join(', ')}`,
     );
   }
 
@@ -221,13 +233,13 @@ export function validateFile(file: File) {
 
 // Sanitize text input
 export function sanitizeText(text: any): string {
-  if (!text) return "";
+  if (!text) return '';
 
   return text
     .toString()
     .trim()
-    .replace(/\s+/g, " ") // Replace multiple spaces with single space
-    .replace(/[<>]/g, ""); // Remove potential HTML tags
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/[<>]/g, ''); // Remove potential HTML tags
 }
 
 // Sanitize avatar data
@@ -242,10 +254,10 @@ export function sanitizeAvatarData(data: any) {
       Object.entries(data).filter(
         ([key]) =>
           ![
-            "name",
-            "personality",
-            "backgroundKnowledge",
-            "voiceModel",
+            'name',
+            'personality',
+            'backgroundKnowledge',
+            'voiceModel',
           ].includes(key),
       ),
     ),
@@ -257,8 +269,8 @@ export function validateFileName(fileName: string) {
   const unsafeChars = /[<>:"/\\|?*\x00-\x1f]/;
   const maxLength = 255;
 
-  if (!fileName || fileName.trim() === "") {
-    return { isValid: false, error: "Filename cannot be empty" };
+  if (!fileName || fileName.trim() === '') {
+    return { isValid: false, error: 'Filename cannot be empty' };
   }
 
   if (fileName.length > maxLength) {
@@ -269,7 +281,7 @@ export function validateFileName(fileName: string) {
   }
 
   if (unsafeChars.test(fileName)) {
-    return { isValid: false, error: "Filename contains invalid characters" };
+    return { isValid: false, error: 'Filename contains invalid characters' };
   }
 
   return { isValid: true, error: null };

@@ -1,11 +1,7 @@
-import { NextResponse } from "next/server";
-import {
-  updateTaskStatus,
-  updateTaskWithFile,
-  getTasks
-} from "@/lib/taskDb";
-import { CELERY_TASK_STATUS_SERVER } from "@/lib/celery/constants";
-import { isCeleryTaskStatusResponse } from "@/types/celery";
+import { NextResponse } from 'next/server';
+import { updateTaskStatus, updateTaskWithFile, getTasks } from '@/lib/taskDb';
+import { CELERY_TASK_STATUS_SERVER } from '@/lib/celery/constants';
+import { isCeleryTaskStatusResponse } from '@/types/celery';
 
 interface TaskCheckResult {
   taskId: string;
@@ -24,7 +20,7 @@ interface SyncParams {
 
 // Supported task types
 const SUPPORTED_TASK_TYPES = ['video', 'audio', 'image'] as const;
-type TaskType = typeof SUPPORTED_TASK_TYPES[number];
+type TaskType = (typeof SUPPORTED_TASK_TYPES)[number];
 
 function isValidTaskType(taskType: string): taskType is TaskType {
   return SUPPORTED_TASK_TYPES.includes(taskType as TaskType);
@@ -55,7 +51,7 @@ async function checkCeleryTaskStatus(taskId: string): Promise<any> {
 async function updateTaskBasedOnStatus(
   taskId: string,
   taskResult: any,
-  taskType: TaskType
+  taskType: TaskType,
 ): Promise<boolean> {
   switch (taskResult.status) {
     case 'SUCCESS':
@@ -64,7 +60,11 @@ async function updateTaskBasedOnStatus(
         console.log(`✅ ${taskType} task ${taskId} completed successfully`);
         return true;
       } else {
-        await updateTaskStatus(taskId, 'FAILURE', 'No result returned from task');
+        await updateTaskStatus(
+          taskId,
+          'FAILURE',
+          'No result returned from task',
+        );
         console.log(`❌ ${taskType} task ${taskId} failed: No result`);
         return true;
       }
@@ -83,7 +83,9 @@ async function updateTaskBasedOnStatus(
       return true;
 
     default:
-      console.log(`ℹ️ ${taskType} task ${taskId} status unchanged: ${taskResult.status}`);
+      console.log(
+        `ℹ️ ${taskType} task ${taskId} status unchanged: ${taskResult.status}`,
+      );
       return false;
   }
 }
@@ -99,9 +101,9 @@ export async function POST(request: Request, { params }: SyncParams) {
           success: false,
           error: `Unsupported task type: ${tasktype}. Supported types: ${SUPPORTED_TASK_TYPES.join(', ')}`,
           stats: { pending: 0, checked: 0, updated: 0, failed: 0 },
-          tasks: []
+          tasks: [],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -119,9 +121,9 @@ export async function POST(request: Request, { params }: SyncParams) {
           pending: 0,
           checked: 0,
           updated: 0,
-          failed: 0
+          failed: 0,
         },
-        tasks: []
+        tasks: [],
       });
     }
 
@@ -140,7 +142,11 @@ export async function POST(request: Request, { params }: SyncParams) {
       const batchPromises = batch.map(async (task) => {
         try {
           const taskResult = await checkCeleryTaskStatus(task.taskId);
-          const statusChanged = await updateTaskBasedOnStatus(task.taskId, taskResult, tasktype);
+          const statusChanged = await updateTaskBasedOnStatus(
+            task.taskId,
+            taskResult,
+            tasktype,
+          );
 
           if (statusChanged) {
             updatedCount++;
@@ -150,20 +156,23 @@ export async function POST(request: Request, { params }: SyncParams) {
             taskId: task.taskId,
             oldStatus: 'PENDING',
             newStatus: taskResult.status,
-            statusChanged
+            statusChanged,
           };
-
         } catch (error) {
           failedCount++;
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.error(`❌ ${tasktype} task ${task.taskId} failed:`, errorMessage);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+          console.error(
+            `❌ ${tasktype} task ${task.taskId} failed:`,
+            errorMessage,
+          );
 
           return {
             taskId: task.taskId,
             oldStatus: 'PENDING',
             newStatus: 'ERROR',
             statusChanged: false,
-            error: errorMessage
+            error: errorMessage,
           };
         }
       });
@@ -177,7 +186,9 @@ export async function POST(request: Request, { params }: SyncParams) {
       });
     }
 
-    console.log(`✅ ${tasktype} sync complete. Updated: ${updatedCount}, Failed: ${failedCount}`);
+    console.log(
+      `✅ ${tasktype} sync complete. Updated: ${updatedCount}, Failed: ${failedCount}`,
+    );
 
     return NextResponse.json({
       success: true,
@@ -187,13 +198,13 @@ export async function POST(request: Request, { params }: SyncParams) {
         pending: pendingTasks.length,
         checked: results.length,
         updated: updatedCount,
-        failed: failedCount
+        failed: failedCount,
       },
-      tasks: results
+      tasks: results,
     });
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     console.error(`❌ ${tasktype} task sync failed:`, errorMessage);
 
     return NextResponse.json(
@@ -205,11 +216,11 @@ export async function POST(request: Request, { params }: SyncParams) {
           pending: 0,
           checked: 0,
           updated: 0,
-          failed: 0
+          failed: 0,
         },
-        tasks: []
+        tasks: [],
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -13,7 +13,9 @@ export async function connectToDatabase(): Promise<Db> {
   }
 }
 
-export async function getCollection<T>(collectionName: string): Promise<Collection<T>> {
+export async function getCollection<T>(
+  collectionName: string,
+): Promise<Collection<T>> {
   const database = await connectToDatabase();
   return database.collection<T>(collectionName);
 }

@@ -22,9 +22,9 @@ export async function encodeFormDataIntoImage(
   imageFile: File,
 ): Promise<EncodedResult> {
   // Create canvas
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not supported");
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas not supported');
 
   // Load image
   const img = await loadImage(imageFile);
@@ -60,9 +60,9 @@ export async function decodeFormDataFromImage(
   imageFile: File,
 ): Promise<FormData | null> {
   // Create canvas
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not supported");
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas not supported');
 
   // Load image
   const img = await loadImage(imageFile);
@@ -102,21 +102,21 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
-      else reject(new Error("Failed to create blob"));
-    }, "image/png");
+      else reject(new Error('Failed to create blob'));
+    }, 'image/png');
   });
 }
 
 function encodeTextInImageData(imageData: ImageData, text: string): ImageData {
   const data = imageData.data;
-  const endMarker = "1111111111111110";
+  const endMarker = '1111111111111110';
 
   // Convert text to binary
   const textBinary =
     text
-      .split("")
-      .map((char) => char.charCodeAt(0).toString(2).padStart(8, "0"))
-      .join("") + endMarker;
+      .split('')
+      .map((char) => char.charCodeAt(0).toString(2).padStart(8, '0'))
+      .join('') + endMarker;
 
   // Check capacity
   const maxCapacity = Math.floor(data.length / 4);
@@ -137,8 +137,8 @@ function encodeTextInImageData(imageData: ImageData, text: string): ImageData {
 
 function decodeTextFromImageData(imageData: ImageData): string | null {
   const data = imageData.data;
-  const endMarker = "1111111111111110";
-  let binaryString = "";
+  const endMarker = '1111111111111110';
+  let binaryString = '';
 
   // Extract bits from red channel
   for (let i = 0; i < data.length; i += 4) {
@@ -150,7 +150,7 @@ function decodeTextFromImageData(imageData: ImageData): string | null {
   if (endIndex === -1) return null;
 
   const textBinary = binaryString.substring(0, endIndex);
-  let text = "";
+  let text = '';
 
   // Convert binary to text
   for (let i = 0; i < textBinary.length; i += 8) {
@@ -168,7 +168,7 @@ export const loadImageToCanvas = (file, canvasRef) => {
     const img = new Image();
     img.onload = () => {
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
 
       canvas.width = img.width;
       canvas.height = img.height;
@@ -182,20 +182,20 @@ export const loadImageToCanvas = (file, canvasRef) => {
 
 export const decodeDataFromImage = (imageData) => {
   const data = imageData.data;
-  let binaryString = "";
+  let binaryString = '';
 
   for (let i = 0; i < data.length; i += 4) {
     binaryString += (data[i] & 1).toString();
   }
 
   // Find end marker
-  const endMarker = "1111111111111110";
+  const endMarker = '1111111111111110';
   const endIndex = binaryString.indexOf(endMarker);
 
   if (endIndex === -1) return null;
 
   const textBinary = binaryString.substring(0, endIndex);
-  let text = "";
+  let text = '';
 
   for (let i = 0; i < textBinary.length; i += 8) {
     const byte = textBinary.substr(i, 8);

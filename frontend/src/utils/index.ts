@@ -11,7 +11,7 @@ export function isHtmlVideoElement(
     | HTMLElement,
 ): element is HTMLVideoElement {
   if (!element) return false;
-  return element.tagName === "VIDEO";
+  return element.tagName === 'VIDEO';
 }
 export function isHtmlImageElement(
   element:
@@ -22,7 +22,7 @@ export function isHtmlImageElement(
     | HTMLElement,
 ): element is HTMLImageElement {
   if (!element) return false;
-  return element.tagName === "IMG";
+  return element.tagName === 'IMG';
 }
 
 export function isHtmlAudioElement(
@@ -34,7 +34,7 @@ export function isHtmlAudioElement(
     | HTMLElement,
 ): element is HTMLAudioElement {
   if (!element) return false;
-  return element.tagName === "audio";
+  return element.tagName === 'audio';
 }
 
 export function formatTimeToMinSec(time: number) {
@@ -49,5 +49,5 @@ export function formatTimeToMinSecMili(time: number) {
 }
 
 function appendZero(value: number, minDigits: number = 2) {
-  return value.toString().padStart(minDigits, "0");
+  return value.toString().padStart(minDigits, '0');
 }

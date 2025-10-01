@@ -1,5 +1,5 @@
-import React from "react";
-import { FiCheckCircle } from "react-icons/fi";
+import React from 'react';
+import { FiCheckCircle } from 'react-icons/fi';
 
 interface AudioPlayerProps {
   audioUrl: string | null;
@@ -19,13 +19,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const getAudioLabel = () => {
     switch (audioSource) {
       case 'uploaded':
-        return "Uploaded Audio";
+        return 'Uploaded Audio';
       case 'selected':
         return `Selected Audio: ${selectedAudioTaskIndex ? selectedAudioTaskIndex + 1 : ''}`;
       case 'generated':
-        return "Generated Audio";
+        return 'Generated Audio';
       default:
-        return "Audio";
+        return 'Audio';
     }
   };
 
@@ -37,12 +37,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           {getAudioLabel()}
         </span>
       </div>
-      <audio
-        controls
-        src={audioUrl}
-        className="w-full"
-        preload="metadata"
-      >
+      <audio controls src={audioUrl} className="w-full" preload="metadata">
         Your browser does not support the audio element.
       </audio>
     </div>

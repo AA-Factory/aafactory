@@ -1,14 +1,9 @@
-import { Avatar } from "@/types/avatar";
-import {
-  encodeMediaFile,
-  createMediaResponse
-} from "@/lib/base64Utils";
-import {
-  type AudioGenerationTaskRequest
-} from "@/types/celery";
+import { Avatar } from '@/types/avatar';
+import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
+import { type AudioGenerationTaskRequest } from '@/types/celery';
 
 // Constants
-const DEFAULT_LANGUAGE = "en-us";
+const DEFAULT_LANGUAGE = 'en-us';
 
 // Types
 export type AudioSource = 'avatar' | 'rick_and_morty' | 'japanese';
@@ -28,11 +23,9 @@ export type GenerateAudioResponse = {
   base64Audio: string;
 };
 
-
-
 export async function getTrainingAudioForSource(
   avatar: Avatar | null,
-  audioSource: AudioSource = 'avatar'
+  audioSource: AudioSource = 'avatar',
 ): Promise<string | File | null> {
   // Handle specific sources
   if (audioSource === 'rick_and_morty') {
@@ -49,7 +42,10 @@ export async function getTrainingAudioForSource(
       const audioResponse = await fetch(avatar.trainingAudioPath);
       if (audioResponse.ok) {
         const audioBlob = await audioResponse.blob();
-        const audioFile = new File([audioBlob], avatar.trainingAudioFileName || 'training_audio.wav');
+        const audioFile = new File(
+          [audioBlob],
+          avatar.trainingAudioFileName || 'training_audio.wav',
+        );
         return audioFile;
       }
     } catch (error) {
@@ -61,21 +57,28 @@ export async function getTrainingAudioForSource(
   return 'rick_and_morty_voice_training.wav';
 }
 
-export function createTaskRequest(payload: GenerateAudioPayload, audioBase64: string): AudioGenerationTaskRequest {
+export function createTaskRequest(
+  payload: GenerateAudioPayload,
+  audioBase64: string,
+): AudioGenerationTaskRequest {
   const language = payload.language || DEFAULT_LANGUAGE;
 
   return {
-    server_name: process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? "mock" : "zonos",
-    task_name: "custom_voice_to_audio",
+    server_name:
+      process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? 'mock' : 'zonos',
+    task_name: 'custom_voice_to_audio',
     payload: {
       text: payload.dialog,
       voice_sample: audioBase64,
       language,
-    }
+    },
   };
 }
 
-export function createAudioResponse(base64Audio: string, taskId: string): GenerateAudioResponse {
+export function createAudioResponse(
+  base64Audio: string,
+  taskId: string,
+): GenerateAudioResponse {
   const response = createMediaResponse(base64Audio, taskId, 'audio');
   return {
     base64Audio: response.base64,
@@ -86,27 +89,32 @@ export function createAudioResponse(base64Audio: string, taskId: string): Genera
 }
 
 // Main service function
-export async function prepareAudioData(payload: GenerateAudioPayload): Promise<{ taskRequest: AudioGenerationTaskRequest; audioBase64: string }> {
+export async function prepareAudioData(
+  payload: GenerateAudioPayload,
+): Promise<{ taskRequest: AudioGenerationTaskRequest; audioBase64: string }> {
   if (!payload.avatar) {
-    throw new Error("No avatar provided for audio generation");
+    throw new Error('No avatar provided for audio generation');
   }
 
   if (!payload.dialog?.trim()) {
-    throw new Error("No dialog text provided");
+    throw new Error('No dialog text provided');
   }
 
   // Get training audio
   const trainingAudio = await getTrainingAudioForSource(
     payload.avatar,
-    payload.audioSource || 'avatar'
+    payload.audioSource || 'avatar',
   );
 
   if (!trainingAudio) {
-    throw new Error("No training audio available");
+    throw new Error('No training audio available');
   }
 
   // Encode audio
-  const { base64: audioBase64 } = await encodeMediaFile(trainingAudio, '/test/training_audio/');
+  const { base64: audioBase64 } = await encodeMediaFile(
+    trainingAudio,
+    '/test/training_audio/',
+  );
 
   // Create task request
   const taskRequest = createTaskRequest(payload, audioBase64);

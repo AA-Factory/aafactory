@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { AudioGenerateTab } from "./AudioGenerateTab";
-import { AudioUploadTab } from "./AudioUploadTab";
-import { AudioSelector } from "./AudioSelector";
-import { AudioPlayer } from "./AudioPlayer";
-import { useGenerateAudio } from "@/hooks/useGenerateAudio";
-import { useNotification } from "@/contexts/NotificationContext";
-import { useVideoGeneration } from "@/contexts/VideoGenerationContext";
-import { useAudioTasks } from "@/lib/api/tasks";
-import { AudioTask } from "@/types/tasks";
-import { DIALOG_SEEDS } from "@/utils/fakeData";
+import React, { useState, useEffect, useMemo } from 'react';
+import { AudioGenerateTab } from './AudioGenerateTab';
+import { AudioUploadTab } from './AudioUploadTab';
+import { AudioSelector } from './AudioSelector';
+import { AudioPlayer } from './AudioPlayer';
+import { useGenerateAudio } from '@/hooks/useGenerateAudio';
+import { useNotification } from '@/contexts/NotificationContext';
+import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
+import { useAudioTasks } from '@/lib/api/tasks';
+import { AudioTask } from '@/types/tasks';
+import { DIALOG_SEEDS } from '@/utils/fakeData';
 
 const getRandomDialogSeed = () => {
   return DIALOG_SEEDS[Math.floor(Math.random() * DIALOG_SEEDS.length)];
@@ -17,22 +17,31 @@ const getRandomDialogSeed = () => {
 export const AudioSection: React.FC = () => {
   const { state, setAudioData } = useVideoGeneration();
   const [audioTab, setAudioTab] = useState<'generate' | 'upload'>('generate');
-  const [selectedAudioSource, setSelectedAudioSource] = useState<'avatar' | 'rick_and_morty' | 'japanese'>('avatar');
+  const [selectedAudioSource, setSelectedAudioSource] = useState<
+    'avatar' | 'rick_and_morty' | 'japanese'
+  >('avatar');
   const [dialog, setDialog] = useState(getRandomDialogSeed());
   const [uploadedAudioFile, setUploadedAudioFile] = useState<File | null>(null);
   const [uploadedAudioUrl, setUploadedAudioUrl] = useState<string | null>(null);
-  const [selectedAudioTask, setSelectedAudioTask] = useState<AudioTask | null>(null);
-  const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
-  const [generatedAudioBase64, setGeneratedAudioBase64] = useState<string | null>(null);
+  const [selectedAudioTask, setSelectedAudioTask] = useState<AudioTask | null>(
+    null,
+  );
+  const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(
+    null,
+  );
+  const [generatedAudioBase64, setGeneratedAudioBase64] = useState<
+    string | null
+  >(null);
   const [loadingAudioTasks, setLoadingAudioTasks] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const generateAudioMutation = useGenerateAudio();
 
   const { showNotification } = useNotification();
-  const {
-    data: audioTasks = [],
-  } = useAudioTasks(state.avatar?.id || "", "SUCCESS");
+  const { data: audioTasks = [] } = useAudioTasks(
+    state.avatar?.id || '',
+    'SUCCESS',
+  );
 
   // Memoize audioTasks to prevent unnecessary re-renders
   const memoizedAudioTasks = useMemo(() => audioTasks, [audioTasks.length]);
@@ -52,9 +61,15 @@ export const AudioSection: React.FC = () => {
 
   // Initialize from context state (only once)
   useEffect(() => {
-    if (!isInitialized && state.selectedAudioTask && memoizedAudioTasks.length > 0) {
+    if (
+      !isInitialized &&
+      state.selectedAudioTask &&
+      memoizedAudioTasks.length > 0
+    ) {
       // Check if the context task exists in available tasks
-      const contextTask = memoizedAudioTasks.find(task => task.taskId === state.selectedAudioTask?.taskId);
+      const contextTask = memoizedAudioTasks.find(
+        (task) => task.taskId === state.selectedAudioTask?.taskId,
+      );
       if (contextTask) {
         setSelectedAudioTask(contextTask);
         setDialog(contextTask.userPrompt || getRandomDialogSeed());
@@ -67,7 +82,9 @@ export const AudioSection: React.FC = () => {
 
   // Update context whenever audio-related state changes
   useEffect(() => {
-    const isReady = dialog.trim().length > 0 && !!(selectedAudioTask || generatedAudioBase64 || uploadedAudioFile);
+    const isReady =
+      dialog.trim().length > 0 &&
+      !!(selectedAudioTask || generatedAudioBase64 || uploadedAudioFile);
 
     setAudioData({
       selectedAudioTask,
@@ -93,7 +110,7 @@ export const AudioSection: React.FC = () => {
   };
 
   const handleAudioGeneration = async () => {
-    showNotification("Generating audio, this may take a minute...", "info");
+    showNotification('Generating audio, this may take a minute...', 'info');
 
     const payload = {
       dialog: dialog,
@@ -104,19 +121,18 @@ export const AudioSection: React.FC = () => {
       onSuccess: (audioResponse) => {
         setGeneratedAudioBase64(audioResponse.base64Audio);
         setGeneratedAudioUrl(audioResponse.audioUrl);
-        showNotification("Audio generation started", "info");
+        showNotification('Audio generation started', 'info');
         setSelectedAudioTask(null);
         setUploadedAudioFile(null);
         setUploadedAudioUrl(null);
         if (audioResponse.base64Audio && audioResponse.audioUrl) {
-          showNotification("Audio generation completed", "success");
+          showNotification('Audio generation completed', 'success');
         }
-      }
+      },
     });
   };
 
   const handleAudioTaskSelect = (taskId: string) => {
-
     if (taskId === 'generated') {
       // Select generated audio, clear task selection
       setSelectedAudioTask(null);
@@ -125,7 +141,7 @@ export const AudioSection: React.FC = () => {
       clearAllAudioSelections();
     } else {
       // Select a specific audio task
-      const task = memoizedAudioTasks.find(t => t.taskId === taskId);
+      const task = memoizedAudioTasks.find((t) => t.taskId === taskId);
       if (task) {
         setSelectedAudioTask(task);
         // Clear other audio sources when selecting a task
@@ -159,7 +175,9 @@ export const AudioSection: React.FC = () => {
       return {
         audioUrl: selectedAudioTask.filePath,
         audioSource: 'selected' as const,
-        selectedAudioTaskIndex: memoizedAudioTasks.findIndex(task => task.taskId === selectedAudioTask.taskId),
+        selectedAudioTaskIndex: memoizedAudioTasks.findIndex(
+          (task) => task.taskId === selectedAudioTask.taskId,
+        ),
       };
     }
 
@@ -182,19 +200,21 @@ export const AudioSection: React.FC = () => {
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           <button
             onClick={() => setAudioTab('generate')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${audioTab === 'generate'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              audioTab === 'generate'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
           >
             Generate Audio
           </button>
           <button
             onClick={() => setAudioTab('upload')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${audioTab === 'upload'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              audioTab === 'upload'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
           >
             Upload Audio
           </button>

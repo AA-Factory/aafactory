@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { EditorElement } from "@/types/editor";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { MdOutlineTextFields, MdMovie } from "react-icons/md";
+'use client';
+import React from 'react';
+import { EditorElement } from '@/types/editor';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { MdOutlineTextFields, MdMovie } from 'react-icons/md';
 
 export type ElementProps = {
   element: EditorElement;
@@ -12,15 +12,15 @@ export type ElementProps = {
 export const Element = observer((props: ElementProps) => {
   const store = React.useContext(StoreContext);
   const { element } = props;
-  const Icon = element.type === "video" ? MdMovie : MdOutlineTextFields;
+  const Icon = element.type === 'video' ? MdMovie : MdOutlineTextFields;
   const isSelected = store.selectedElement?.id === element.id;
-  const bgColor = isSelected ? "rgba(0, 160, 245, 0.1)" : "";
+  const bgColor = isSelected ? 'rgba(0, 160, 245, 0.1)' : '';
   return (
     <div
       style={{
         backgroundColor: bgColor,
       }}
-      className={`flex mx-2 my-1 py-2 px-1 flex-row justify-start items-center rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isSelected ? "bg-blue-100 dark:bg-blue-900" : ""}`}
+      className={`flex mx-2 my-1 py-2 px-1 flex-row justify-start items-center rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
       key={element.id}
       onClick={() => {
         store.setSelectedElement(element);
@@ -31,7 +31,7 @@ export const Element = observer((props: ElementProps) => {
         {element.name}
       </div>
       <div>
-        {element.type === "video" ? (
+        {element.type === 'video' ? (
           <video
             className="opacity-0 max-w-[20px] max-h-[20px]"
             src={element.properties.src}
@@ -46,7 +46,7 @@ export const Element = observer((props: ElementProps) => {
             id={element.properties.elementId}
           ></video>
         ) : null}
-        {element.type === "image" ? (
+        {element.type === 'image' ? (
           <img
             className="opacity-0 max-w-[20px] max-h-[20px]"
             src={element.properties.src}
@@ -61,7 +61,7 @@ export const Element = observer((props: ElementProps) => {
             id={element.properties.elementId}
           ></img>
         ) : null}
-        {element.type === "audio" ? (
+        {element.type === 'audio' ? (
           <audio
             className="opacity-0 max-w-[20px] max-h-[20px]"
             src={element.properties.src}

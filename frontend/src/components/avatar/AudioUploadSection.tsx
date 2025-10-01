@@ -1,5 +1,5 @@
-import React from "react";
-import { HiMicrophone, HiUpload } from "react-icons/hi";
+import React from 'react';
+import { HiMicrophone, HiUpload } from 'react-icons/hi';
 
 interface AudioUploadSectionProps {
   selectedAudio: File | null;
@@ -36,12 +36,13 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
       </p>
 
       <div
-        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${isDragging
-          ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-          : selectedAudio
-            ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
-            : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50"
-          }`}
+        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+          isDragging
+            ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+            : selectedAudio
+              ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
+              : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50'
+        }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
@@ -63,7 +64,8 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
               {selectedAudio.name}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {(selectedAudio.size / (1024 * 1024)).toFixed(2)} MB - Click to change or drag a new file
+              {(selectedAudio.size / (1024 * 1024)).toFixed(2)} MB - Click to
+              change or drag a new file
             </p>
             <audio
               controls
@@ -110,7 +112,7 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
                 <>
                   <span className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                     Click to upload
-                  </span>{" "}
+                  </span>{' '}
                   or drag and drop
                 </>
               )}

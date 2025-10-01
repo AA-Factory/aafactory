@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { HiDownload, HiTrash, HiArrowLeft } from "react-icons/hi";
-import { AvatarForm, AvatarFormRef } from "./AvatarForm";
-import { AvatarFormData } from "@/lib/validation";
-import { useNotification } from "@/contexts/NotificationContext";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { HiDownload, HiTrash, HiArrowLeft } from 'react-icons/hi';
+import { AvatarForm, AvatarFormRef } from './AvatarForm';
+import { AvatarFormData } from '@/lib/validation';
+import { useNotification } from '@/contexts/NotificationContext';
 import {
   useAvatar,
   useCreateAvatar,
   useUpdateAvatar,
   useDeleteAvatar,
   useRefreshAvatars,
-} from "@/hooks/useAvatars";
-import Link from "next/link";
-import { encodeFormDataIntoImage } from "@/utils/steganography";
-import { useRouter } from "next/navigation";
+} from '@/hooks/useAvatars';
+import Link from 'next/link';
+import { encodeFormDataIntoImage } from '@/utils/steganography';
+import { useRouter } from 'next/navigation';
 
 type AvatarPageProps = {
   editMode?: boolean;
@@ -58,7 +58,9 @@ export default function AvatarPage({
   );
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [existingAudioUrl, setExistingAudioUrl] = useState<string | null>(null);
-  const [existingAudioFileName, setExistingAudioFileName] = useState<string | null>(null);
+  const [existingAudioFileName, setExistingAudioFileName] = useState<
+    string | null
+  >(null);
 
   // ---- Load existing avatar into form when editing ----
   useEffect(() => {
@@ -66,16 +68,16 @@ export default function AvatarPage({
     if (!existingAvatar || isLoadingAvatar) return;
 
     const avatarData = {
-      name: existingAvatar.name || "",
-      description: existingAvatar.description || "",
+      name: existingAvatar.name || '',
+      description: existingAvatar.description || '',
       category:
         (existingAvatar.category as
-          | "realistic"
-          | "stylized"
-          | "cartoon"
-          | "fantasy") || "realistic",
-      personality: existingAvatar.personality || "",
-      backgroundKnowledge: existingAvatar.backgroundKnowledge || "",
+          | 'realistic'
+          | 'stylized'
+          | 'cartoon'
+          | 'fantasy') || 'realistic',
+      personality: existingAvatar.personality || '',
+      backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
     };
 
     setDefaultValues(avatarData);
@@ -88,7 +90,7 @@ export default function AvatarPage({
     // Load existing image if available
     if (
       existingAvatar.imageUrl &&
-      existingAvatar.imageUrl !== "/placeholder-avatar.png"
+      existingAvatar.imageUrl !== '/placeholder-avatar.png'
     ) {
       setExistingImageUrl(existingAvatar.imageUrl);
     } else {
@@ -131,7 +133,7 @@ export default function AvatarPage({
   const handleSaveOnly = useCallback(
     async (formData: AvatarFormData) => {
       try {
-        showNotification("Saving avatar...", "info");
+        showNotification('Saving avatar...', 'info');
 
         const avatarData = {
           name: formData.name,
@@ -147,7 +149,7 @@ export default function AvatarPage({
 
         if (file) {
           const extension = file.type.split('/')[1];
-          fileName = `${formData.name || "avatar"}-original.${extension}`;
+          fileName = `${formData.name || 'avatar'}-original.${extension}`;
           avatarData.hasEncodedData = false;
         }
 
@@ -161,7 +163,7 @@ export default function AvatarPage({
             updateData.trainingAudio = trainingAudio;
           }
           await updateAvatarMutation.mutateAsync(updateData);
-          showNotification("Avatar data successfully updated!", "success");
+          showNotification('Avatar data successfully updated!', 'success');
         } else {
           if (file || trainingAudio) {
             await createAvatarMutation.mutateAsync({
@@ -173,14 +175,14 @@ export default function AvatarPage({
           } else {
             await createAvatarMutation.mutateAsync({ jsonData: avatarData });
           }
-          showNotification("Avatar successfully saved!", "success");
+          showNotification('Avatar successfully saved!', 'success');
         }
 
         refreshAll();
-        router.push("/avatars");
+        router.push('/avatars');
       } catch (err: any) {
         const errorMessage = err instanceof Error ? err.message : String(err);
-        showNotification(errorMessage, "error");
+        showNotification(errorMessage, 'error');
       }
     },
     [
@@ -197,17 +199,17 @@ export default function AvatarPage({
   const handleSaveAndEncode = useCallback(
     async (formData: AvatarFormData) => {
       if (!formData.image) {
-        showNotification("Please select an image first", "warning");
+        showNotification('Please select an image first', 'warning');
         return;
       }
 
       try {
-        showNotification("Encoding avatar data into image...", "info");
+        showNotification('Encoding avatar data into image...', 'info');
 
         const formDataToEncode = {
           name: formData.name,
-          description: formData.description || "",
-          category: formData.category || "realistic",
+          description: formData.description || '',
+          category: formData.category || 'realistic',
           personality: formData.personality,
           backgroundKnowledge: formData.backgroundKnowledge,
         };
@@ -218,11 +220,11 @@ export default function AvatarPage({
         );
         setEncodedImage(downloadUrl);
         showNotification(
-          "Saving avatar and uploading encoded image...",
-          "info",
+          'Saving avatar and uploading encoded image...',
+          'info',
         );
 
-        const fileName = `${formData.name || "avatar"}-encoded.png`;
+        const fileName = `${formData.name || 'avatar'}-encoded.png`;
         const avatarData = { ...formDataToEncode, hasEncodedData: true } as any;
 
         let trainingAudio: File | null = formData.trainingAudio || null;
@@ -239,8 +241,8 @@ export default function AvatarPage({
           }
           await updateAvatarMutation.mutateAsync(updateData);
           showNotification(
-            "Avatar successfully updated and encoded!",
-            "success",
+            'Avatar successfully updated and encoded!',
+            'success',
           );
         } else {
           await createAvatarMutation.mutateAsync({
@@ -249,11 +251,11 @@ export default function AvatarPage({
             fileName,
             trainingAudio: trainingAudio || undefined,
           });
-          showNotification("Avatar successfully saved and encoded!", "success");
+          showNotification('Avatar successfully saved and encoded!', 'success');
         }
       } catch (err: any) {
         const errorMessage = err instanceof Error ? err.message : String(err);
-        showNotification(errorMessage, "error");
+        showNotification(errorMessage, 'error');
       }
     },
     [
@@ -267,9 +269,9 @@ export default function AvatarPage({
 
   const handleDownload = useCallback(() => {
     if (!encodedImage) return;
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = encodedImage;
-    a.download = `${currentFormData?.name || "avatar"}-encoded.png`;
+    a.download = `${currentFormData?.name || 'avatar'}-encoded.png`;
     a.click();
   }, [encodedImage, currentFormData?.name]);
 
@@ -279,16 +281,16 @@ export default function AvatarPage({
       try {
         await deleteAvatarMutation.mutateAsync(id);
         showNotification(
-          "Avatar and associated files deleted successfully!",
-          "success",
+          'Avatar and associated files deleted successfully!',
+          'success',
         );
       } catch (err: any) {
         showNotification(
-          "Failed to delete avatar: " + (err?.message ?? String(err)),
-          "error",
+          'Failed to delete avatar: ' + (err?.message ?? String(err)),
+          'error',
         );
       } finally {
-        router.push("/avatars");
+        router.push('/avatars');
       }
     },
     [deleteAvatarMutation, router, showNotification],
@@ -308,12 +310,12 @@ export default function AvatarPage({
             </Link>
 
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-              {editMode ? "Edit Avatar" : "Avatar Creator"}
+              {editMode ? 'Edit Avatar' : 'Avatar Creator'}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
               {editMode
-                ? "Update your avatar details and settings"
-                : "Create and save your avatar with steganography encoding"}
+                ? 'Update your avatar details and settings'
+                : 'Create and save your avatar with steganography encoding'}
             </p>
           </div>
 
@@ -368,10 +370,10 @@ export default function AvatarPage({
                 <HiTrash className="h-4 w-4" />
                 <span>
                   {isLoadingAvatar
-                    ? "Deleting..."
+                    ? 'Deleting...'
                     : showConfirmation
-                      ? "Are you sure?"
-                      : "Delete Avatar"}
+                      ? 'Are you sure?'
+                      : 'Delete Avatar'}
                 </span>
               </button>
             )}

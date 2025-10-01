@@ -1,7 +1,7 @@
 // components/avatars/CreateAvatarCard.tsx
-import React from "react";
-import { HiPlus, HiCamera, HiHeart, HiMicrophone } from "react-icons/hi";
-import Link from "next/link";
+import React from 'react';
+import { HiPlus, HiCamera, HiHeart, HiMicrophone } from 'react-icons/hi';
+import Link from 'next/link';
 
 export const CreateAvatarCard: React.FC = () => {
   return (

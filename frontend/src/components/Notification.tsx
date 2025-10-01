@@ -1,15 +1,15 @@
 // src/components/Notification.tsx
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   HiExclamationCircle,
   HiCheckCircle,
   HiInformationCircle,
   HiExclamation,
   HiX,
-} from "react-icons/hi";
-import { useNotification } from "@/contexts/NotificationContext";
+} from 'react-icons/hi';
+import { useNotification } from '@/contexts/NotificationContext';
 
 const Notification = () => {
   const { notification, hideNotification } = useNotification();
@@ -20,34 +20,34 @@ const Notification = () => {
 
   const getNotificationStyles = (type: string) => {
     switch (type) {
-      case "success":
+      case 'success':
         return {
-          container: "bg-green-50 border border-green-200 shadow-lg",
-          text: "text-green-800",
+          container: 'bg-green-50 border border-green-200 shadow-lg',
+          text: 'text-green-800',
           icon: HiCheckCircle,
-          iconColor: "text-green-600",
+          iconColor: 'text-green-600',
         };
-      case "error":
+      case 'error':
         return {
-          container: "bg-red-50 border border-red-200 shadow-lg",
-          text: "text-red-800",
+          container: 'bg-red-50 border border-red-200 shadow-lg',
+          text: 'text-red-800',
           icon: HiExclamationCircle,
-          iconColor: "text-red-600",
+          iconColor: 'text-red-600',
         };
-      case "warning":
+      case 'warning':
         return {
-          container: "bg-yellow-50 border border-yellow-200 shadow-lg",
-          text: "text-yellow-800",
+          container: 'bg-yellow-50 border border-yellow-200 shadow-lg',
+          text: 'text-yellow-800',
           icon: HiExclamation,
-          iconColor: "text-yellow-600",
+          iconColor: 'text-yellow-600',
         };
-      case "info":
+      case 'info':
       default:
         return {
-          container: "bg-blue-50 border border-blue-200 shadow-lg",
-          text: "text-blue-800",
+          container: 'bg-blue-50 border border-blue-200 shadow-lg',
+          text: 'text-blue-800',
           icon: HiInformationCircle,
-          iconColor: "text-blue-600",
+          iconColor: 'text-blue-600',
         };
     }
   };
@@ -58,7 +58,7 @@ const Notification = () => {
   return (
     <div
       className={`fixed bottom-4 left-4 z-50 max-w-sm rounded-lg p-3 transition-all duration-500 ease-out ${styles.container} ${
-        notification.isFading ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        notification.isFading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
       }`}
     >
       <div className="flex items-start space-x-2">

@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { MdAdd } from "react-icons/md";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { MdAdd } from 'react-icons/md';
 
 type TextResourceProps = {
   fontSize: number;

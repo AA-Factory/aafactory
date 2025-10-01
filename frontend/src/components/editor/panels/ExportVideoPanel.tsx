@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
 
 export const ExportVideoPanel = observer(() => {
   const store = React.useContext(StoreContext);
@@ -40,9 +40,9 @@ export const ExportVideoPanel = observer(() => {
             className="mr-2"
             name="video-format"
             value="mp4"
-            checked={store.selectedVideoFormat === "mp4"}
+            checked={store.selectedVideoFormat === 'mp4'}
             onChange={(e) => {
-              store.setVideoFormat("mp4");
+              store.setVideoFormat('mp4');
             }}
           />
           <div className="text-xs mr-2">MP4</div>
@@ -51,9 +51,9 @@ export const ExportVideoPanel = observer(() => {
             className="mr-2"
             name="video-format"
             value="gif"
-            checked={store.selectedVideoFormat === "webm"}
+            checked={store.selectedVideoFormat === 'webm'}
             onChange={(e) => {
-              store.setVideoFormat("webm");
+              store.setVideoFormat('webm');
             }}
           />
           <div className="text-xs mr-2">webm</div>
@@ -71,8 +71,8 @@ export const ExportVideoPanel = observer(() => {
           }, 1000);
         }}
       >
-        Export Video ({store.maxTime / 1000} secs){" "}
-        {store.selectedVideoFormat === "mp4" ? "ALPHA" : ""}
+        Export Video ({store.maxTime / 1000} secs){' '}
+        {store.selectedVideoFormat === 'mp4' ? 'ALPHA' : ''}
       </button>
     </>
   );

@@ -1,5 +1,5 @@
-"use client";
-import { useRouter } from "next/navigation";
+'use client';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function Home() {
       </p>
       <div className="mt-8">
         <button
-          onClick={() => router.push("/avatar/create")}
+          onClick={() => router.push('/avatar/create')}
           className="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-medium hover:bg-blue-700 transition"
         >
           Create Your Avatar

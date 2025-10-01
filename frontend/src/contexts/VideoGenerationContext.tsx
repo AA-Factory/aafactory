@@ -1,10 +1,21 @@
-"use client";
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
-import { Avatar } from "@/types/avatar";
-import { VideoTask } from "@/types/tasks";
-import { useVideoTasks, usePollPendingVideoTasks, usePollPendingAudioTasks } from "@/lib/api/tasks";
-import { DIALOG_SEEDS } from "@/utils/fakeData";
-import { VIDEO_TYPES } from "@/lib/celery/constants";
+'use client';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
+import { Avatar } from '@/types/avatar';
+import { VideoTask } from '@/types/tasks';
+import {
+  useVideoTasks,
+  usePollPendingVideoTasks,
+  usePollPendingAudioTasks,
+} from '@/lib/api/tasks';
+import { DIALOG_SEEDS } from '@/utils/fakeData';
+import { VIDEO_TYPES } from '@/lib/celery/constants';
 interface AudioTask {
   taskId: string;
   userPrompt: string;
@@ -63,14 +74,17 @@ interface VideoGenerationContextType {
   canProceedToNextStep: boolean;
 }
 
-const VideoGenerationContext = createContext<VideoGenerationContextType | undefined>(undefined);
+const VideoGenerationContext = createContext<
+  VideoGenerationContextType | undefined
+>(undefined);
 
 const getRandomDialogSeed = () => {
   return DIALOG_SEEDS[Math.floor(Math.random() * DIALOG_SEEDS.length)];
 };
 
-export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-
+export const VideoGenerationProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
   const [state, setState] = useState<VideoGenerationState>({
     videoType: VIDEO_TYPES[0],
     avatar: null,
@@ -89,15 +103,15 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
     data: videoTasks = [],
     isLoading: loadingVideoTasks,
     error: videoTasksError,
-  } = useVideoTasks(state.avatar?.id || "");
+  } = useVideoTasks(state.avatar?.id || '');
 
   const pollPendingVideoTasksMutation = usePollPendingVideoTasks();
   const pollPendingAudioTasksMutation = usePollPendingAudioTasks();
   // Process video tasks with default filePath
   const processedVideoTasks = useMemo(() => {
-    return videoTasks.map(task => ({
+    return videoTasks.map((task) => ({
       ...task,
-      filePath: task.filePath ?? "",
+      filePath: task.filePath ?? '',
     }));
   }, [videoTasks]);
 
@@ -110,33 +124,36 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
   }, [state.avatar?.id]);
 
   const setVideoType = useCallback((type: { id: string; label: string }) => {
-    setState(prev => ({ ...prev, videoType: type }));
+    setState((prev) => ({ ...prev, videoType: type }));
   }, []);
 
   const setAvatar = useCallback((avatar: Avatar | null) => {
-    setState(prev => ({ ...prev, avatar }));
+    setState((prev) => ({ ...prev, avatar }));
   }, []);
 
   const setStep = useCallback((step: number) => {
-    setState(prev => ({ ...prev, step }));
+    setState((prev) => ({ ...prev, step }));
   }, []);
 
-  const setAudioData = useCallback((audioData: {
-    selectedAudioTask: AudioTask | null;
-    generatedAudioBase64: string | null;
-    uploadedAudioFile: File | null;
-    dialog: string;
-    audioReady: boolean;
-  }) => {
-    setState(prev => ({
-      ...prev,
-      selectedAudioTask: audioData.selectedAudioTask,
-      generatedAudioBase64: audioData.generatedAudioBase64,
-      uploadedAudioFile: audioData.uploadedAudioFile,
-      dialog: audioData.dialog,
-      audioReady: audioData.audioReady,
-    }));
-  }, []);
+  const setAudioData = useCallback(
+    (audioData: {
+      selectedAudioTask: AudioTask | null;
+      generatedAudioBase64: string | null;
+      uploadedAudioFile: File | null;
+      dialog: string;
+      audioReady: boolean;
+    }) => {
+      setState((prev) => ({
+        ...prev,
+        selectedAudioTask: audioData.selectedAudioTask,
+        generatedAudioBase64: audioData.generatedAudioBase64,
+        uploadedAudioFile: audioData.uploadedAudioFile,
+        dialog: audioData.dialog,
+        audioReady: audioData.audioReady,
+      }));
+    },
+    [],
+  );
 
   const refreshVideoTasks = useCallback(() => {
     if (state.avatar?.id) {
@@ -145,9 +162,8 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
   }, [state.avatar?.id, pollPendingVideoTasksMutation]);
 
   const selectVideoTask = useCallback((task: VideoTask | null) => {
-    setState(prev => ({ ...prev, selectedVideoTask: task }));
+    setState((prev) => ({ ...prev, selectedVideoTask: task }));
   }, []);
-
 
   // Computed values
   const canProceedToNextStep = (() => {
@@ -189,7 +205,9 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
 export const useVideoGeneration = () => {
   const context = useContext(VideoGenerationContext);
   if (context === undefined) {
-    throw new Error('useVideoGeneration must be used within a VideoGenerationProvider');
+    throw new Error(
+      'useVideoGeneration must be used within a VideoGenerationProvider',
+    );
   }
   return context;
 };

@@ -1,40 +1,43 @@
-"use client";
-import React from "react";
-import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
+'use client';
+import React from 'react';
+import { FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 
 // Import components
-import { VideoTypeSelector } from "@/components/video-generation/VideoTypeSelector";
-import { AvatarSelector } from "@/components/video-generation/AvatarSelector";
-import { AudioSection } from "@/components/video-generation/AudioSection";
-import { VideoSection } from "@/components/video-generation/VideoSection";
-import { VideoPlayer } from "@/components/video-generation/VideoPlayer";
-import { VideoGallery } from "@/components/video-generation/VideoGallery";
-import { StepProgress } from "@/components/video-generation/StepProgress";
+import { VideoTypeSelector } from '@/components/video-generation/VideoTypeSelector';
+import { AvatarSelector } from '@/components/video-generation/AvatarSelector';
+import { AudioSection } from '@/components/video-generation/AudioSection';
+import { VideoSection } from '@/components/video-generation/VideoSection';
+import { VideoPlayer } from '@/components/video-generation/VideoPlayer';
+import { VideoGallery } from '@/components/video-generation/VideoGallery';
+import { StepProgress } from '@/components/video-generation/StepProgress';
 
 // Import context
-import { VideoGenerationProvider, useVideoGeneration } from "@/contexts/VideoGenerationContext";
+import {
+  VideoGenerationProvider,
+  useVideoGeneration,
+} from '@/contexts/VideoGenerationContext';
 
 function GenerateVideoContent() {
   const { state, setStep, canProceedToNextStep } = useVideoGeneration();
 
   const steps = [
     {
-      label: "Select video type",
+      label: 'Select video type',
       content: <VideoTypeSelector />,
       canNext: !!state.videoType,
     },
     {
-      label: "Select avatar",
+      label: 'Select avatar',
       content: <AvatarSelector />,
       canNext: !!state.avatar,
     },
     {
-      label: "Generate audio",
+      label: 'Generate audio',
       content: <AudioSection />,
       canNext: state.audioReady,
     },
     {
-      label: "Generate video",
+      label: 'Generate video',
       content: <VideoSection />,
       canNext: false,
     },
@@ -59,10 +62,11 @@ function GenerateVideoContent() {
           {/* Navigation buttons */}
           <div className="flex justify-between mt-8">
             <button
-              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${state.step === 0
-                ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${
+                state.step === 0
+                  ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
               onClick={() => setStep(Math.max(0, state.step - 1))}
               disabled={state.step === 0}
             >
@@ -71,12 +75,17 @@ function GenerateVideoContent() {
             </button>
 
             <button
-              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${!canProceedToNextStep || state.step === steps.length - 1
-                ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              onClick={() => setStep(Math.min(steps.length - 1, state.step + 1))}
-              disabled={!canProceedToNextStep || state.step === steps.length - 1}
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${
+                !canProceedToNextStep || state.step === steps.length - 1
+                  ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+              onClick={() =>
+                setStep(Math.min(steps.length - 1, state.step + 1))
+              }
+              disabled={
+                !canProceedToNextStep || state.step === steps.length - 1
+              }
             >
               <span>Next</span>
               <FiChevronRight className="w-4 h-4" />

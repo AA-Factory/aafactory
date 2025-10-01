@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { fabric } from "fabric";
-import React, { useEffect, useState } from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { Resources } from "./Resources";
-import { ElementsPanel } from "./panels/ElementsPanel";
-import { Menu } from "./Menu";
-import { TimeLine } from "./TimeLine";
-import { Store } from "@/store/Store";
-import "@/utils/fabricUtils";
+import { fabric } from 'fabric';
+import React, { useEffect, useState } from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { Resources } from './Resources';
+import { ElementsPanel } from './panels/ElementsPanel';
+import { Menu } from './Menu';
+import { TimeLine } from './TimeLine';
+import { Store } from '@/store/Store';
+import '@/utils/fabricUtils';
 import { useNotification } from '@/contexts/NotificationContext';
 
 export const EditorWithStore = () => {
@@ -32,7 +32,7 @@ export const Editor = observer(() => {
 
         if (result.elements) {
           store.setEditorElements([]);
-          result.elements.forEach(item => {
+          result.elements.forEach((item) => {
             store.addEditorElement(item.elementData);
           });
         }
@@ -40,19 +40,19 @@ export const Editor = observer(() => {
       } catch (error) {
         console.error('Load failed:', error);
       }
-    }
-    const canvas = new fabric.Canvas("canvas", {
+    };
+    const canvas = new fabric.Canvas('canvas', {
       height: 500,
       width: 800,
-      backgroundColor: "#ededed",
+      backgroundColor: '#ededed',
     });
     fabric.Object.prototype.transparentCorners = false;
-    fabric.Object.prototype.cornerColor = "#00a0f5";
-    fabric.Object.prototype.cornerStyle = "circle";
-    fabric.Object.prototype.cornerStrokeColor = "#0063d8";
+    fabric.Object.prototype.cornerColor = '#00a0f5';
+    fabric.Object.prototype.cornerStyle = 'circle';
+    fabric.Object.prototype.cornerStrokeColor = '#0063d8';
     fabric.Object.prototype.cornerSize = 10;
     // canvas mouse down without target should deselect active object
-    canvas.on("mouse:down", function (e) {
+    canvas.on('mouse:down', function (e) {
       if (!e.target) {
         store.setSelectedElement(null);
       }

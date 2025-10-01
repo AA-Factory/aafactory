@@ -1,6 +1,6 @@
-"use client";
-import React, { createContext } from "react";
-import { Store } from "./Store";
+'use client';
+import React, { createContext } from 'react';
+import { Store } from './Store';
 
 export const StoreContext = createContext(new Store());
 

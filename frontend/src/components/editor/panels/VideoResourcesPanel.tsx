@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { VideoResource } from "../entity/VideoResource";
-import { ResourcePanel } from "./ResourcePanel";
+'use client';
+import React from 'react';
+import { VideoResource } from '../entity/VideoResource';
+import { ResourcePanel } from './ResourcePanel';
 
 export const VideoResourcesPanel = () => {
   return (
@@ -9,10 +9,10 @@ export const VideoResourcesPanel = () => {
       {(data, refreshResources) => (
         <>
           {data.map((video, index) => (
-            <VideoResource 
-              key={video.id} 
-              video={video} 
-              index={index} 
+            <VideoResource
+              key={video.id}
+              video={video}
+              index={index}
               onDelete={refreshResources}
             />
           ))}

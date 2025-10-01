@@ -1,5 +1,5 @@
-import { writeFile, mkdir, unlink } from "fs/promises";
-import { existsSync } from "fs";
+import { writeFile, mkdir, unlink } from 'fs/promises';
+import { existsSync } from 'fs';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,7 +24,7 @@ export interface DeleteResult {
 export async function saveBase64File(
   base64Data: string,
   taskId: string,
-  fileType: 'audio' | 'video'
+  fileType: 'audio' | 'video',
 ): Promise<SaveFileResult> {
   try {
     // Remove data URL prefix if present (e.g., "data:audio/mp3;base64,")
@@ -51,15 +51,20 @@ export async function saveBase64File(
     return {
       filePath: webPath,
       fileName,
-      fileType: extension
+      fileType: extension,
     };
   } catch (error) {
     console.error('Error saving base64 file:', error);
-    throw new Error(`Failed to save ${fileType} file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to save ${fileType} file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
-function getFileExtension(base64Data: string, defaultType: 'audio' | 'video'): string {
+function getFileExtension(
+  base64Data: string,
+  defaultType: 'audio' | 'video',
+): string {
   // Check data URL for MIME type
   const dataUrlMatch = base64Data.match(/^data:([^;]+);base64,/);
 
@@ -67,7 +72,8 @@ function getFileExtension(base64Data: string, defaultType: 'audio' | 'video'): s
     const mimeType = dataUrlMatch[1];
 
     // Audio extensions
-    if (mimeType.includes('audio/mp3') || mimeType.includes('audio/mpeg')) return 'mp3';
+    if (mimeType.includes('audio/mp3') || mimeType.includes('audio/mpeg'))
+      return 'mp3';
     if (mimeType.includes('audio/wav')) return 'wav';
     if (mimeType.includes('audio/ogg')) return 'ogg';
     if (mimeType.includes('audio/aac')) return 'aac';
@@ -93,12 +99,12 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
 
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
-    const absolutePath = path.join(process.cwd(), "public/uploads", filePath);
+    const absolutePath = path.join(process.cwd(), 'public/uploads', filePath);
 
     if (!existsSync(absolutePath)) {
       return {
         success: true,
-        message: "File does not exist (already deleted)",
+        message: 'File does not exist (already deleted)',
       };
     }
 
@@ -106,10 +112,10 @@ export async function deleteFile(filePath: string): Promise<DeleteResult> {
 
     return {
       success: true,
-      message: "File deleted successfully",
+      message: 'File deleted successfully',
     };
   } catch (error: any) {
-    console.error("Error deleting file:", error);
+    console.error('Error deleting file:', error);
     throw new Error(`Failed to delete file: ${error.message}`);
   }
 }
@@ -136,14 +142,10 @@ export async function deleteFileSimple(filePath: string): Promise<void> {
 export async function uploadFile(
   blob: Blob | Buffer,
   fileName: string,
-  destination: string = "image",
+  destination: string = 'image',
 ): Promise<UploadResult> {
   try {
-    const uploadsDir = path.join(
-      process.cwd(),
-      "public/uploads",
-      destination,
-    );
+    const uploadsDir = path.join(process.cwd(), 'public/uploads', destination);
     await mkdir(uploadsDir, { recursive: true });
 
     const timestamp = Date.now();
@@ -161,7 +163,7 @@ export async function uploadFile(
     } else if (Buffer.isBuffer(blob)) {
       buffer = blob;
     } else {
-      throw new Error("Invalid file type. Expected Blob or Buffer.");
+      throw new Error('Invalid file type. Expected Blob or Buffer.');
     }
 
     await writeFile(filePath, buffer as any);
@@ -173,7 +175,7 @@ export async function uploadFile(
       fullPath: filePath,
     };
   } catch (error: any) {
-    console.error("Error uploading file:", error);
+    console.error('Error uploading file:', error);
     throw new Error(`Failed to upload file: ${error.message}`);
   }
 }
@@ -187,7 +189,7 @@ export async function uploadAvatarImage(
   blob: Blob | Buffer,
   fileName: string,
 ): Promise<UploadResult> {
-  return uploadFile(blob, fileName, "image");
+  return uploadFile(blob, fileName, 'image');
 }
 
 /**
@@ -199,7 +201,7 @@ export async function uploadTrainingAudio(
   blob: Blob | Buffer,
   fileName: string,
 ): Promise<UploadResult> {
-  return uploadFile(blob, fileName, "audio");
+  return uploadFile(blob, fileName, 'audio');
 }
 
 export async function cleanAllDirectories() {
@@ -250,7 +252,9 @@ export async function cleanSpecificDirectories(directories: string[]) {
 
   for (const dir of directories) {
     if (!validDirectories.includes(dir)) {
-      console.warn(`Invalid directory: ${dir}. Valid directories: ${validDirectories.join(', ')}`);
+      console.warn(
+        `Invalid directory: ${dir}. Valid directories: ${validDirectories.join(', ')}`,
+      );
       continue;
     }
 

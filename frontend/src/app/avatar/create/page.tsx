@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import AvatarPage from "@/components/avatar/AvatarPage";
+import React from 'react';
+import AvatarPage from '@/components/avatar/AvatarPage';
 
 const AvatarCreate: React.FC = () => {
   return <AvatarPage editMode={false} />;

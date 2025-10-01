@@ -1,7 +1,7 @@
 // app/api/avatars/get-avatar/route.js
-import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import clientPromise from "@/lib/mongodb";
+import { NextRequest, NextResponse } from 'next/server';
+import { ObjectId } from 'mongodb';
+import clientPromise from '@/lib/mongodb';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
@@ -14,23 +14,30 @@ export async function GET(req: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Avatar ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Avatar ID is required' },
+        { status: 400 },
+      );
     }
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid avatar ID' }, { status: 400 });
     }
 
-    const avatar = await db.collection('avatars').findOne({ _id: new ObjectId(id) });
+    const avatar = await db
+      .collection('avatars')
+      .findOne({ _id: new ObjectId(id) });
 
     if (!avatar) {
       return NextResponse.json({ error: 'Avatar not found' }, { status: 404 });
     }
 
     return NextResponse.json({ avatar });
-
   } catch (error) {
     console.error('Error fetching avatar:', error);
-    return NextResponse.json({ error: 'Failed to fetch avatar' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch avatar' },
+      { status: 500 },
+    );
   }
 }

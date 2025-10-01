@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   HiMenu,
   HiX,
@@ -10,12 +10,12 @@ import {
   HiLightningBolt,
   HiCog,
   HiAdjustments,
-} from "react-icons/hi";
-import { IconType } from "react-icons";
-import Link from "next/link";
-import { ActiveAvatarsDisplay } from "./avatars/ActiveAvatarsDisplay";
-import { useActiveAvatars } from "@/contexts/ActiveAvatarsContext";
-import DarkModeSwitch from "./DarkModeSwitch";
+} from 'react-icons/hi';
+import { IconType } from 'react-icons';
+import Link from 'next/link';
+import { ActiveAvatarsDisplay } from './avatars/ActiveAvatarsDisplay';
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
+import DarkModeSwitch from './DarkModeSwitch';
 
 interface NavLink {
   name: string;
@@ -30,19 +30,19 @@ const HeaderNav: React.FC = () => {
 
   const navLinks: NavLink[] = [
     {
-      name: "Avatars",
+      name: 'Avatars',
       icon: HiUser,
       submenu: [
-        { name: "Create Avatar", href: "/avatar/create" },
-        { name: "Manage Avatars", href: "/avatars" },
+        { name: 'Create Avatar', href: '/avatar/create' },
+        { name: 'Manage Avatars', href: '/avatars' },
       ],
     },
     {
-      name: "Content Creation",
+      name: 'Content Creation',
       icon: HiCode,
       submenu: [
-        { name: "Generate Video", href: "/content_creation/generate_video" },
-        { name: "Editor", href: "/editor" },
+        { name: 'Generate Video', href: '/content_creation/generate_video' },
+        { name: 'Editor', href: '/editor' },
       ],
     },
     // {
@@ -158,7 +158,6 @@ const HeaderNav: React.FC = () => {
             </button>
           </div>
         </div>
-
       </div>
 
       {/* Mobile Navigation Menu */}

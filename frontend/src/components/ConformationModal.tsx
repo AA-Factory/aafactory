@@ -1,5 +1,5 @@
-import React from "react";
-import { HiUser } from "react-icons/hi";
+import React from 'react';
+import { HiUser } from 'react-icons/hi';
 
 const ConfirmationModal = ({
   isOpen,

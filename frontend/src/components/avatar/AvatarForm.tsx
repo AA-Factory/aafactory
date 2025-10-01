@@ -4,23 +4,23 @@ import React, {
   useEffect,
   useImperativeHandle,
   forwardRef,
-} from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   HiExclamationCircle,
   HiChevronDown,
   HiChevronUp,
   HiLightningBolt,
-} from "react-icons/hi";
+} from 'react-icons/hi';
 import {
   avatarFormSchema,
   AvatarFormData,
   categoryOptions,
-} from "@/lib/validation";
-import { ImageUploadSection } from "./ImageUploadSection";
-import { AudioUploadSection } from "./AudioUploadSection";
-import { generateFakeFormData } from "@/utils/fakeData";
+} from '@/lib/validation';
+import { ImageUploadSection } from './ImageUploadSection';
+import { AudioUploadSection } from './AudioUploadSection';
+import { generateFakeFormData } from '@/utils/fakeData';
 
 interface AvatarFormProps {
   onSubmit: (data: AvatarFormData) => void;
@@ -40,7 +40,7 @@ export interface AvatarFormRef {
 interface FormFieldProps {
   name: keyof AvatarFormData;
   label: string;
-  type?: "text" | "textarea" | "select";
+  type?: 'text' | 'textarea' | 'select';
   rows?: number;
   placeholder?: string;
   register: any;
@@ -53,7 +53,7 @@ interface FormFieldProps {
 const FormField: React.FC<FormFieldProps> = ({
   name,
   label,
-  type = "text",
+  type = 'text',
   rows,
   placeholder,
   register,
@@ -64,27 +64,26 @@ const FormField: React.FC<FormFieldProps> = ({
 }) => {
   if (hidden) return null;
   const baseClasses =
-    "w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm";
+    'w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm';
   const errorClasses = error
-    ? "border-red-300 dark:border-red-600"
-    : "border-gray-300 dark:border-gray-600";
+    ? 'border-red-300 dark:border-red-600'
+    : 'border-gray-300 dark:border-gray-600';
 
   return (
-
     <div className="mb-3">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
         {required && <span className="text-red-500 dark:text-red-400"> *</span>}
       </label>
 
-      {type === "textarea" ? (
+      {type === 'textarea' ? (
         <textarea
           {...register(name)}
           rows={rows}
           placeholder={placeholder}
           className={`${baseClasses} resize-none placeholder-gray-500 dark:placeholder-gray-400 ${errorClasses}`}
         />
-      ) : type === "select" && options ? (
+      ) : type === 'select' && options ? (
         <div className="relative">
           <select
             {...register(name)}
@@ -187,7 +186,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
 
     // Set existing image when provided
     useEffect(() => {
-      if (existingImageUrl && existingImageUrl !== "/placeholder-avatar.png") {
+      if (existingImageUrl && existingImageUrl !== '/placeholder-avatar.png') {
         setSelectedImage(existingImageUrl);
       }
     }, [existingImageUrl]);
@@ -227,7 +226,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
     };
 
     const handleFileSelect = (file: File) => {
-      setValue("image", file);
+      setValue('image', file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
@@ -266,39 +265,39 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
     };
 
     const handleAudioFileSelect = (file: File) => {
-      setValue("trainingAudio", file);
+      setValue('trainingAudio', file);
       setSelectedAudio(file);
     };
 
     const avatarFields = [
       {
-        name: "name" as const,
-        label: "Name",
-        placeholder: "Enter the name of your avatar",
+        name: 'name' as const,
+        label: 'Name',
+        placeholder: 'Enter the name of your avatar',
         required: true,
       },
       {
-        name: "description" as const,
-        label: "Description",
-        type: "textarea" as const,
+        name: 'description' as const,
+        label: 'Description',
+        type: 'textarea' as const,
         rows: 2,
-        placeholder: "Brief description of your avatar",
+        placeholder: 'Brief description of your avatar',
         required: false,
         hidden: true,
       },
       {
-        name: "category" as const,
-        label: "Category",
-        type: "select" as const,
+        name: 'category' as const,
+        label: 'Category',
+        type: 'select' as const,
         options: categoryOptions,
-        placeholder: "Select avatar category",
+        placeholder: 'Select avatar category',
         required: false,
         hidden: true,
       },
       {
-        name: "personality" as const,
-        label: "Personality",
-        type: "textarea" as const,
+        name: 'personality' as const,
+        label: 'Personality',
+        type: 'textarea' as const,
         rows: 2,
         placeholder:
           "Describe your avatar's personality traits and characteristics",
@@ -306,12 +305,12 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         hidden: true,
       },
       {
-        name: "backgroundKnowledge" as const,
-        label: "Background Knowledge",
-        type: "textarea" as const,
+        name: 'backgroundKnowledge' as const,
+        label: 'Background Knowledge',
+        type: 'textarea' as const,
         rows: 3,
         placeholder:
-          "Enter the background knowledge and expertise of your avatar",
+          'Enter the background knowledge and expertise of your avatar',
         required: true,
         hidden: true,
       },
@@ -323,7 +322,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         <Section
           title="Avatar Information"
           expanded={expandedSections.avatarInfos}
-          onToggle={() => toggleSection("avatarInfos")}
+          onToggle={() => toggleSection('avatarInfos')}
         >
           {avatarFields.map((field) => (
             <FormField
@@ -370,7 +369,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         {/* Submit Button */}
         <div className="flex justify-between items-center pt-4">
           {/* Development Mode: Fake Data Button */}
-          {process.env.NODE_ENV === "development" && (
+          {process.env.NODE_ENV === 'development' && (
             <button
               type="button"
               onClick={fillWithFakeData}
@@ -388,11 +387,11 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           >
             {isSubmitting
               ? editMode
-                ? "Updating Avatar..."
-                : "Creating Avatar..."
+                ? 'Updating Avatar...'
+                : 'Creating Avatar...'
               : editMode
-                ? "Update Avatar"
-                : "Create Avatar"}
+                ? 'Update Avatar'
+                : 'Create Avatar'}
           </button>
         </div>
       </form>
@@ -400,7 +399,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
   },
 );
 
-AvatarForm.displayName = "AvatarForm";
+AvatarForm.displayName = 'AvatarForm';
 
 interface SectionProps {
   title: string;

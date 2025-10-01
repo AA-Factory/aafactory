@@ -22,12 +22,13 @@ export interface UseResourceAPIReturn {
 
 export const useResourceAPI = (
   resourceType: ResourceType,
-  autoLoad = true
+  autoLoad = true,
 ): UseResourceAPIReturn => {
   const [data, setData] = useState<ResourceData[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showNotification, hideNotification, notification } = useNotification();
+  const { showNotification, hideNotification, notification } =
+    useNotification();
   const loadResources = async (): Promise<ResourceData[]> => {
     setIsLoading(true);
     setError(null);
@@ -42,15 +43,21 @@ export const useResourceAPI = (
           src: item.url,
           filename: item.filename,
           url: item.url,
-          ...item // Include any other properties
+          ...item, // Include any other properties
         }));
 
         setData(resources);
-        console.log(`✅ Loaded ${resources.length} ${resourceType}s from database`);
-        showNotification(`Loaded ${resources.length} ${resourceType}s`, 'success');
+        console.log(
+          `✅ Loaded ${resources.length} ${resourceType}s from database`,
+        );
+        showNotification(
+          `Loaded ${resources.length} ${resourceType}s`,
+          'success',
+        );
         return resources;
       } else {
-        const errorMessage = result.message || `Failed to load ${resourceType}s`;
+        const errorMessage =
+          result.message || `Failed to load ${resourceType}s`;
         setError(errorMessage);
         throw new Error(errorMessage);
       }
@@ -82,13 +89,14 @@ export const useResourceAPI = (
           src: result.file.path || result.file.filename,
           filename: result.file.filename || file.name,
           url: result.file.path || result.file.filename,
-          ...result.file
+          ...result.file,
         };
 
         console.log(`✅ Uploaded ${resourceType}:`, resource);
         return resource;
       } else {
-        const errorMessage = result.message || `Failed to upload ${resourceType}`;
+        const errorMessage =
+          result.message || `Failed to upload ${resourceType}`;
         throw new Error(errorMessage);
       }
     } catch (error) {

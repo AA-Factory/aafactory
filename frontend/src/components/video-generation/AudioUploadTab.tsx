@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface AudioUploadTabProps {
   uploadedAudioFile: File | null;
@@ -30,9 +30,12 @@ export const AudioUploadTab: React.FC<AudioUploadTabProps> = ({
               />
             </svg>
             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-              <span className="font-semibold">Click to upload</span> an audio file
+              <span className="font-semibold">Click to upload</span> an audio
+              file
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">MP3, WAV, M4A, OGG (MAX. 50MB)</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              MP3, WAV, M4A, OGG (MAX. 50MB)
+            </p>
           </div>
           <input
             type="file"

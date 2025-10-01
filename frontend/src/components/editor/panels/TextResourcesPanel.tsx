@@ -1,56 +1,56 @@
-"use client";
-import React from "react";
-import { observer } from "mobx-react";
-import { TextResource } from "../entity/TextResource";
+'use client';
+import React from 'react';
+import { observer } from 'mobx-react';
+import { TextResource } from '../entity/TextResource';
 
 const TEXT_RESOURCES = [
   {
-    name: "Title",
+    name: 'Title',
     fontSize: 28,
     fontWeight: 600,
   },
   {
-    name: "Subtitle",
+    name: 'Subtitle',
     fontSize: 16,
     fontWeight: 600,
   },
   {
-    name: "Body",
+    name: 'Body',
     fontSize: 14,
     fontWeight: 400,
   },
   {
-    name: "Caption",
+    name: 'Caption',
     fontSize: 12,
     fontWeight: 400,
   },
   {
-    name: "Heading 1",
+    name: 'Heading 1',
     fontSize: 24,
     fontWeight: 800,
   },
   {
-    name: "Heading 2",
+    name: 'Heading 2',
     fontSize: 20,
     fontWeight: 800,
   },
   {
-    name: "Heading 3",
+    name: 'Heading 3',
     fontSize: 18,
     fontWeight: 800,
   },
   {
-    name: "Heading 4",
+    name: 'Heading 4',
     fontSize: 16,
     fontWeight: 800,
   },
   {
-    name: "Heading 5",
+    name: 'Heading 5',
     fontSize: 14,
     fontWeight: 800,
   },
   {
-    name: "Heading 6",
+    name: 'Heading 6',
     fontSize: 12,
     fontWeight: 800,
   },

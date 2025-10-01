@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { Element } from "../entity/Element";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { Element } from '../entity/Element';
 
 export const ElementsPanel = observer((_props: {}) => {
   const store = React.useContext(StoreContext);

@@ -1,10 +1,10 @@
 // hooks/useVideo.ts
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/apiClient";
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/apiClient';
 
 export function useVideo(videoUrl: string) {
   return useQuery({
-    queryKey: ["video", videoUrl],
+    queryKey: ['video', videoUrl],
     queryFn: async () => {
       const response = await apiClient.get<{ data: any }>(
         `/video?url=${encodeURIComponent(videoUrl)}`,

@@ -1,5 +1,5 @@
-import React from "react";
-import { FiCheckCircle } from "react-icons/fi";
+import React from 'react';
+import { FiCheckCircle } from 'react-icons/fi';
 
 interface Step {
   label: string;
@@ -19,20 +19,22 @@ export const StepProgress: React.FC<StepProgressProps> = ({
       {steps.map((step, idx) => (
         <li
           key={step.label}
-          className={`flex items-center ${currentStep === idx
-              ? "text-blue-600 dark:text-blue-500"
+          className={`flex items-center ${
+            currentStep === idx
+              ? 'text-blue-600 dark:text-blue-500'
               : currentStep > idx
-                ? "text-green-600 dark:text-green-500"
-                : "text-gray-500 dark:text-gray-400"
-            }`}
+                ? 'text-green-600 dark:text-green-500'
+                : 'text-gray-500 dark:text-gray-400'
+          }`}
         >
           <span
-            className={`flex items-center justify-center w-5 h-5 me-2 text-xs border rounded-full shrink-0 ${currentStep === idx
-                ? "border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+            className={`flex items-center justify-center w-5 h-5 me-2 text-xs border rounded-full shrink-0 ${
+              currentStep === idx
+                ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30'
                 : currentStep > idx
-                  ? "border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/30"
-                  : "border-gray-500 dark:border-gray-400"
-              }`}
+                  ? 'border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/30'
+                  : 'border-gray-500 dark:border-gray-400'
+            }`}
           >
             {currentStep > idx ? (
               <FiCheckCircle className="w-3 h-3" />

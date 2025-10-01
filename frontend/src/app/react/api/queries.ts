@@ -1,6 +1,5 @@
 // features/staff/model/api/queries.ts
 
-
 // api/queries.ts
 export const getVideoResource = () => ({
   queryKey: ['video-resource'], // Must be an array

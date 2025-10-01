@@ -1,5 +1,5 @@
 // components/AvatarCard/AvatarCard.tsx
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   HiPencil,
   HiTrash,
@@ -8,11 +8,11 @@ import {
   HiX,
   HiPlus,
   HiMinus,
-} from "react-icons/hi";
-import { Avatar } from "../../types/avatar";
-import { AVATAR_CONSTANTS } from "@/lib/celery/constants";
-import { useActiveAvatars } from "@/contexts/ActiveAvatarsContext";
-import Link from "next/link";
+} from 'react-icons/hi';
+import { Avatar } from '../../types/avatar';
+import { AVATAR_CONSTANTS } from '@/lib/celery/constants';
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
+import Link from 'next/link';
 
 interface AvatarCardProps {
   avatar: Avatar;
@@ -65,10 +65,11 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
   return (
     <div
       className={`bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 group relative h-full flex flex-col
-    ${isActive
-          ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-          : "border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600"
-        }`}
+    ${
+      isActive
+        ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+        : 'border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600'
+    }`}
     >
       <div className="text-center relative">
         {/* Active Avatar Badge - Top Left */}
@@ -85,10 +86,11 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
           {/* Edit button - slides left when delete confirmation shows */}
           <Link
             href={`/avatar/${avatar.id}`}
-            className={`w-7 h-7 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${showDeleteConfirm
-              ? "transform -translate-x-2 opacity-40"
-              : "transform translate-x-0 opacity-100"
-              }`}
+            className={`w-7 h-7 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+              showDeleteConfirm
+                ? 'transform -translate-x-2 opacity-40'
+                : 'transform translate-x-0 opacity-100'
+            }`}
             title="Edit Avatar"
           >
             <HiPencil className="w-3 h-3 text-white" />
@@ -96,8 +98,9 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
           {/* Delete button that stretches */}
           <div
-            className={`bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden ${showDeleteConfirm ? "w-36 h-7" : "w-7 h-7"
-              }`}
+            className={`bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden ${
+              showDeleteConfirm ? 'w-36 h-7' : 'w-7 h-7'
+            }`}
           >
             {!showDeleteConfirm ? (
               // Initial delete icon

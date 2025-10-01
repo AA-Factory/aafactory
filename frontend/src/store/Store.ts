@@ -1,12 +1,12 @@
-import { makeAutoObservable } from "mobx";
-import { fabric } from "fabric";
+import { makeAutoObservable } from 'mobx';
+import { fabric } from 'fabric';
 import {
   getUid,
   isHtmlAudioElement,
   isHtmlImageElement,
   isHtmlVideoElement,
-} from "@/utils";
-import anime, { get } from "animejs";
+} from '@/utils';
+import anime, { get } from 'animejs';
 import {
   MenuOption,
   EditorElement,
@@ -18,10 +18,10 @@ import {
   ImageEditorElement,
   Effect,
   TextEditorElement,
-} from "../types/editor";
-import { FabricUitls } from "@/utils/fabricUtils";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { toBlobURL } from "@ffmpeg/util";
+} from '../types/editor';
+import { FabricUitls } from '@/utils/fabricUtils';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { toBlobURL } from '@ffmpeg/util';
 
 export class Store {
   canvas: fabric.Canvas | null;
@@ -29,10 +29,10 @@ export class Store {
   backgroundColor: string;
 
   selectedMenuOption: MenuOption;
-  audios: string[]
-  videos: { id: string, src: string }[]
-  images: { id: string, src: string }[]
-  editorElements: EditorElement[]
+  audios: string[];
+  videos: { id: string; src: string }[];
+  images: { id: string; src: string }[];
+  editorElements: EditorElement[];
   selectedElement: EditorElement | null;
 
   maxTime: number;
@@ -43,8 +43,8 @@ export class Store {
   currentKeyFrame: number;
   fps: number;
 
-  possibleVideoFormats: string[] = ["mp4", "webm"];
-  selectedVideoFormat: "mp4" | "webm";
+  possibleVideoFormats: string[] = ['mp4', 'webm'];
+  selectedVideoFormat: 'mp4' | 'webm';
 
   constructor() {
     this.canvas = null;
@@ -52,7 +52,7 @@ export class Store {
     this.images = [];
     this.audios = [];
     this.editorElements = [];
-    this.backgroundColor = "#111111";
+    this.backgroundColor = '#111111';
     this.maxTime = 30 * 1000;
     this.playing = false;
     this.currentKeyFrame = 0;
@@ -60,8 +60,8 @@ export class Store {
     this.fps = 60;
     this.animations = [];
     this.animationTimeLine = anime.timeline();
-    this.selectedMenuOption = "Video";
-    this.selectedVideoFormat = "mp4";
+    this.selectedMenuOption = 'Video';
+    this.selectedVideoFormat = 'mp4';
     makeAutoObservable(this);
   }
 
@@ -76,8 +76,8 @@ export class Store {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           elementId: element.id,
-          elementData: element
-        })
+          elementData: element,
+        }),
       });
     } catch (error) {
       console.error('Update failed:', error);
@@ -115,7 +115,7 @@ export class Store {
     this.refreshElements();
   }
 
-  setVideos(videos: { id: string, src: string }[]) {
+  setVideos(videos: { id: string; src: string }[]) {
     this.videos = videos;
   }
 
@@ -177,31 +177,31 @@ export class Store {
       }
       fabricObject.clipPath = undefined;
       switch (animation.type) {
-        case "fadeIn": {
+        case 'fadeIn': {
           this.animationTimeLine.add(
             {
               opacity: [0, 1],
               duration: animation.duration,
               targets: fabricObject,
-              easing: "linear",
+              easing: 'linear',
             },
             editorElement.timeFrame.start,
           );
           break;
         }
-        case "fadeOut": {
+        case 'fadeOut': {
           this.animationTimeLine.add(
             {
               opacity: [1, 0],
               duration: animation.duration,
               targets: fabricObject,
-              easing: "linear",
+              easing: 'linear',
             },
             editorElement.timeFrame.end - animation.duration,
           );
           break;
         }
-        case "slideIn": {
+        case 'slideIn': {
           const direction = animation.properties.direction;
           const targetPosition = {
             left: editorElement.placement.x,
@@ -209,15 +209,15 @@ export class Store {
           };
           const startPosition = {
             left:
-              direction === "left"
+              direction === 'left'
                 ? -editorElement.placement.width
-                : direction === "right"
+                : direction === 'right'
                   ? this.canvas?.width
                   : editorElement.placement.x,
             top:
-              direction === "top"
+              direction === 'top'
                 ? -editorElement.placement.height
-                : direction === "bottom"
+                : direction === 'bottom'
                   ? this.canvas?.height
                   : editorElement.placement.y,
           };
@@ -226,11 +226,11 @@ export class Store {
               editorElement,
               50,
             );
-            fabricObject.set("clipPath", clipRectangle);
+            fabricObject.set('clipPath', clipRectangle);
           }
           if (
-            editorElement.type === "text" &&
-            animation.properties.textType === "character"
+            editorElement.type === 'text' &&
+            animation.properties.textType === 'character'
           ) {
             this.canvas?.remove(...editorElement.properties.splittedTexts);
             // @ts-ignore
@@ -277,7 +277,7 @@ export class Store {
                 opacity: [1, 0],
                 duration: 1,
                 targets: fabricObject,
-                easing: "linear",
+                easing: 'linear',
               },
               editorElement.timeFrame.start,
             );
@@ -286,7 +286,7 @@ export class Store {
                 opacity: [0, 1],
                 duration: 1,
                 targets: fabricObject,
-                easing: "linear",
+                easing: 'linear',
               },
               editorElement.timeFrame.start + animation.duration,
             );
@@ -296,7 +296,7 @@ export class Store {
                 opacity: [0, 1],
                 duration: 1,
                 targets: editorElement.properties.splittedTexts,
-                easing: "linear",
+                easing: 'linear',
               },
               editorElement.timeFrame.start,
             );
@@ -305,7 +305,7 @@ export class Store {
                 opacity: [1, 0],
                 duration: 1,
                 targets: editorElement.properties.splittedTexts,
-                easing: "linear",
+                easing: 'linear',
               },
               editorElement.timeFrame.start + animation.duration,
             );
@@ -316,13 +316,13 @@ export class Store {
               top: [startPosition.top, targetPosition.top],
               duration: animation.duration,
               targets: fabricObject,
-              easing: "linear",
+              easing: 'linear',
             },
             editorElement.timeFrame.start,
           );
           break;
         }
-        case "slideOut": {
+        case 'slideOut': {
           const direction = animation.properties.direction;
           const startPosition = {
             left: editorElement.placement.x,
@@ -330,15 +330,15 @@ export class Store {
           };
           const targetPosition = {
             left:
-              direction === "left"
+              direction === 'left'
                 ? -editorElement.placement.width
-                : direction === "right"
+                : direction === 'right'
                   ? this.canvas?.width
                   : editorElement.placement.x,
             top:
-              direction === "top"
+              direction === 'top'
                 ? -100 - editorElement.placement.height
-                : direction === "bottom"
+                : direction === 'bottom'
                   ? this.canvas?.height
                   : editorElement.placement.y,
           };
@@ -347,7 +347,7 @@ export class Store {
               editorElement,
               50,
             );
-            fabricObject.set("clipPath", clipRectangle);
+            fabricObject.set('clipPath', clipRectangle);
           }
           this.animationTimeLine.add(
             {
@@ -355,18 +355,18 @@ export class Store {
               top: [startPosition.top, targetPosition.top],
               duration: animation.duration,
               targets: fabricObject,
-              easing: "linear",
+              easing: 'linear',
             },
             editorElement.timeFrame.end - animation.duration,
           );
           break;
         }
-        case "breathe": {
+        case 'breathe': {
           const itsSlideInAnimation = this.animations.find(
-            (a) => a.targetId === animation.targetId && a.type === "slideIn",
+            (a) => a.targetId === animation.targetId && a.type === 'slideIn',
           );
           const itsSlideOutAnimation = this.animations.find(
-            (a) => a.targetId === animation.targetId && a.type === "slideOut",
+            (a) => a.targetId === animation.targetId && a.type === 'slideOut',
           );
           const timeEndOfSlideIn = itsSlideInAnimation
             ? editorElement.timeFrame.start + itsSlideInAnimation.duration
@@ -402,7 +402,7 @@ export class Store {
               duration: duration,
               targets: fabricObject,
               keyframes,
-              easing: "linear",
+              easing: 'linear',
               loop: true,
             },
             timeEndOfSlideIn,
@@ -445,9 +445,11 @@ export class Store {
 
   updateEditorElement(editorElement: EditorElement) {
     this.updateElementInDatabase(editorElement);
-    this.setEditorElements(this.editorElements.map((element) =>
-      element.id === editorElement.id ? editorElement : element
-    ));
+    this.setEditorElements(
+      this.editorElements.map((element) =>
+        element.id === editorElement.id ? editorElement : element,
+      ),
+    );
   }
 
   updateEditorElementTimeFrame(
@@ -481,10 +483,10 @@ export class Store {
   }
 
   async removeEditorElement(id: string) {
-    this.setEditorElements(this.editorElements.filter(
-      (editorElement) => editorElement.id !== id
-    ));
-    //vall /api/timeline with id in url 
+    this.setEditorElements(
+      this.editorElements.filter((editorElement) => editorElement.id !== id),
+    );
+    //vall /api/timeline with id in url
     try {
       await fetch(`/api/timeline?elementId=${id}`, {
         method: 'DELETE',
@@ -559,7 +561,7 @@ export class Store {
 
   // In your store
   async addVideo(index: number, video_id: string) {
-    const videoElement = document.getElementById(`${video_id}`)
+    const videoElement = document.getElementById(`${video_id}`);
     if (!isHtmlVideoElement(videoElement)) {
       return;
     }
@@ -571,7 +573,7 @@ export class Store {
     const editorElement = {
       id,
       name: `Media(video) ${index + 1}`,
-      type: "video",
+      type: 'video',
       placement: {
         x: 0,
         y: 0,
@@ -589,18 +591,17 @@ export class Store {
         elementId: `video-${id}`,
         src: videoElement.src,
         effect: {
-          type: "none",
-        }
+          type: 'none',
+        },
       },
     };
-
 
     // Save to database and if response is ok, add to store
     try {
       await fetch('/api/timeline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ elementData: editorElement })
+        body: JSON.stringify({ elementData: editorElement }),
       });
       this.addEditorElement(editorElement);
       console.log('✅ Video added to database');
@@ -611,47 +612,46 @@ export class Store {
   }
 
   addImage(index: number, image_id: string) {
-    const imageElement = document.getElementById(`${image_id}`)
+    const imageElement = document.getElementById(`${image_id}`);
     if (!isHtmlImageElement(imageElement)) {
       return;
     }
     const aspectRatio = imageElement.naturalWidth / imageElement.naturalHeight;
     const id = getUid();
-    this.addEditorElement(
-      {
-        id,
-        name: `Media(image) ${index + 1}`,
-        type: "image",
-        placement: {
-          x: 0,
-          y: 0,
-          width: 100 * aspectRatio,
-          height: 100,
-          rotation: 0,
-          scaleX: 1,
-          scaleY: 1,
-        },
-        timeFrame: {
-          start: 0,
-          end: this.maxTime,
-        },
-        properties: {
-          elementId: `image-${id}`,
-          src: imageElement.src,
-          effect: {
-            type: "none",
-          }
+    this.addEditorElement({
+      id,
+      name: `Media(image) ${index + 1}`,
+      type: 'image',
+      placement: {
+        x: 0,
+        y: 0,
+        width: 100 * aspectRatio,
+        height: 100,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      timeFrame: {
+        start: 0,
+        end: this.maxTime,
+      },
+      properties: {
+        elementId: `image-${id}`,
+        src: imageElement.src,
+        effect: {
+          type: 'none',
         },
       },
-    );
-
+    });
 
     // Save to database and if response is ok, add to store
     try {
       fetch('/api/timeline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ elementData: this.editorElements[this.editorElements.length - 1] })
+        body: JSON.stringify({
+          elementData: this.editorElements[this.editorElements.length - 1],
+        }),
       });
       console.log('✅ Image added to database');
     } catch (error) {
@@ -670,7 +670,7 @@ export class Store {
     this.addEditorElement({
       id,
       name: `Media(audio) ${index + 1}`,
-      type: "audio",
+      type: 'audio',
       placement: {
         x: 0,
         y: 0,
@@ -696,7 +696,7 @@ export class Store {
     this.addEditorElement({
       id,
       name: `Text ${index + 1}`,
-      type: "text",
+      type: 'text',
       placement: {
         x: 0,
         y: 0,
@@ -722,7 +722,7 @@ export class Store {
   updateVideoElements() {
     this.editorElements
       .filter(
-        (element): element is VideoEditorElement => element.type === "video",
+        (element): element is VideoEditorElement => element.type === 'video',
       )
       .forEach((element) => {
         const video = document.getElementById(element.properties.elementId);
@@ -741,7 +741,7 @@ export class Store {
   updateAudioElements() {
     this.editorElements
       .filter(
-        (element): element is AudioEditorElement => element.type === "audio",
+        (element): element is AudioEditorElement => element.type === 'audio',
       )
       .forEach((element) => {
         const audio = document.getElementById(element.properties.elementId);
@@ -785,7 +785,7 @@ export class Store {
 
   // }
 
-  setVideoFormat(format: "mp4" | "webm") {
+  setVideoFormat(format: 'mp4' | 'webm') {
     this.selectedVideoFormat = format;
   }
 
@@ -794,9 +794,9 @@ export class Store {
   }
 
   saveCanvasToVideoWithAudioWebmMp4() {
-    console.log("modified");
-    let mp4 = this.selectedVideoFormat === "mp4";
-    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    console.log('modified');
+    let mp4 = this.selectedVideoFormat === 'mp4';
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     const stream = canvas.captureStream(30);
     const audioElements = this.editorElements.filter(isEditorAudioElement);
     const audioStreams: MediaStream[] = [];
@@ -814,7 +814,7 @@ export class Store {
     audioStreams.forEach((audioStream) => {
       stream.addTrack(audioStream.getAudioTracks()[0]);
     });
-    const video = document.createElement("video");
+    const video = document.createElement('video');
     video.srcObject = stream;
     video.height = 500;
     video.width = 800;
@@ -825,50 +825,50 @@ export class Store {
       const chunks: Blob[] = [];
       mediaRecorder.ondataavailable = function (e) {
         chunks.push(e.data);
-        console.log("data available");
+        console.log('data available');
       };
       mediaRecorder.onstop = async function (e) {
-        const blob = new Blob(chunks, { type: "video/webm" });
+        const blob = new Blob(chunks, { type: 'video/webm' });
 
         if (mp4) {
           // lets use ffmpeg to convert webm to mp4
           const data = new Uint8Array(await blob.arrayBuffer());
           const ffmpeg = new FFmpeg();
-          const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd";
+          const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
           await ffmpeg.load({
             coreURL: await toBlobURL(
               `${baseURL}/ffmpeg-core.js`,
-              "text/javascript",
+              'text/javascript',
             ),
             wasmURL: await toBlobURL(
               `${baseURL}/ffmpeg-core.wasm`,
-              "application/wasm",
+              'application/wasm',
             ),
             // workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
           });
-          await ffmpeg.writeFile("video.webm", data);
+          await ffmpeg.writeFile('video.webm', data);
           await ffmpeg.exec([
-            "-y",
-            "-i",
-            "video.webm",
-            "-c",
-            "copy",
-            "video.mp4",
+            '-y',
+            '-i',
+            'video.webm',
+            '-c',
+            'copy',
+            'video.mp4',
           ]);
           // await ffmpeg.exec(["-y", "-i", "video.webm", "-c:v", "libx264", "video.mp4"]);
 
-          const output = await ffmpeg.readFile("video.mp4");
-          const outputBlob = new Blob([output], { type: "video/mp4" });
+          const output = await ffmpeg.readFile('video.mp4');
+          const outputBlob = new Blob([output], { type: 'video/mp4' });
           const outputUrl = URL.createObjectURL(outputBlob);
-          const a = document.createElement("a");
-          a.download = "video.mp4";
+          const a = document.createElement('a');
+          a.download = 'video.mp4';
           a.href = outputUrl;
           a.click();
         } else {
           const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
+          const a = document.createElement('a');
           a.href = url;
-          a.download = "video.webm";
+          a.download = 'video.webm';
           a.click();
         }
       };
@@ -890,7 +890,7 @@ export class Store {
       const element = store.editorElements[index];
 
       switch (element.type) {
-        case "video": {
+        case 'video': {
           if (document.getElementById(element.properties.elementId) == null)
             continue;
           const videoElement = document.getElementById(
@@ -922,7 +922,7 @@ export class Store {
           canvas.add(videoObject);
 
           // Updated object:modified handler with database sync
-          canvas.on("object:modified", function (e) {
+          canvas.on('object:modified', function (e) {
             if (!e.target) return;
             const target = e.target;
             if (target != videoObject) return;
@@ -956,7 +956,7 @@ export class Store {
           break;
         }
 
-        case "image": {
+        case 'image': {
           if (document.getElementById(element.properties.elementId) == null)
             continue;
           const imageElement = document.getElementById(
@@ -998,7 +998,7 @@ export class Store {
           canvas.add(imageObject);
 
           // Updated object:modified handler with database sync
-          canvas.on("object:modified", function (e) {
+          canvas.on('object:modified', function (e) {
             if (!e.target) return;
             const target = e.target;
             if (target != imageObject) return;
@@ -1029,11 +1029,11 @@ export class Store {
           break;
         }
 
-        case "audio": {
+        case 'audio': {
           break;
         }
 
-        case "text": {
+        case 'text': {
           const textObject = new fabric.Textbox(element.properties.text, {
             name: element.id,
             left: element.placement.x,
@@ -1048,14 +1048,14 @@ export class Store {
             objectCaching: false,
             selectable: true,
             lockUniScaling: true,
-            fill: "#ffffff",
+            fill: '#ffffff',
           });
 
           element.fabricObject = textObject;
           canvas.add(textObject);
 
           // Updated object:modified handler with database sync
-          canvas.on("object:modified", function (e) {
+          canvas.on('object:modified', function (e) {
             if (!e.target) return;
             const target = e.target;
             if (target != textObject) return;
@@ -1089,12 +1089,12 @@ export class Store {
         }
 
         default: {
-          throw new Error("Not implemented");
+          throw new Error('Not implemented');
         }
       }
 
       if (element.fabricObject) {
-        element.fabricObject.on("selected", function (e) {
+        element.fabricObject.on('selected', function (e) {
           store.setSelectedElement(element);
         });
       }
@@ -1121,24 +1121,23 @@ export class Store {
   //       console.error('Error syncing visible elements:', error);
   //     }
   //   }
-
 }
 
 export function isEditorAudioElement(
   element: EditorElement,
 ): element is AudioEditorElement {
-  return element.type === "audio";
+  return element.type === 'audio';
 }
 export function isEditorVideoElement(
   element: EditorElement,
 ): element is VideoEditorElement {
-  return element.type === "video";
+  return element.type === 'video';
 }
 
 export function isEditorImageElement(
   element: EditorElement,
 ): element is ImageEditorElement {
-  return element.type === "image";
+  return element.type === 'image';
 }
 
 function getTextObjectsPartitionedByCharacters(
@@ -1147,9 +1146,9 @@ function getTextObjectsPartitionedByCharacters(
 ): fabric.Text[] {
   let copyCharsObjects: fabric.Text[] = [];
   // replace all line endings with blank
-  const characters = (textObject.text ?? "")
-    .split("")
-    .filter((m) => m !== "\n");
+  const characters = (textObject.text ?? '')
+    .split('')
+    .filter((m) => m !== '\n');
   const charObjects = textObject.__charBounds;
   if (!charObjects) return [];
   const charObjectFixed = charObjects
@@ -1169,7 +1168,7 @@ function getTextObjectsPartitionedByCharacters(
       top: lineIndex * lineHeight * scaleY + element.placement.y,
       fontSize: textObject.fontSize,
       fontWeight: textObject.fontWeight,
-      fill: "#fff",
+      fill: '#fff',
     });
     copyCharsObjects.push(charTextObject);
   }

@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { MdAdd } from "react-icons/md";
-import { ResourceData } from "@/hooks/useResourceAPI";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { MdAdd } from 'react-icons/md';
+import { ResourceData } from '@/hooks/useResourceAPI';
 
 type ImageResourceProps = {
   image: ResourceData;
@@ -33,12 +33,12 @@ export const ImageResource = observer(
           onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             try {
               const response = await fetch(`/api/image/${image.id}`, {
                 method: 'DELETE',
               });
-              
+
               if (response.ok) {
                 onDelete();
                 console.log('✅ Image deleted:', image.id);

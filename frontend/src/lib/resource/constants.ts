@@ -14,10 +14,16 @@ export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
   video: {
     collection: 'videos',
     uploadDir: 'video',
-    allowedTypes: ['video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime'],
+    allowedTypes: [
+      'video/mp4',
+      'video/mov',
+      'video/avi',
+      'video/webm',
+      'video/quicktime',
+    ],
     maxSize: 100 * 1024 * 1024,
     displayName: 'Video',
-    acceptString: 'video/mp4,video/webm'
+    acceptString: 'video/mp4,video/webm',
   },
   audio: {
     collection: 'audios',
@@ -25,7 +31,7 @@ export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
     allowedTypes: ['audio/mpeg', 'audio/mp3', 'audio/wav'],
     maxSize: 20 * 1024 * 1024,
     displayName: 'Audio',
-    acceptString: 'audio/mp3,audio/*'
+    acceptString: 'audio/mp3,audio/*',
   },
   image: {
     collection: 'images',
@@ -33,10 +39,9 @@ export const RESOURCE_CONFIG: Record<ResourceType, ResourceConfig> = {
     allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
     maxSize: 10 * 1024 * 1024,
     displayName: 'Image',
-    acceptString: 'image/jpeg,image/png,image/webp'
+    acceptString: 'image/jpeg,image/png,image/webp',
   },
 } as const;
-
 
 export const RESOURCE_ENDPOINTS = {
   video: '/api/resources/video',

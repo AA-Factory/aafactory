@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (!elementData || !elementData.id) {
       return NextResponse.json(
         { message: 'Element data with ID required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       elementId: elementData.id,
       elementData: elementData,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     const result = await db.collection('timeline').insertOne(document);
@@ -30,14 +30,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       elementId: elementData.id,
-      _id: result.insertedId
+      _id: result.insertedId,
     });
-
   } catch (error) {
     console.error('POST error:', error);
     return NextResponse.json(
       { message: 'Failed to create element' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -48,18 +47,18 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db(MONGODB_DB);
 
-    const elements = await db.collection('timeline')
+    const elements = await db
+      .collection('timeline')
       .find({})
       .sort({ 'elementData.timeFrame.start': 1 })
       .toArray();
 
     return NextResponse.json({ elements });
-
   } catch (error) {
     console.error('GET error:', error);
     return NextResponse.json(
       { message: 'Failed to fetch elements' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -72,7 +71,7 @@ export async function PUT(req: NextRequest) {
     if (!elementId || !elementData) {
       return NextResponse.json(
         { message: 'Element ID and data required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -84,28 +83,27 @@ export async function PUT(req: NextRequest) {
       {
         $set: {
           elementData: elementData,
-          updatedAt: new Date()
-        }
-      }
+          updatedAt: new Date(),
+        },
+      },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
         { message: 'Element not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      modified: result.modifiedCount
+      modified: result.modifiedCount,
     });
-
   } catch (error) {
     console.error('PUT error:', error);
     return NextResponse.json(
       { message: 'Failed to update element' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -119,7 +117,7 @@ export async function DELETE(req: NextRequest) {
     if (!elementId) {
       return NextResponse.json(
         { message: 'Element ID required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -127,25 +125,24 @@ export async function DELETE(req: NextRequest) {
     const db = client.db(MONGODB_DB);
 
     const result = await db.collection('timeline').deleteOne({
-      elementId: elementId
+      elementId: elementId,
     });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
         { message: 'Element not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json({
-      success: true
+      success: true,
     });
-
   } catch (error) {
     console.error('DELETE error:', error);
     return NextResponse.json(
       { message: 'Failed to delete element' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

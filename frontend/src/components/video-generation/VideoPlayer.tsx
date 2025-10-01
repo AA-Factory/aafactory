@@ -1,6 +1,6 @@
-import React from "react";
-import { FiPlayCircle } from "react-icons/fi";
-import { useVideoGeneration } from "@/contexts/VideoGenerationContext";
+import React from 'react';
+import { FiPlayCircle } from 'react-icons/fi';
+import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 
 export const VideoPlayer: React.FC = () => {
   const { state } = useVideoGeneration();

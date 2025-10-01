@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useEffect, useRef } from "react";
+import React, { MouseEventHandler, useEffect, useRef } from 'react';
 
 function DragableView(props: {
   children?: React.ReactNode;
@@ -36,8 +36,9 @@ function DragableView(props: {
   const handleMouseMove: MouseEventHandler<HTMLDivElement> = (event) => {
     if (!data.div) return;
     if (!data.isDragging) return;
-    data.div.style.left = `${(calculateNewValue(event.clientX) / props.total) * 100
-      }%`;
+    data.div.style.left = `${
+      (calculateNewValue(event.clientX) / props.total) * 100
+    }%`;
     event.stopPropagation();
     event.preventDefault();
   };
@@ -52,11 +53,11 @@ function DragableView(props: {
   };
 
   useEffect(() => {
-    window.addEventListener("mouseup", handleMouseUp as any);
-    window.addEventListener("mousemove", handleMouseMove as any);
+    window.addEventListener('mouseup', handleMouseUp as any);
+    window.addEventListener('mousemove', handleMouseMove as any);
     return () => {
-      window.removeEventListener("mouseup", handleMouseUp as any);
-      window.removeEventListener("mousemove", handleMouseMove as any);
+      window.removeEventListener('mouseup', handleMouseUp as any);
+      window.removeEventListener('mousemove', handleMouseMove as any);
     };
   }, [handleMouseUp, handleMouseMove]);
 
@@ -67,7 +68,7 @@ function DragableView(props: {
       }}
       className={`absolute height-100 ${props.className}`}
       style={{
-        left: (props.value / props.total) * 100 + "%",
+        left: (props.value / props.total) * 100 + '%',
         top: 0,
         bottom: 0,
         ...props.style,

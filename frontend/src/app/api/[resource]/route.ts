@@ -13,17 +13,14 @@ interface RouteParams {
   };
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { resource } = params;
 
     if (!Object.keys(RESOURCE_CONFIG).includes(resource)) {
       return NextResponse.json(
         { error: 'Invalid resource type' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,18 +42,16 @@ export async function GET(
     return NextResponse.json({
       resource,
       data,
-      pagination: { limit, offset, total }
+      pagination: { limit, offset, total },
     });
-
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
 
 async function ensureUploadDir(uploadDir: string) {
   if (!existsSync(uploadDir)) {
@@ -64,10 +59,7 @@ async function ensureUploadDir(uploadDir: string) {
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: RouteParams
-) {
+export async function POST(req: NextRequest, { params }: RouteParams) {
   let filePath: string | null = null;
 
   try {
@@ -76,8 +68,11 @@ export async function POST(
     // Validate resource type
     if (!Object.keys(RESOURCE_CONFIG).includes(resource)) {
       return NextResponse.json(
-        { message: 'Invalid resource type. Supported types: video, audio, image' },
-        { status: 400 }
+        {
+          message:
+            'Invalid resource type. Supported types: video, audio, image',
+        },
+        { status: 400 },
       );
     }
 
@@ -100,7 +95,7 @@ export async function POST(
     if (!file) {
       return NextResponse.json(
         { message: `No ${resource} file provided` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -109,9 +104,9 @@ export async function POST(
       return NextResponse.json(
         {
           message: `Invalid file type. Only ${resourceType} files are allowed.`,
-          allowedTypes: config.allowedTypes
+          allowedTypes: config.allowedTypes,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -120,16 +115,21 @@ export async function POST(
       const maxSizeMB = config.maxSize / (1024 * 1024);
       return NextResponse.json(
         { message: `File too large. Maximum size is ${maxSizeMB}MB.` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Prepare file info
-    const fileExtension = file.name.split('.').pop() || getDefaultExtension(resourceType);
+    const fileExtension =
+      file.name.split('.').pop() || getDefaultExtension(resourceType);
     const uniqueFilename = `${uuidv4()}.${fileExtension}`;
 
     // Create full upload directory path
-    const uploadDir = path.join(process.cwd(), 'public/uploads', config.uploadDir);
+    const uploadDir = path.join(
+      process.cwd(),
+      'public/uploads',
+      config.uploadDir,
+    );
 
     // Ensure upload directory exists
     await ensureUploadDir(uploadDir);
@@ -150,7 +150,7 @@ export async function POST(
       resourceType: resourceType,
       uploadedAt: new Date(),
       // Add resource-specific metadata
-      ...getResourceSpecificMetadata(resourceType, file)
+      ...getResourceSpecificMetadata(resourceType, file),
     };
 
     // Save to database
@@ -159,9 +159,8 @@ export async function POST(
 
     return NextResponse.json({
       message: `${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} uploaded successfully`,
-      file: { ...fileInfo, _id: result.insertedId }
+      file: { ...fileInfo, _id: result.insertedId },
     });
-
   } catch (error) {
     console.error('Upload error:', error);
 
@@ -175,10 +174,7 @@ export async function POST(
       }
     }
 
-    return NextResponse.json(
-      { message: 'Upload failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Upload failed' }, { status: 500 });
   }
 }
 
@@ -187,7 +183,7 @@ function getDefaultExtension(resourceType: ResourceType): string {
   const defaults = {
     video: 'mp4',
     audio: 'mp3',
-    image: 'jpg'
+    image: 'jpg',
   };
   return defaults[resourceType];
 }
@@ -226,7 +222,7 @@ function getResourceSpecificMetadata(resourceType: ResourceType, file: File) {
 async function handleUrlBasedSave(
   req: NextRequest,
   resourceType: ResourceType,
-  config: any
+  config: any,
 ) {
   let filePath: string | null = null;
 
@@ -237,7 +233,7 @@ async function handleUrlBasedSave(
     if (!sourceUrl) {
       return NextResponse.json(
         { message: 'No source URL provided' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -252,11 +248,16 @@ async function handleUrlBasedSave(
 
     // Extract file extension from URL or use default
     const urlParts = new URL(sourceUrl).pathname.split('.');
-    const fileExtension = urlParts.length > 1 ? urlParts.pop() : getDefaultExtension(resourceType);
+    const fileExtension =
+      urlParts.length > 1 ? urlParts.pop() : getDefaultExtension(resourceType);
     const uniqueFilename = `${uuidv4()}.${fileExtension}`;
 
     // Create full upload directory path
-    const uploadDir = path.join(process.cwd(), 'public/uploads', config.uploadDir);
+    const uploadDir = path.join(
+      process.cwd(),
+      'public/uploads',
+      config.uploadDir,
+    );
 
     // Ensure upload directory exists
     await ensureUploadDir(uploadDir);
@@ -267,7 +268,8 @@ async function handleUrlBasedSave(
 
     // Get file size and type
     const fileSize = buffer.length;
-    const mimeType = response.headers.get('content-type') || getDefaultMimeType(resourceType);
+    const mimeType =
+      response.headers.get('content-type') || getDefaultMimeType(resourceType);
 
     // Validate file size
     if (fileSize > config.maxSize) {
@@ -286,7 +288,10 @@ async function handleUrlBasedSave(
       uploadedAt: new Date(),
       sourceUrl: sourceUrl, // Keep track of original source
       // Add resource-specific metadata
-      ...getResourceSpecificMetadata(resourceType, { name: title || uniqueFilename, type: mimeType } as File)
+      ...getResourceSpecificMetadata(resourceType, {
+        name: title || uniqueFilename,
+        type: mimeType,
+      } as File),
     };
 
     // Save to database
@@ -295,9 +300,8 @@ async function handleUrlBasedSave(
 
     return NextResponse.json({
       message: `${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} saved successfully`,
-      file: { ...fileInfo, _id: result.insertedId }
+      file: { ...fileInfo, _id: result.insertedId },
     });
-
   } catch (error) {
     console.error('URL-based save error:', error);
 
@@ -313,7 +317,7 @@ async function handleUrlBasedSave(
 
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Save failed' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -323,7 +327,7 @@ function getDefaultMimeType(resourceType: ResourceType): string {
   const defaults = {
     video: 'video/mp4',
     audio: 'audio/mp3',
-    image: 'image/jpeg'
+    image: 'image/jpeg',
   };
   return defaults[resourceType];
 }

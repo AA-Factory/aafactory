@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest) {
         hasEncodedData: formData.get('hasEncodedData') === 'true',
         fileName: '',
         src: '',
-        hasFileUpload: false
+        hasFileUpload: false,
       };
 
       // Handle main file upload
@@ -37,7 +37,7 @@ export async function PUT(req: NextRequest) {
         const fileNameEntry = formData.get('fileName') as string | null;
         const fileName = fileNameEntry || fileEntry.name;
 
-        uploadResult = await uploadFile(fileEntry, fileName, "image");
+        uploadResult = await uploadFile(fileEntry, fileName, 'image');
         data.fileName = uploadResult.fileName || fileName;
         data.src = uploadResult.filePath;
         data.hasFileUpload = true;
@@ -46,7 +46,10 @@ export async function PUT(req: NextRequest) {
       // Handle training audio file upload
       const audioEntry = formData.get('trainingAudio') as File | null;
       if (audioEntry && audioEntry.size > 0) {
-        audioUploadResult = await uploadTrainingAudio(audioEntry, audioEntry.name);
+        audioUploadResult = await uploadTrainingAudio(
+          audioEntry,
+          audioEntry.name,
+        );
         data.trainingAudioPath = audioUploadResult.filePath;
         data.trainingAudioFileName = audioUploadResult.fileName;
       }
@@ -56,23 +59,30 @@ export async function PUT(req: NextRequest) {
     }
 
     if (!data.id || !ObjectId.isValid(data.id)) {
-      return NextResponse.json({ error: 'Valid avatar ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Valid avatar ID is required' },
+        { status: 400 },
+      );
     }
 
     // Prevent overwriting _id
     delete data._id;
     const { id, ...updateFields } = data;
 
-    const result = await db.collection('avatars').updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { ...updateFields, updatedAt: new Date() } }
-    );
+    const result = await db
+      .collection('avatars')
+      .updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { ...updateFields, updatedAt: new Date() } },
+      );
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: 'Avatar not found' }, { status: 404 });
     }
 
-    const updatedAvatar = await db.collection('avatars').findOne({ _id: new ObjectId(id) });
+    const updatedAvatar = await db
+      .collection('avatars')
+      .findOne({ _id: new ObjectId(id) });
 
     return NextResponse.json({
       success: true,
@@ -82,12 +92,17 @@ export async function PUT(req: NextRequest) {
         ? { filePath: uploadResult.filePath, fileName: uploadResult.fileName }
         : null,
       audioUploadResult: audioUploadResult
-        ? { filePath: audioUploadResult.filePath, fileName: audioUploadResult.fileName }
+        ? {
+            filePath: audioUploadResult.filePath,
+            fileName: audioUploadResult.fileName,
+          }
         : null,
     });
-
   } catch (error: any) {
     console.error('Error updating avatar:', error);
-    return NextResponse.json({ error: 'Failed to update avatar', details: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update avatar', details: error.message },
+      { status: 500 },
+    );
   }
 }

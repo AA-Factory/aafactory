@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -7,10 +7,10 @@ import React, {
   useRef,
   useEffect,
   ReactNode,
-} from "react";
-import { usePathname } from "next/navigation";
+} from 'react';
+import { usePathname } from 'next/navigation';
 
-type NotificationType = "success" | "error" | "warning" | "info";
+type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 interface NotificationState {
   isVisible: boolean;
@@ -36,8 +36,8 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notification, setNotification] = useState<NotificationState>({
     isVisible: false,
-    message: "",
-    type: "info",
+    message: '',
+    type: 'info',
     isFading: false,
   });
 
@@ -52,7 +52,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const showNotification = (
     message: string,
-    type: NotificationType = "info",
+    type: NotificationType = 'info',
     duration = 3000,
   ) => {
     clearTimers();
@@ -62,7 +62,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     timerRef.current = setTimeout(() => {
       setNotification((prev) => ({ ...prev, isFading: true }));
       fadeTimerRef.current = setTimeout(() => {
-        setNotification((prev) => ({ ...prev, isVisible: false, message: "" }));
+        setNotification((prev) => ({ ...prev, isVisible: false, message: '' }));
       }, 500);
     }, duration);
   };
@@ -71,7 +71,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     clearTimers();
     setNotification((prev) => ({ ...prev, isFading: true }));
     fadeTimerRef.current = setTimeout(() => {
-      setNotification((prev) => ({ ...prev, isVisible: false, message: "" }));
+      setNotification((prev) => ({ ...prev, isVisible: false, message: '' }));
     }, 500);
   };
 
@@ -93,7 +93,7 @@ export const useNotification = () => {
   const ctx = useContext(NotificationContext);
   if (!ctx)
     throw new Error(
-      "useNotification must be used within a NotificationProvider",
+      'useNotification must be used within a NotificationProvider',
     );
   return ctx;
 };

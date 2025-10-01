@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { ImageResource } from "../entity/ImageResource";
-import { ResourcePanel } from "./ResourcePanel";
+'use client';
+import React from 'react';
+import { ImageResource } from '../entity/ImageResource';
+import { ResourcePanel } from './ResourcePanel';
 
 export const ImageResourcesPanel = () => {
   return (

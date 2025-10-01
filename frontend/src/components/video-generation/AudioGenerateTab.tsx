@@ -1,12 +1,14 @@
-import React from "react";
-import { TbSparkles } from "react-icons/tb";
-import { FiInfo } from "react-icons/fi";
-import { Avatar } from "@/types/avatar";
+import React from 'react';
+import { TbSparkles } from 'react-icons/tb';
+import { FiInfo } from 'react-icons/fi';
+import { Avatar } from '@/types/avatar';
 
 interface AudioGenerateTabProps {
   avatar: Avatar | null;
   selectedAudioSource: 'avatar' | 'rick_and_morty' | 'japanese';
-  onAudioSourceChange: (source: 'avatar' | 'rick_and_morty' | 'japanese') => void;
+  onAudioSourceChange: (
+    source: 'avatar' | 'rick_and_morty' | 'japanese',
+  ) => void;
   dialog: string;
   onDialogChange: (dialog: string) => void;
   onAudioGeneration: () => void;
@@ -41,7 +43,11 @@ export const AudioGenerateTab: React.FC<AudioGenerateTabProps> = ({
           name="audioSource"
           value={selectedAudioSource}
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
-          onChange={(e) => onAudioSourceChange(e.target.value as 'avatar' | 'rick_and_morty' | 'japanese')}
+          onChange={(e) =>
+            onAudioSourceChange(
+              e.target.value as 'avatar' | 'rick_and_morty' | 'japanese',
+            )
+          }
         >
           {avatar?.trainingAudioPath && (
             <option value="avatar">Avatar's uploaded audio</option>

@@ -9,4 +9,4 @@ export async function getTimelineElements() {
     .toArray();
 
   return elements;
-};
+}

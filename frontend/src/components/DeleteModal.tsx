@@ -1,5 +1,5 @@
-import React from "react";
-import { HiTrash, HiRefresh } from "react-icons/hi";
+import React from 'react';
+import { HiTrash, HiRefresh } from 'react-icons/hi';
 
 interface Avatar {
   id: string;
@@ -22,9 +22,9 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   if (!avatarToDeleteId) return null;
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       onConfirm();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       onCancel();
     }
   };
@@ -69,7 +69,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </button>
           </div>
