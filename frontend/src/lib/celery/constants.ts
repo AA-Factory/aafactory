@@ -17,7 +17,7 @@ export const VIDEO_TYPES = [
 
 export const POLLING_CONFIG = {
   audio: {
-    REFETCH_INTERVAL: 10000,
+    REFETCH_INTERVAL: 5000,
     BACKGROUND_REFETCH: true,
   },
   video: {

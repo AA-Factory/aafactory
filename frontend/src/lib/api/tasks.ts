@@ -53,11 +53,27 @@ const pollPendingVideoTasks = async (avatarId: string): Promise<{ updatedCount: 
   }
   const data = await response.json();
   if (data.success) {
-    return { updatedCount: data.updatedCount };
+    return { updatedCount: data.stats.updated };
   }
   return { updatedCount: 0 };
 };
 
+const pollPendingAudioTasks = async (avatarId: string): Promise<{ updatedCount: number }> => {
+  const response = await fetch(`/api/tasks/avatar/${avatarId}/audio/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to poll pending audio tasks: ${response.statusText}`);
+  }
+  const data = await response.json();
+  if (data.success) {
+    return { updatedCount: data.stats.updated };
+  }
+  return { updatedCount: 0 };
+};
 /** -----------------
  * React Query Hooks
  * ----------------- */
@@ -89,6 +105,22 @@ export const usePollPendingVideoTasks = () => {
         // Invalidate all video task queries for this avatar
         queryClient.invalidateQueries({
           queryKey: taskKeys.videoByAvatar(avatarId)
+        });
+      }
+    },
+  });
+};
+
+export const usePollPendingAudioTasks = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['pollPendingAudioTasks'],
+    mutationFn: pollPendingAudioTasks,
+    onSuccess: (data, avatarId) => {
+      if (data.updatedCount > 0) {
+        // Invalidate all audio task queries for this avatar
+        queryClient.invalidateQueries({
+          queryKey: taskKeys.audioByAvatar(avatarId)
         });
       }
     },

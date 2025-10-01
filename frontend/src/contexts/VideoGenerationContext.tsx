@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
 import { Avatar } from "@/types/avatar";
 import { VideoTask } from "@/types/tasks";
-import { useVideoTasks, usePollPendingVideoTasks } from "@/lib/api/tasks";
+import { useVideoTasks, usePollPendingVideoTasks, usePollPendingAudioTasks } from "@/lib/api/tasks";
 import { DIALOG_SEEDS } from "@/utils/fakeData";
 import { VIDEO_TYPES } from "@/lib/celery/constants";
 interface AudioTask {
@@ -92,7 +92,7 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
   } = useVideoTasks(state.avatar?.id || "");
 
   const pollPendingVideoTasksMutation = usePollPendingVideoTasks();
-
+  const pollPendingAudioTasksMutation = usePollPendingAudioTasks();
   // Process video tasks with default filePath
   const processedVideoTasks = useMemo(() => {
     return videoTasks.map(task => ({
@@ -105,6 +105,7 @@ export const VideoGenerationProvider: React.FC<{ children: React.ReactNode }> = 
   useEffect(() => {
     if (state.avatar?.id) {
       pollPendingVideoTasksMutation.mutate(state.avatar.id);
+      pollPendingAudioTasksMutation.mutate(state.avatar.id);
     }
   }, [state.avatar?.id]);
 
