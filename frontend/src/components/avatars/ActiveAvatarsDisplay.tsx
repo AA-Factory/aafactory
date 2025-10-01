@@ -3,7 +3,6 @@
 import React from 'react';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import { useAvatars } from '@/hooks/useAvatars';
-import { Avatar } from '../../types/avatar';
 
 interface ActiveAvatarsDisplayProps {
   maxDisplay?: number;

@@ -6,7 +6,7 @@ import {
   isHtmlImageElement,
   isHtmlVideoElement,
 } from '@/utils';
-import anime, { get } from 'animejs';
+import anime from 'animejs';
 import {
   MenuOption,
   EditorElement,
@@ -795,7 +795,7 @@ export class Store {
 
   saveCanvasToVideoWithAudioWebmMp4() {
     console.log('modified');
-    let mp4 = this.selectedVideoFormat === 'mp4';
+    const mp4 = this.selectedVideoFormat === 'mp4';
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     const stream = canvas.captureStream(30);
     const audioElements = this.editorElements.filter(isEditorAudioElement);
@@ -804,9 +804,9 @@ export class Store {
       const audioElement = document.getElementById(
         audio.properties.elementId,
       ) as HTMLAudioElement;
-      let ctx = new AudioContext();
-      let sourceNode = ctx.createMediaElementSource(audioElement);
-      let dest = ctx.createMediaStreamDestination();
+      const ctx = new AudioContext();
+      const sourceNode = ctx.createMediaElementSource(audioElement);
+      const dest = ctx.createMediaStreamDestination();
       sourceNode.connect(dest);
       sourceNode.connect(ctx.destination);
       audioStreams.push(dest.stream);
@@ -1144,7 +1144,7 @@ function getTextObjectsPartitionedByCharacters(
   textObject: fabric.Text,
   element: TextEditorElement,
 ): fabric.Text[] {
-  let copyCharsObjects: fabric.Text[] = [];
+  const copyCharsObjects: fabric.Text[] = [];
   // replace all line endings with blank
   const characters = (textObject.text ?? '')
     .split('')

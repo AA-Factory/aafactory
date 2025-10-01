@@ -93,7 +93,7 @@ const fetchAvatarById = async (id: string): Promise<Avatar> => {
   return mapAvatar(data.avatar);
 };
 
-const deleteAvatar = (id: string) =>
+const deleteAvatar = async (id: string) =>
   apiRequest(`/api/avatars/delete-avatar`, {
     method: 'DELETE',
     body: JSON.stringify({ id }),
@@ -197,7 +197,7 @@ export const useAvatars = () =>
 export const useAvatar = (id?: string) =>
   useQuery({
     queryKey: avatarKeys.detail(id!),
-    queryFn: () => fetchAvatarById(id!),
+    queryFn: async () => fetchAvatarById(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
   });
@@ -219,7 +219,7 @@ export const useDeleteAvatar = () => {
     onError: (_, __, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(avatarKeys.lists(), ctx.prev);
     },
-    onSettled: () =>
+    onSettled: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
   });
 };
@@ -276,7 +276,7 @@ export const useCreateAvatar = () => {
     onError: (_, __, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(avatarKeys.lists(), ctx.prev);
     },
-    onSettled: () =>
+    onSettled: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
   });
 };
@@ -337,13 +337,13 @@ export const useUpdateAvatar = () => {
 export const useRefreshAvatars = () => {
   const queryClient = useQueryClient();
   return {
-    refreshAll: () =>
+    refreshAll: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.all }),
-    refreshList: () =>
+    refreshList: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
-    refreshAvatar: (id: string) =>
+    refreshAvatar: async (id: string) =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.detail(id) }),
-    forceRefreshList: () =>
+    forceRefreshList: async () =>
       queryClient.refetchQueries({ queryKey: avatarKeys.lists() }),
   };
 };

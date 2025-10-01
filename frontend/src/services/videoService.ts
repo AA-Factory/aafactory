@@ -48,9 +48,7 @@ export function createVideoResponse(
 }
 
 // Main service function
-export async function prepareVideoData(
-  payload: GenerateVideoPayload,
-): Promise<{
+export async function prepareVideoData(payload: GenerateVideoPayload): Promise<{
   taskRequest: VideoGenerationTaskRequest;
   imageBase64: string;
   audioBase64: string;

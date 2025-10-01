@@ -143,9 +143,9 @@ export default function AvatarPage({
           backgroundKnowledge: formData.backgroundKnowledge,
         } as any;
 
-        let file: File | null = formData.image || null;
+        const file: File | null = formData.image || null;
         let fileName: string | null = null;
-        let trainingAudio: File | null = formData.trainingAudio || null;
+        const trainingAudio: File | null = formData.trainingAudio || null;
 
         if (file) {
           const extension = file.type.split('/')[1];
@@ -227,7 +227,7 @@ export default function AvatarPage({
         const fileName = `${formData.name || 'avatar'}-encoded.png`;
         const avatarData = { ...formDataToEncode, hasEncodedData: true } as any;
 
-        let trainingAudio: File | null = formData.trainingAudio || null;
+        const trainingAudio: File | null = formData.trainingAudio || null;
 
         if (editMode && avatarId) {
           const updateData: any = {
@@ -359,7 +359,7 @@ export default function AvatarPage({
 
             {savedAvatarId && (
               <button
-                onClick={() =>
+                onClick={async () =>
                   showConfirmation
                     ? handleDeleteAvatar(avatarId)
                     : setShowConfirmation(true)

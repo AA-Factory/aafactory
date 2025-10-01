@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { HiPaperAirplane, HiVideoCamera, HiMicrophone } from 'react-icons/hi';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
-import { useAvatar } from '@/hooks/useAvatars';
 
 const Chat: React.FC = () => {
   const [messages, setMessages] = useState([

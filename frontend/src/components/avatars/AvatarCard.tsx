@@ -1,14 +1,6 @@
 // components/AvatarCard/AvatarCard.tsx
 import React, { useState } from 'react';
-import {
-  HiPencil,
-  HiTrash,
-  HiVideoCamera,
-  HiCheck,
-  HiX,
-  HiPlus,
-  HiMinus,
-} from 'react-icons/hi';
+import { HiPencil, HiTrash, HiVideoCamera, HiCheck, HiX } from 'react-icons/hi';
 import { Avatar } from '../../types/avatar';
 import { AVATAR_CONSTANTS } from '@/lib/celery/constants';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';

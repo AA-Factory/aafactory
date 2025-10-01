@@ -50,7 +50,7 @@ export const AudioGenerateTab: React.FC<AudioGenerateTabProps> = ({
           }
         >
           {avatar?.trainingAudioPath && (
-            <option value="avatar">Avatar's uploaded audio</option>
+            <option value="avatar">Avatar&apos;s uploaded audio</option>
           )}
           <option value="rick_and_morty">Rick and Morty (default)</option>
           <option value="japanese">Japanese Voice</option>

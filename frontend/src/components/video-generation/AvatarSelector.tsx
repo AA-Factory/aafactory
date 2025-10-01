@@ -1,5 +1,4 @@
 import React from 'react';
-import { Avatar } from '@/types/avatar';
 import { useAvatars } from '@/hooks/useAvatars';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 

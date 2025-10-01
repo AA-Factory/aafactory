@@ -54,7 +54,7 @@ export function isValidBase64(str: string): boolean {
  */
 export function base64ToBlob(
   base64String: string,
-  mimeType: string = 'audio/wav',
+  mimeType = 'audio/wav',
 ): Blob {
   try {
     const cleanedBase64 = cleanBase64(base64String);
@@ -109,7 +109,7 @@ export function base64ToArrayBuffer(base64String: string): ArrayBuffer {
 /**
  * Converts a File to base64 string
  */
-export function fileToBase64(file: File): Promise<string> {
+export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!file) {
       reject(new EncodingError('No file provided'));
@@ -154,7 +154,7 @@ export function fileToBase64(file: File): Promise<string> {
 /**
  * Converts a Blob to base64 string
  */
-export function blobToBase64(blob: Blob): Promise<string> {
+export async function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!blob) {
       reject(new EncodingError('No blob provided'));
@@ -257,7 +257,7 @@ export async function encodeMediaFile(
  */
 export async function encodeAudioFile(
   audioFile: string | File,
-  basePath: string = '/test/training_audio/',
+  basePath = '/test/training_audio/',
 ): Promise<{ base64: string; filename: string; mimeType?: string }> {
   return encodeMediaFile(audioFile, basePath);
 }
@@ -293,7 +293,7 @@ export async function encodeImageFile(
  */
 export function base64ToDataUrl(
   base64String: string,
-  mimeType: string = 'audio/wav',
+  mimeType = 'audio/wav',
 ): string {
   try {
     const cleanedBase64 = cleanBase64(base64String);
@@ -316,7 +316,7 @@ export function base64ToDataUrl(
  */
 export function base64ToObjectUrl(
   base64String: string,
-  mimeType: string = 'audio/wav',
+  mimeType = 'audio/wav',
 ): string {
   try {
     const blob = base64ToBlob(base64String, mimeType);
@@ -411,7 +411,7 @@ export function getBase64Size(base64String: string): number {
 /**
  * @deprecated Use fileToBase64 instead
  */
-export function convertFileToBase64(file: File): Promise<string> {
+export async function convertFileToBase64(file: File): Promise<string> {
   return fileToBase64(file);
 }
 

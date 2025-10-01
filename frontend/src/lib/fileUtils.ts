@@ -142,7 +142,7 @@ export async function deleteFileSimple(filePath: string): Promise<void> {
 export async function uploadFile(
   blob: Blob | Buffer,
   fileName: string,
-  destination: string = 'image',
+  destination = 'image',
 ): Promise<UploadResult> {
   try {
     const uploadsDir = path.join(process.cwd(), 'public/uploads', destination);

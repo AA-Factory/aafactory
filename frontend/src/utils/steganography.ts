@@ -86,7 +86,7 @@ export async function decodeFormDataFromImage(
 }
 
 // Helper functions
-function loadImage(file: File): Promise<HTMLImageElement> {
+async function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -98,7 +98,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+async function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
@@ -163,12 +163,21 @@ function decodeTextFromImageData(imageData: ImageData): string | null {
   return text;
 }
 
-export const loadImageToCanvas = (file, canvasRef) => {
+export async function loadImageToCanvas(
+  file: File,
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+): Promise<ImageData> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       const canvas = canvasRef.current;
+      if (!canvas) {
+        throw new Error('Canvas element not found');
+      }
       const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Canvas 2D context not available');
+      }
 
       canvas.width = img.width;
       canvas.height = img.height;
@@ -178,7 +187,7 @@ export const loadImageToCanvas = (file, canvasRef) => {
     };
     img.src = URL.createObjectURL(file);
   });
-};
+}
 
 export const decodeDataFromImage = (imageData) => {
   const data = imageData.data;

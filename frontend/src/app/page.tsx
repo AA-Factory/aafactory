@@ -11,7 +11,7 @@ export default function Home() {
       </h1>
       <p className="mt-6 text-xl text-gray-700 max-w-2xl">
         AAFactory is an open-source project for building lifelike, video-based
-        avatars. Whether you're creating a virtual assistant, a digital
+        avatars. Whether you&apos;re creating a virtual assistant, a digital
         character, or an AI-powered presenter — AAFactory gives you the tools to
         bring your avatars to life.
       </p>

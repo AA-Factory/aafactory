@@ -1,11 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { buildWorkflow } from '@/lib/workflow';
-import {
-  COMFYUI_RUN_ASYNC,
-  COMFYUI_RUN_SYNC,
-  COMFYUI_SERVER_URL,
-  COMFYUI_STATUS,
-} from '@/lib/celery/constants';
+import { COMFYUI_RUN_ASYNC, COMFYUI_RUN_SYNC } from '@/lib/celery/constants';
 
 export type GenerateImagePayload = {
   workflow: Record<string, unknown>;

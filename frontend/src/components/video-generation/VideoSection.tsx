@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TbSparkles } from 'react-icons/tb';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAvatars } from '@/hooks/useAvatars';

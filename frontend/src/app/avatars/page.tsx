@@ -1,15 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { HiUser } from 'react-icons/hi';
-import ConfirmationModal from '@/components/ConformationModal';
+import React, { useState } from 'react';
 import { AvatarCard } from '@/components/avatars/AvatarCard';
 import { CreateAvatarCard } from '@/components/avatars/CreateAvatarCard';
 import EmptyState from '@/components/avatars/EmptyState';
 import LoadingState from '@/components/avatars/LoadingState';
-import { ActiveAvatarsDisplay } from '@/components/avatars/ActiveAvatarsDisplay';
-import { Avatar } from '../../types/avatar';
-import { useModal } from '@/hooks/useModal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAvatars, useDeleteAvatar } from '@/hooks/useAvatars';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';

@@ -1,7 +1,6 @@
 import { dehydrate } from '@tanstack/react-query';
 import { HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import React from 'react';
-import { cache } from 'react';
 import { getVideoResource } from './api/queries';
 import LoadingState from '@/components/avatars/LoadingState';
 export default async function ReactPage() {

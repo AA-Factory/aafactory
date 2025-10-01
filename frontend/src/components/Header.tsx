@@ -1,19 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  HiMenu,
-  HiX,
-  HiUser,
-  HiChatAlt2,
-  HiCode,
-  HiLightningBolt,
-  HiCog,
-  HiAdjustments,
-} from 'react-icons/hi';
+import { HiMenu, HiX, HiUser, HiCode } from 'react-icons/hi';
 import { IconType } from 'react-icons';
 import Link from 'next/link';
-import { ActiveAvatarsDisplay } from './avatars/ActiveAvatarsDisplay';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import DarkModeSwitch from './DarkModeSwitch';
 

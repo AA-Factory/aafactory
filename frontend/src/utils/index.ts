@@ -48,6 +48,6 @@ export function formatTimeToMinSecMili(time: number) {
   return formatTimeToMinSec(time / 1000) + `.${appendZero(mili, 2)}`;
 }
 
-function appendZero(value: number, minDigits: number = 2) {
+function appendZero(value: number, minDigits = 2) {
   return value.toString().padStart(minDigits, '0');
 }

@@ -4,7 +4,7 @@ import { StoreContext } from '@/store';
 import { observer } from 'mobx-react';
 import { Element } from '../entity/Element';
 
-export const ElementsPanel = observer((_props: {}) => {
+export const ElementsPanel = observer((_props: any) => {
   const store = React.useContext(StoreContext);
   return (
     <div className="bg-slate-200 dark:bg-gray-800 h-full overflow-scroll">

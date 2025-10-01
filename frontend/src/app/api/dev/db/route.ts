@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { cleanAllDirectories, cleanSpecificDirectories } from '@/lib/fileUtils';
-import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
+import { RESOURCE_CONFIG } from '@/lib/resource/constants';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const client = await clientPromise;
     const db = client.db(MONGODB_DB);
 
-    let resetResults = {
+    const resetResults = {
       collections: [] as string[],
       folders: [] as string[],
       errors: [] as string[],

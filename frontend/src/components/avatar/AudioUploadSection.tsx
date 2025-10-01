@@ -1,5 +1,4 @@
 import React from 'react';
-import { HiMicrophone, HiUpload } from 'react-icons/hi';
 
 interface AudioUploadSectionProps {
   selectedAudio: File | null;

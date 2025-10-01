@@ -26,7 +26,7 @@ export const VideoResource = observer(
         </div>
         <button
           className="hover:bg-[#00a0f5] bg-[rgba(0,0,0,.25)] rounded-sm z-10 text-white font-bold py-1 absolute text-lg bottom-2 right-2"
-          onClick={() => store.addVideo(index, video.id)}
+          onClick={async () => store.addVideo(index, video.id)}
         >
           <MdAdd size="25" />
         </button>

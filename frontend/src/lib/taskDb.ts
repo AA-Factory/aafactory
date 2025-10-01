@@ -1,9 +1,5 @@
 import { TaskDocument, getCollection } from './database';
-import {
-  saveBase64File,
-  SaveFileResult,
-  cleanAllDirectories,
-} from './fileUtils';
+import { saveBase64File, SaveFileResult } from './fileUtils';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
 export interface CreateTaskParams {
@@ -30,7 +26,7 @@ export async function createTask(
     const result = await safeDbOperation(
       'insertAvatar',
       'avatars',
-      () => collection.insertOne(taskDoc),
+      async () => collection.insertOne(taskDoc),
       taskDoc,
     );
 
