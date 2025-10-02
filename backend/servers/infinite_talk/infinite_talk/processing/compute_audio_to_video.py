@@ -2,7 +2,7 @@ from pathlib import Path
 import argparse
 import logging
 from infinite_talk.InfiniteTalk.generate_infinitetalk import generate
-from config import default_args, config_overrides
+from infinite_talk.processing.config import default_args, config_overrides
 
 
 MODULE_PATH = Path(__file__).parent
