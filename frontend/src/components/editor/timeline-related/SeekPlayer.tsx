@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { StoreContext } from "@/store";
-import { formatTimeToMinSecMili } from "@/utils";
-import { observer } from "mobx-react-lite";
-import { useContext } from "react";
-import { MdPlayArrow, MdPause } from "react-icons/md";
-import { ScaleRangeInput } from "./ScaleRangeInput";
+import { StoreContext } from '@/store';
+import { formatTimeToMinSecMili } from '@/utils';
+import { observer } from 'mobx-react-lite';
+import { useContext } from 'react';
+import { MdPlayArrow, MdPause } from 'react-icons/md';
+import { ScaleRangeInput } from './ScaleRangeInput';
 
 const MARKINGS = [
   {
     interval: 5000,
-    color: "black",
+    color: 'black',
     size: 16,
     width: 1,
   },
   {
     interval: 1000,
-    color: "black",
+    color: 'black',
     size: 8,
     width: 1,
   },

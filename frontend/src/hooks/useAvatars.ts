@@ -1,15 +1,15 @@
 // hooks/useAvatars.ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Avatar } from "@/types/avatar";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Avatar } from '@/lib/types/avatar';
 
 /** -----------------
  * Query Keys
  * ----------------- */
-export const avatarKeys = {
-  all: ["avatars"] as const,
-  lists: () => [...avatarKeys.all, "list"] as const,
+const avatarKeys = {
+  all: ['avatars'] as const,
+  lists: () => [...avatarKeys.all, 'list'] as const,
   list: (filters: string) => [...avatarKeys.lists(), { filters }] as const,
-  details: () => [...avatarKeys.all, "detail"] as const,
+  details: () => [...avatarKeys.all, 'detail'] as const,
   detail: (id: string) => [...avatarKeys.details(), id] as const,
 };
 
@@ -18,14 +18,14 @@ export const avatarKeys = {
  * ----------------- */
 const mapAvatar = (avatar: any): Avatar => ({
   id: avatar._id,
-  name: avatar.name || "Unnamed Avatar",
-  imageUrl: avatar.src || "/placeholder-avatar.png",
+  name: avatar.name || 'Unnamed Avatar',
   createdAt: new Date(avatar.createdAt).toLocaleDateString(),
-  personality: avatar.personality || "No personality defined",
+  updatedAt: new Date(avatar.updatedAt).toLocaleDateString(),
+  description: avatar.description || '',
+  category: avatar.category || 'realistic',
+  personality: avatar.personality || 'No personality defined',
   backgroundKnowledge:
-    avatar.backgroundKnowledge || "No background knowledge defined",
-  description: avatar.description || "",
-  category: avatar.category || "realistic",
+    avatar.backgroundKnowledge || 'No background knowledge defined',
   hasEncodedData: avatar.hasEncodedData || false,
   fileName: avatar.fileName,
   src: avatar.src,
@@ -43,11 +43,11 @@ const apiRequest = async <T>(
     ...(isFormData
       ? {}
       : {
-          headers: {
-            "Content-Type": "application/json",
-            ...(options?.headers || {}),
-          },
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options?.headers || {}),
+        },
+      }),
   });
 
   const responseText = await response.text();
@@ -57,7 +57,7 @@ const apiRequest = async <T>(
       const errorData = JSON.parse(responseText);
       if (errorData.validationErrors) {
         throw new Error(
-          "Validation errors: " + JSON.stringify(errorData.validationErrors),
+          'Validation errors: ' + JSON.stringify(errorData.validationErrors),
         );
       }
       throw new Error(
@@ -79,8 +79,8 @@ const apiRequest = async <T>(
  * API Functions
  * ----------------- */
 const fetchAvatars = async (): Promise<Avatar[]> => {
-  const data = await apiRequest<{ avatars: any[] }>("/api/avatars/get-all", {
-    method: "GET",
+  const data = await apiRequest<{ avatars: any[] }>('/api/avatars/get-all', {
+    method: 'GET',
   });
   return data.avatars.map(mapAvatar);
 };
@@ -88,14 +88,14 @@ const fetchAvatars = async (): Promise<Avatar[]> => {
 const fetchAvatarById = async (id: string): Promise<Avatar> => {
   const data = await apiRequest<{ avatar: any }>(
     `/api/avatars/get-avatar?id=${id}`,
-    { method: "GET" },
+    { method: 'GET' },
   );
   return mapAvatar(data.avatar);
 };
 
-const deleteAvatar = (id: string) =>
+const deleteAvatar = async (id: string) =>
   apiRequest(`/api/avatars/delete-avatar`, {
-    method: "DELETE",
+    method: 'DELETE',
     body: JSON.stringify({ id }),
   });
 
@@ -104,7 +104,7 @@ const createAvatar = async (avatarData: {
   file?: File;
   fileName?: string;
   trainingAudio?: File;
-  jsonData?: Omit<Avatar, "id" | "createdAt">;
+  jsonData?: Omit<Avatar, 'id' | 'createdAt'>;
 }): Promise<Avatar> => {
   let data;
   if (avatarData.file || avatarData.trainingAudio) {
@@ -113,27 +113,27 @@ const createAvatar = async (avatarData: {
       formData.append(key, String(value)),
     );
     if (avatarData.file) {
-      formData.append("file", avatarData.file);
-      formData.append("fileName", avatarData.fileName ?? "");
+      formData.append('file', avatarData.file);
+      formData.append('fileName', avatarData.fileName ?? '');
     }
     if (avatarData.trainingAudio) {
       // Create a new File object with the correct MIME type to ensure proper detection
       const audioFile = new File(
         [avatarData.trainingAudio],
         avatarData.trainingAudio.name,
-        { type: avatarData.trainingAudio.type || "audio/mpeg" },
+        { type: avatarData.trainingAudio.type || 'audio/mpeg' },
       );
-      formData.append("trainingAudio", audioFile);
+      formData.append('trainingAudio', audioFile);
     }
 
     data = await apiRequest<{ avatar: any }>(
-      "/api/avatars/create-avatar",
-      { method: "POST", body: formData },
+      '/api/avatars/create-avatar',
+      { method: 'POST', body: formData },
       true,
     );
   } else {
-    data = await apiRequest<{ avatar: any }>("/api/avatars/create-avatar", {
-      method: "POST",
+    data = await apiRequest<{ avatar: any }>('/api/avatars/create-avatar', {
+      method: 'POST',
       body: JSON.stringify(avatarData.jsonData),
     });
   }
@@ -153,32 +153,30 @@ const updateAvatar = async (
 
   if (file || trainingAudio) {
     const formData = new FormData();
-    formData.append("id", id);
+    formData.append('id', id);
     Object.entries(rest).forEach(([key, value]) =>
-      formData.append(key, String(value ?? "")),
+      formData.append(key, String(value ?? '')),
     );
     if (file) {
-      formData.append("file", file);
-      formData.append("fileName", fileName || "");
+      formData.append('file', file);
+      formData.append('fileName', fileName || '');
     }
     if (trainingAudio) {
       // Create a new File object with the correct MIME type to ensure proper detection
-      const audioFile = new File(
-        [trainingAudio],
-        trainingAudio.name,
-        { type: trainingAudio.type || "audio/mpeg" },
-      );
-      formData.append("trainingAudio", audioFile);
+      const audioFile = new File([trainingAudio], trainingAudio.name, {
+        type: trainingAudio.type || 'audio/mpeg',
+      });
+      formData.append('trainingAudio', audioFile);
     }
 
     data = await apiRequest<{ avatar: any }>(
-      "/api/avatars/update-avatar",
-      { method: "PUT", body: formData },
+      '/api/avatars/update-avatar',
+      { method: 'PUT', body: formData },
       true,
     );
   } else {
-    data = await apiRequest<{ avatar: any }>("/api/avatars/update-avatar", {
-      method: "PUT",
+    data = await apiRequest<{ avatar: any }>('/api/avatars/update-avatar', {
+      method: 'PUT',
       body: JSON.stringify({ id, ...rest }),
     });
   }
@@ -198,8 +196,8 @@ export const useAvatars = () =>
 
 export const useAvatar = (id?: string) =>
   useQuery({
-    queryKey: avatarKeys.detail(id || ""),
-    queryFn: () => fetchAvatarById(id!),
+    queryKey: avatarKeys.detail(id!),
+    queryFn: async () => fetchAvatarById(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
   });
@@ -207,6 +205,7 @@ export const useAvatar = (id?: string) =>
 export const useDeleteAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['deleteAvatar'],
     mutationFn: deleteAvatar,
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: avatarKeys.lists() });
@@ -220,7 +219,7 @@ export const useDeleteAvatar = () => {
     onError: (_, __, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(avatarKeys.lists(), ctx.prev);
     },
-    onSettled: () =>
+    onSettled: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
   });
 };
@@ -228,6 +227,7 @@ export const useDeleteAvatar = () => {
 export const useCreateAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['createAvatar'],
     mutationFn: createAvatar,
     onMutate: async (newData) => {
       await queryClient.cancelQueries({ queryKey: avatarKeys.lists() });
@@ -237,30 +237,31 @@ export const useCreateAvatar = () => {
         {
           id: tempId,
           name:
-            newData.jsonData?.name || newData.formData?.name || "New Avatar",
-          imageUrl: "/placeholder-avatar.png",
+            newData.jsonData?.name || newData.formData?.name || 'New Avatar',
+          src: '/placeholder-avatar.png',
           personality:
             newData.jsonData?.personality ||
             newData.formData?.personality ||
-            "",
+            '',
           backgroundKnowledge:
             newData.jsonData?.backgroundKnowledge ||
             newData.formData?.backgroundKnowledge ||
-            "",
+            '',
           hasEncodedData:
             newData.jsonData?.hasEncodedData ||
             newData.formData?.hasEncodedData ||
             false,
           fileName: newData.fileName,
           createdAt: new Date().toLocaleDateString(),
+          updatedAt: new Date().toLocaleDateString(),
           description:
             newData.jsonData?.description ||
             newData.formData?.description ||
-            "",
+            '',
           category:
             newData.jsonData?.category ||
             newData.formData?.category ||
-            "realistic",
+            'realistic',
         },
         ...(old ?? []),
       ]);
@@ -276,7 +277,7 @@ export const useCreateAvatar = () => {
     onError: (_, __, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(avatarKeys.lists(), ctx.prev);
     },
-    onSettled: () =>
+    onSettled: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
   });
 };
@@ -284,6 +285,7 @@ export const useCreateAvatar = () => {
 export const useUpdateAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['updateAvatar'],
     mutationFn: updateAvatar,
     onMutate: async (updated) => {
       await queryClient.cancelQueries({
@@ -336,13 +338,13 @@ export const useUpdateAvatar = () => {
 export const useRefreshAvatars = () => {
   const queryClient = useQueryClient();
   return {
-    refreshAll: () =>
+    refreshAll: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.all }),
-    refreshList: () =>
+    refreshList: async () =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
-    refreshAvatar: (id: string) =>
+    refreshAvatar: async (id: string) =>
       queryClient.invalidateQueries({ queryKey: avatarKeys.detail(id) }),
-    forceRefreshList: () =>
+    forceRefreshList: async () =>
       queryClient.refetchQueries({ queryKey: avatarKeys.lists() }),
   };
 };
@@ -350,14 +352,14 @@ export const useRefreshAvatars = () => {
 export const useActiveAvatar = () => {
   const { data: avatars } = useAvatars();
   const getActiveAvatarId = () =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("activeAvatarId")
+    typeof window !== 'undefined'
+      ? localStorage.getItem('activeAvatarId')
       : null;
   const setActiveAvatarId = (id: string | null) => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       id
-        ? localStorage.setItem("activeAvatarId", id)
-        : localStorage.removeItem("activeAvatarId");
+        ? localStorage.setItem('activeAvatarId', id)
+        : localStorage.removeItem('activeAvatarId');
     }
   };
   const activeAvatarId = getActiveAvatarId();

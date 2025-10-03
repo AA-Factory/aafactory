@@ -1,20 +1,21 @@
-"use client";
-import React from "react";
-import { EditorElement } from "@/types/editor";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import DragableView from "./DragableView";
+'use client';
+import React from 'react';
+import { EditorElement } from '@/lib/types/editor';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import DragableView from './DragableView';
 
 export const TimeFrameView = observer((props: { element: EditorElement }) => {
   const store = React.useContext(StoreContext);
   const { element } = props;
-  const disabled = element.type === "audio";
+  const disabled = element.type === 'audio';
   const isSelected = store.selectedElement?.id === element.id;
   const bgColorOnSelected = isSelected
-    ? "bg-slate-800 dark:bg-gray-700"
-    : "bg-slate-600 dark:bg-gray-600";
-  const disabledCursor = disabled ? "cursor-no-drop" : "cursor-ew-resize";
+    ? 'bg-slate-800 dark:bg-gray-700'
+    : 'bg-slate-600 dark:bg-gray-600';
+  const disabledCursor = disabled ? 'cursor-no-drop' : 'cursor-ew-resize';
 
+  // React.useEffect(() => {}, []);
   return (
     <div
       onClick={() => {
@@ -23,8 +24,8 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
       key={element.id}
       className={`relative width-full h-[25px] my-2 ${
         isSelected
-          ? "border-2 border-indigo-600 dark:border-indigo-400 bg-slate-200 dark:bg-gray-700"
-          : ""
+          ? 'border-2 border-indigo-600 dark:border-indigo-400 bg-slate-200 dark:bg-gray-700'
+          : ''
       }`}
     >
       <DragableView
@@ -44,7 +45,7 @@ export const TimeFrameView = observer((props: { element: EditorElement }) => {
       </DragableView>
 
       <DragableView
-        className={disabled ? "cursor-no-drop" : "cursor-col-resize"}
+        className={disabled ? 'cursor-no-drop' : 'cursor-col-resize'}
         value={element.timeFrame.start}
         disabled={disabled}
         style={{

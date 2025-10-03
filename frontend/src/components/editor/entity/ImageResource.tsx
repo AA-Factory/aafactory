@@ -1,15 +1,18 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { MdAdd } from "react-icons/md";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { MdAdd } from 'react-icons/md';
+import { ResourceData } from '@/lib/types/resource';
 
 type ImageResourceProps = {
-  image: string;
+  image: ResourceData;
   index: number;
+  onDelete: () => void;
 };
+
 export const ImageResource = observer(
-  ({ image, index }: ImageResourceProps) => {
+  ({ image, index, onDelete }: ImageResourceProps) => {
     const store = React.useContext(StoreContext);
     const ref = React.useRef<HTMLImageElement>(null);
     const [resolution, setResolution] = React.useState({ w: 0, h: 0 });
@@ -21,9 +24,35 @@ export const ImageResource = observer(
         </div>
         <button
           className="hover:bg-[#00a0f5] bg-[rgba(0,0,0,.25)] rounded-sm z-10 text-white font-bold py-1 absolute text-lg bottom-2 right-2"
-          onClick={() => store.addImage(index)}
+          onClick={() => store.addImage(index, image.id)}
         >
           <MdAdd size="25" />
+        </button>
+        <button
+          className="hover:bg-red-500 bg-[rgba(0,0,0,.25)] rounded-sm z-10 text-white font-bold py-1 absolute text-lg top-2 left-2"
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            try {
+              const response = await fetch(`/api/image/${image.id}`, {
+                method: 'DELETE',
+              });
+
+              if (response.ok) {
+                onDelete();
+                console.log('✅ Image deleted:', image.id);
+              } else {
+                console.error('❌ Failed to delete image');
+                window.alert('Failed to delete image');
+              }
+            } catch (error) {
+              console.error('❌ Delete error:', error);
+              window.alert('Error deleting image');
+            }
+          }}
+        >
+          X
         </button>
         <img
           onLoad={() => {
@@ -34,11 +63,11 @@ export const ImageResource = observer(
           }}
           ref={ref}
           className="max-h-[100px] max-w-[150px]"
-          src={image}
+          src={image.src}
           height={200}
           width={200}
-          id={`image-${index}`}
-        ></img>
+          id={image.id}
+        />
       </div>
     );
   },

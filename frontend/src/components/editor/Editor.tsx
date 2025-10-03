@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { fabric } from "fabric";
-import React, { useEffect, useState } from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { Resources } from "./Resources";
-import { ElementsPanel } from "./panels/ElementsPanel";
-import { Menu } from "./Menu";
-import { TimeLine } from "./TimeLine";
-import { Store } from "@/store/Store";
-import "@/utils/fabricUtils";
+import { fabric } from 'fabric';
+import React, { useEffect, useState } from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { Resources } from './Resources';
+import { ElementsPanel } from './panels/ElementsPanel';
+import { Menu } from './Menu';
+import { TimeLine } from './TimeLine';
+import { Store } from '@/store/Store';
+import '@/utils/fabricUtils';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export const EditorWithStore = () => {
   const [store] = useState(new Store());
@@ -22,20 +23,36 @@ export const EditorWithStore = () => {
 
 export const Editor = observer(() => {
   const store = React.useContext(StoreContext);
-
+  const { showNotification } = useNotification();
   useEffect(() => {
-    const canvas = new fabric.Canvas("canvas", {
+    const loadTimelineFromDatabase = async () => {
+      try {
+        const response = await fetch('/api/timeline');
+        const result = await response.json();
+
+        if (result.elements) {
+          store.setEditorElements([]);
+          result.elements.forEach((item) => {
+            store.addEditorElement(item.elementData);
+          });
+        }
+        showNotification('Timeline loaded successfully', 'success');
+      } catch (error) {
+        console.error('Load failed:', error);
+      }
+    };
+    const canvas = new fabric.Canvas('canvas', {
       height: 500,
       width: 800,
-      backgroundColor: "#ededed",
+      backgroundColor: '#ededed',
     });
     fabric.Object.prototype.transparentCorners = false;
-    fabric.Object.prototype.cornerColor = "#00a0f5";
-    fabric.Object.prototype.cornerStyle = "circle";
-    fabric.Object.prototype.cornerStrokeColor = "#0063d8";
+    fabric.Object.prototype.cornerColor = '#00a0f5';
+    fabric.Object.prototype.cornerStyle = 'circle';
+    fabric.Object.prototype.cornerStrokeColor = '#0063d8';
     fabric.Object.prototype.cornerSize = 10;
     // canvas mouse down without target should deselect active object
-    canvas.on("mouse:down", function (e) {
+    canvas.on('mouse:down', function (e) {
       if (!e.target) {
         store.setSelectedElement(null);
       }
@@ -46,9 +63,10 @@ export const Editor = observer(() => {
       canvas.renderAll();
       fabric.util.requestAnimFrame(render);
     });
+    loadTimelineFromDatabase();
   }, []);
   return (
-    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-svh bg-white dark:bg-gray-900">
+    <div className="grid grid-rows-[500px_1fr_20px] grid-cols-[72px_300px_1fr_250px] h-200 bg-white dark:bg-gray-900">
       <div className="tile row-span-2 flex flex-col border-r border-gray-200 dark:border-gray-700">
         <Menu />
       </div>
@@ -66,9 +84,6 @@ export const Editor = observer(() => {
       </div>
       <div className="col-start-3 row-start-2 col-span-2 relative px-[10px] py-[4px] overflow-scroll bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <TimeLine />
-      </div>
-      <div className="col-span-4 text-right px-2 text-[0.5em] bg-black dark:bg-gray-900 text-white border-t border-gray-200 dark:border-gray-700">
-        Crafted By Amit Digga
       </div>
     </div>
   );

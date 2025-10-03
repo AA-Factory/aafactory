@@ -1,32 +1,31 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useActiveAvatars } from "@/contexts/ActiveAvatarsContext";
-import { useAvatars } from "@/hooks/useAvatars";
-import { Avatar } from "../../types/avatar";
+import React from 'react';
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
+import { useAvatars } from '@/hooks/useAvatars';
 
 interface ActiveAvatarsDisplayProps {
   maxDisplay?: number;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
 const sizeClasses = {
-  sm: "w-8 h-8",
-  md: "w-10 h-10",
-  lg: "w-12 h-12",
+  sm: 'w-8 h-8',
+  md: 'w-10 h-10',
+  lg: 'w-12 h-12',
 };
 
 const overlapClasses = {
-  sm: "-ml-2",
-  md: "-ml-3",
-  lg: "-ml-4",
+  sm: '-ml-2',
+  md: '-ml-3',
+  lg: '-ml-4',
 };
 
 export const ActiveAvatarsDisplay: React.FC<ActiveAvatarsDisplayProps> = ({
   maxDisplay = 5,
-  size = "md",
-  className = "",
+  size = 'md',
+  className = '',
 }) => {
   const { activeAvatarIds } = useActiveAvatars();
   const { data: avatars = [] } = useAvatars();
@@ -51,16 +50,16 @@ export const ActiveAvatarsDisplay: React.FC<ActiveAvatarsDisplayProps> = ({
             key={avatar.id}
             className={`
               ${sizeClasses[size]} 
-              ${index > 0 ? overlapClasses[size] : ""}
+              ${index > 0 ? overlapClasses[size] : ''}
               relative rounded-full border-2 border-white dark:border-gray-800 shadow-lg
               hover:z-10 transition-all duration-200 hover:scale-110
             `}
             style={{ zIndex: displayAvatars.length - index }}
             title={avatar.name}
           >
-            {avatar.imageUrl ? (
+            {avatar.src ? (
               <img
-                src={avatar.imageUrl}
+                src={avatar.src}
                 alt={avatar.name}
                 className="w-full h-full rounded-full object-cover"
               />

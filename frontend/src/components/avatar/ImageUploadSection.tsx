@@ -1,7 +1,8 @@
-import React from "react";
-import { HiCamera, HiUpload } from "react-icons/hi";
+import React from 'react';
+import { HiCamera, HiUpload } from 'react-icons/hi';
 
 interface ImageUploadSectionProps {
+  register: any;
   selectedImage: string | null;
   isDragging: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
@@ -14,6 +15,7 @@ interface ImageUploadSectionProps {
 }
 
 export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
+  register,
   selectedImage,
   isDragging,
   fileInputRef,
@@ -25,28 +27,29 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   existingImageUrl,
 }) => {
   return (
-    <div>
+    <div className="mb-3">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Avatar Image
       </label>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-        Upload an image or drag and drop (supports decoding form data from
-        steganographic images)
+        Upload an image for the avatar (optional), If none is provided a default
+        will be used
       </p>
 
       <div
         className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
           isDragging
-            ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+            ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
             : selectedImage
-              ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
-              : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50"
+              ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
+              : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50'
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
         <input
+          {...register('image')}
           ref={fileInputRef}
           type="file"
           accept="image/*"
@@ -57,14 +60,14 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
         {selectedImage || existingImageUrl ? (
           <div className="space-y-2">
             <img
-              src={selectedImage || existingImageUrl || ""}
+              src={selectedImage || existingImageUrl || ''}
               alt="Avatar image"
               className="mx-auto h-24 w-24 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {selectedImage
-                ? "Click to change or drag a new image"
-                : "Current image - click to change or drag a new image"}
+                ? 'Click to change or drag a new image'
+                : 'Current image - click to change or drag a new image'}
             </p>
           </div>
         ) : (
@@ -85,7 +88,7 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
                 <>
                   <span className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                     Click to upload
-                  </span>{" "}
+                  </span>{' '}
                   or drag and drop
                 </>
               )}

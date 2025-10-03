@@ -1,20 +1,20 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
 // import { formatTimeToMinSec } from "@/utils";
-import { observer } from "mobx-react";
+import { observer } from 'mobx-react';
 import {
   VideoEditorElement,
   ImageEditorElement,
   EffecType,
-} from "@/types/editor";
+} from '@/lib/types/editor';
 
 const EFFECT_TYPE_TO_LABEL: Record<string, string> = {
-  blackAndWhite: "Black and White",
-  none: "None",
-  saturate: "Saturate",
-  sepia: "Sepia",
-  invert: "Invert",
+  blackAndWhite: 'Black and White',
+  none: 'None',
+  saturate: 'Saturate',
+  sepia: 'Sepia',
+  invert: 'Invert',
 };
 export type EffectResourceProps = {
   editorElement: VideoEditorElement | ImageEditorElement;

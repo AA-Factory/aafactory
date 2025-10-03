@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useRef, useState } from "react";
+'use client';
+import { useEffect, useRef, useState } from 'react';
 
 export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
   const { max, value, onChange } = props;
@@ -19,10 +19,10 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
         });
       }
     };
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     handleResize();
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
   useEffect(() => {
@@ -30,13 +30,13 @@ export const ScaleRangeInput: React.FC<ScaleRangeInputProps> = (props) => {
       const canvas = ref.current;
       canvas.width = canvasSize.width;
       canvas.height = canvasSize.height;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       if (ctx) {
-        const isDarkMode = document.body.classList.contains("dark");
-        ctx.fillStyle = isDarkMode ? "black" : "white";
+        const isDarkMode = document.body.classList.contains('dark');
+        ctx.fillStyle = isDarkMode ? 'black' : 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const markingColor = isDarkMode ? "white" : "black";
+        const markingColor = isDarkMode ? 'white' : 'black';
         props.markings.forEach((marking) => {
           ctx.strokeStyle = markingColor;
           ctx.lineWidth = marking.width;

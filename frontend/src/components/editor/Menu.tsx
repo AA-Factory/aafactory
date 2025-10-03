@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
 import {
   MdDownload,
   MdVideoLibrary,
@@ -11,8 +11,8 @@ import {
   MdAudiotrack,
   MdOutlineFormatColorFill,
   MdMovieFilter,
-} from "react-icons/md";
-import { Store } from "@/store/Store";
+} from 'react-icons/md';
+import { Store } from '@/store/Store';
 
 export const Menu = observer(() => {
   const store = React.useContext(StoreContext);
@@ -24,7 +24,7 @@ export const Menu = observer(() => {
         return (
           <li
             key={option.name}
-            className={`h-[72px] w-[72px] flex flex-col items-center justify-center ${isSelected ? "bg-slate-200 dark:bg-gray-700" : ""}`}
+            className={`h-[72px] w-[72px] flex flex-col items-center justify-center ${isSelected ? 'bg-slate-200 dark:bg-gray-700' : ''}`}
           >
             <button
               onClick={() => option.action(store)}
@@ -32,11 +32,11 @@ export const Menu = observer(() => {
             >
               <option.icon
                 size="20"
-                color={isSelected ? "#000" : "#444"}
+                color={isSelected ? '#000' : '#444'}
                 className="dark:text-white"
               />
               <div
-                className={`text-[0.6rem] hover:text-black dark:hover:text-white ${isSelected ? "text-black dark:text-white" : "text-slate-600 dark:text-gray-300"}`}
+                className={`text-[0.6rem] hover:text-black dark:hover:text-white ${isSelected ? 'text-black dark:text-white' : 'text-slate-600 dark:text-gray-300'}`}
               >
                 {option.name}
               </div>
@@ -50,59 +50,59 @@ export const Menu = observer(() => {
 
 const MENU_OPTIONS = [
   {
-    name: "Video",
+    name: 'Video',
     icon: MdVideoLibrary,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Video");
+      store.setSelectedMenuOption('Video');
     },
   },
   {
-    name: "Audio",
+    name: 'Audio',
     icon: MdAudiotrack,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Audio");
+      store.setSelectedMenuOption('Audio');
     },
   },
   {
-    name: "Image",
+    name: 'Image',
     icon: MdImage,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Image");
+      store.setSelectedMenuOption('Image');
     },
   },
   {
-    name: "Text",
+    name: 'Text',
     icon: MdTitle,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Text");
+      store.setSelectedMenuOption('Text');
     },
   },
   {
-    name: "Animation",
+    name: 'Animation',
     icon: MdTransform,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Animation");
+      store.setSelectedMenuOption('Animation');
     },
   },
   {
-    name: "Effect",
+    name: 'Effect',
     icon: MdMovieFilter,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Effect");
+      store.setSelectedMenuOption('Effect');
     },
   },
   {
-    name: "Fill",
+    name: 'Fill',
     icon: MdOutlineFormatColorFill,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Fill");
+      store.setSelectedMenuOption('Fill');
     },
   },
   {
-    name: "Export",
+    name: 'Export',
     icon: MdDownload,
     action: (store: Store) => {
-      store.setSelectedMenuOption("Export");
+      store.setSelectedMenuOption('Export');
     },
   },
 ];

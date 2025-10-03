@@ -1,8 +1,8 @@
 // src/app/api/avatars/get-all/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/utils/mongodb";
+import { NextRequest, NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
 
-const MONGODB_DB = process.env.MONGODB_DB || "aafactory_db";
+const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 // GET - Retrieve all avatars
 export async function GET(req: NextRequest) {
@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
 
     // Get query parameters for filtering/pagination if needed
     const url = new URL(req.url);
-    const limit = parseInt(url.searchParams.get("limit") || "50");
-    const skip = parseInt(url.searchParams.get("skip") || "0");
-    const search = url.searchParams.get("search");
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const skip = parseInt(url.searchParams.get('skip') || '0');
+    const search = url.searchParams.get('search');
 
     let query = {};
 
@@ -22,15 +22,15 @@ export async function GET(req: NextRequest) {
     if (search) {
       query = {
         $or: [
-          { name: { $regex: search, $options: "i" } },
-          { personality: { $regex: search, $options: "i" } },
+          { name: { $regex: search, $options: 'i' } },
+          { personality: { $regex: search, $options: 'i' } },
         ],
       };
     }
 
     // Get avatars with optional filtering and pagination
     const avatars = await db
-      .collection("avatars")
+      .collection('avatars')
       .find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       .toArray();
 
     // Get total count for pagination
-    const totalCount = await db.collection("avatars").countDocuments(query);
+    const totalCount = await db.collection('avatars').countDocuments(query);
 
     return NextResponse.json({
       avatars,
@@ -50,10 +50,10 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error("Error fetching avatars:", error);
+    console.error('Error fetching avatars:', error);
     return NextResponse.json(
       {
-        error: "Failed to fetch avatars: " + error.message,
+        error: 'Failed to fetch avatars: ' + error.message,
       },
       { status: 500 },
     );

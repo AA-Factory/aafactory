@@ -2,38 +2,10 @@ services:
   redis:
     image: redis:8.2.1-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     profiles:
       - backend-local
       - local
-  db:
-    container_name: postgresql_db
-    image: postgres
-    restart: always
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-    profiles:
-      - backend-local
-      - local
-
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
-    ports:
-      - 5050:80
-    depends_on:
-      - db
-    profiles:
-      - backend-local
-      - local
-
   backend-app:
     container_name: backend-app
     build:
@@ -41,7 +13,7 @@ services:
       dockerfile: Dockerfile
     command: uv run uvicorn --host 0.0.0.0 main:app
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       - CELERY_BROKER_URL=$CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
@@ -118,7 +90,7 @@ services:
     image: mongo:7-jammy
     container_name: mongodb-dev
     ports:
-      - "27017:27017"
+      - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -130,15 +102,15 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "mongosh",
-          "--username",
-          "admin",
-          "--password",
-          "password",
-          "--authenticationDatabase",
-          "admin",
-          "--eval",
+          'CMD',
+          'mongosh',
+          '--username',
+          'admin',
+          '--password',
+          'password',
+          '--authenticationDatabase',
+          'admin',
+          '--eval',
           "db.adminCommand('ping')",
         ]
       interval: 5s
@@ -154,10 +126,12 @@ services:
       dockerfile: Dockerfile
     container_name: frontend-app
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - MONGODB_URI=$MONGODB_URI
       - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
+      - NEXT_PUBLIC_MOCK_SERVER=$NEXT_PUBLIC_MOCK_SERVER
+      - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
     volumes:
       - ./frontend:/app
       - /app/node_modules

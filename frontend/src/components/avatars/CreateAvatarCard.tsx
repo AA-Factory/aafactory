@@ -1,7 +1,7 @@
 // components/avatars/CreateAvatarCard.tsx
-import React from "react";
-import { HiPlus, HiCamera, HiHeart, HiMicrophone } from "react-icons/hi";
-import Link from "next/link";
+import React from 'react';
+import { HiPlus, HiCamera, HiMicrophone } from 'react-icons/hi';
+import Link from 'next/link';
 
 export const CreateAvatarCard: React.FC = () => {
   return (
@@ -19,10 +19,10 @@ export const CreateAvatarCard: React.FC = () => {
               <HiCamera className="w-3 h-3 mr-2" />
               Upload image
             </div>
-            <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+            {/* <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
               <HiHeart className="w-3 h-3 mr-2" />
               Define personality
-            </div>
+            </div> */}
             <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
               <HiMicrophone className="w-3 h-3 mr-2" />
               Choose voice model

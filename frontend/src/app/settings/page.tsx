@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   HiChevronDown,
   HiChevronUp,
   HiEye,
   HiEyeOff,
   HiSave,
-} from "react-icons/hi";
+} from 'react-icons/hi';
 
 const SettingsPage: React.FC = () => {
   const [formData, setFormData] = useState({
-    comfyServerUrl: "",
-    comfyServerPort: "",
-    elevenLabsApiKey: "",
-    openaiApiKey: "",
+    comfyServerUrl: '',
+    comfyServerPort: '',
+    elevenLabsApiKey: '',
+    openaiApiKey: '',
   });
 
   const [expandedSections, setExpandedSections] = useState({
@@ -28,9 +28,9 @@ const SettingsPage: React.FC = () => {
     openaiApiKey: false,
   });
 
-  const [saveStatus, setSaveStatus] = useState("");
+  const [saveStatus, setSaveStatus] = useState('');
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -38,14 +38,14 @@ const SettingsPage: React.FC = () => {
     }));
   };
 
-  const toggleSection = (section) => {
+  const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
   };
 
-  const togglePasswordVisibility = (field) => {
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
     setShowPasswords((prev) => ({
       ...prev,
       [field]: !prev[field],
@@ -53,19 +53,19 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    setSaveStatus("Saving...");
+    setSaveStatus('Saving...');
 
     // Simulate API call
     setTimeout(() => {
-      setSaveStatus("Settings saved successfully!");
-      setTimeout(() => setSaveStatus(""), 3000);
+      setSaveStatus('Settings saved successfully!');
+      setTimeout(() => setSaveStatus(''), 3000);
     }, 1000);
   };
 
-  const maskApiKey = (key, visible) => {
+  const maskApiKey = (key: string, visible: boolean) => {
     if (visible || !key) return key;
     const prefix = key.substring(0, 7);
-    const masked = "*".repeat(Math.max(0, key.length - 7));
+    const masked = '*'.repeat(Math.max(0, key.length - 7));
     return prefix + masked;
   };
 
@@ -78,7 +78,7 @@ const SettingsPage: React.FC = () => {
           {/* ComfyUI Section */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
-              onClick={() => toggleSection("comfyui")}
+              onClick={() => toggleSection('comfyui')}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <span className="text-lg font-medium">ComfyUI</span>
@@ -123,7 +123,7 @@ const SettingsPage: React.FC = () => {
           {/* ElevenLabs Section */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
-              onClick={() => toggleSection("elevenlabs")}
+              onClick={() => toggleSection('elevenlabs')}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <span className="text-lg font-medium">ElevenLabs</span>
@@ -154,7 +154,7 @@ const SettingsPage: React.FC = () => {
                     />
                     <button
                       onClick={() =>
-                        togglePasswordVisibility("elevenLabsApiKey")
+                        togglePasswordVisibility('elevenLabsApiKey')
                       }
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600  hover:bg-gray-50"
                     >
@@ -173,7 +173,7 @@ const SettingsPage: React.FC = () => {
           {/* LLM Section */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
-              onClick={() => toggleSection("llm")}
+              onClick={() => toggleSection('llm')}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <span className="text-lg font-medium">LLM</span>
@@ -203,7 +203,7 @@ const SettingsPage: React.FC = () => {
                       placeholder="sk-proj-..."
                     />
                     <button
-                      onClick={() => togglePasswordVisibility("openaiApiKey")}
+                      onClick={() => togglePasswordVisibility('openaiApiKey')}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-900"
                     >
                       {showPasswords.openaiApiKey ? (
@@ -234,9 +234,9 @@ const SettingsPage: React.FC = () => {
             <div className="text-center">
               <p
                 className={`text-sm ${
-                  saveStatus.includes("successfully")
-                    ? "text-green-600"
-                    : "text-blue-600"
+                  saveStatus.includes('successfully')
+                    ? 'text-green-600'
+                    : 'text-blue-600'
                 }`}
               >
                 {saveStatus}

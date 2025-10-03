@@ -1,3 +1,15 @@
 {
-  "editor.formatOnSave": true
+  "mdb.presetConnections": [
+    {
+      "name": "Local MongoDB",
+      "connectionString": "mongodb://mongodb:27017",
+      "dbName": "aafactory_db"
+    }
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": "frontend/prettier.config.js",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

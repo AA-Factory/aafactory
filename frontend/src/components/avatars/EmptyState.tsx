@@ -1,6 +1,6 @@
-import React from "react";
-import { HiUser } from "react-icons/hi";
-import Link from "next/link";
+import React from 'react';
+import { HiUser } from 'react-icons/hi';
+import Link from 'next/link';
 
 const EmptyState = () => {
   return (

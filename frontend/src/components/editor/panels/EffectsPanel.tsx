@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { StoreContext } from "@/store";
-import { observer } from "mobx-react";
-import { EffectResource } from "../entity/EffectResource";
-import { isEditorImageElement, isEditorVideoElement } from "@/store/Store";
+'use client';
+import React from 'react';
+import { StoreContext } from '@/store';
+import { observer } from 'mobx-react';
+import { EffectResource } from '../entity/EffectResource';
+import { isEditorImageElement, isEditorVideoElement } from '@/store/Store';
 
 export const EffectsPanel = observer(() => {
   const store = React.useContext(StoreContext);

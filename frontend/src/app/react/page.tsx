@@ -1,20 +1,23 @@
-"use client";
-
-import React from "react";
-import { useVideo } from "@/hooks/useVideo";
-const ReactPage: React.FC = () => {
-  const videoUrl =
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"; // Replace with your video URL
-  const { data, error, isLoading } = useVideo(videoUrl);
+import { dehydrate } from '@tanstack/react-query';
+import { HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import React from 'react';
+import { getVideoResource } from './api/queries';
+import LoadingState from '@/components/avatars/LoadingState';
+export default async function ReactPage() {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(getVideoResource());
   return (
-    <div>
-      <h1 className="text-2xl font-bold">React Page</h1>
-      <p className="mt-4 text-gray-700">
-        This is the React page where you can explore React-related content and
-        features.
-      </p>
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      {/* //use the state here */}
+      <React.Suspense fallback={<LoadingState />}>
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4">React Page</h1>
+          <p>
+            This is a React page using TanStack Query with server-side data
+            fetching.
+          </p>
+        </div>
+      </React.Suspense>
+    </HydrationBoundary>
   );
-};
-
-export default ReactPage;
+}
