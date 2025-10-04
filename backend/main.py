@@ -45,10 +45,10 @@ def task_status(task_id: str) -> JSONResponse:
         logger.info(f"Subtask ID: {subtask_id}")
         # Try to follow the sub-task if the result looks like a task id (UUID)
         subtask = AsyncResult(subtask_id)
-        logger.info("Subtask status:", subtask.status)
+        logger.info(f"Subtask status: {subtask.status}")
         if subtask.status == "SUCCESS":
             response["result"] = subtask.result
-        if subtask.status == "FAILURE":
+        elif subtask.status == "FAILURE":
             response["status"] = "FAILURE"
         else:
             response["status"] = "PENDING"
