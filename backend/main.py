@@ -48,6 +48,8 @@ def task_status(task_id: str) -> JSONResponse:
         logger.info("Subtask status:", subtask.status)
         if subtask.status == "SUCCESS":
             response["result"] = subtask.result
+        if subtask.status == "FAILURE":
+            response["status"] = "FAILURE"
         else:
             response["status"] = "PENDING"
             logger.info("Subtask not ready yet.")
