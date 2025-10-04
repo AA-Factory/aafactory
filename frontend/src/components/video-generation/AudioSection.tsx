@@ -9,6 +9,7 @@ import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useAudioTasks } from '@/lib/api/tasks';
 import { AudioTask } from '@/lib/types/tasks';
 import { DIALOG_SEEDS } from '@/utils/fakeData';
+import { MIN_AUDIO_DURATION } from '@/lib/task/constants';
 
 const getRandomDialogSeed = () => {
   return DIALOG_SEEDS[Math.floor(Math.random() * DIALOG_SEEDS.length)];
@@ -34,6 +35,7 @@ export const AudioSection: React.FC = () => {
   >(null);
   const [loadingAudioTasks, setLoadingAudioTasks] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
 
   const generateAudioMutation = useGenerateAudio();
 
@@ -82,9 +84,14 @@ export const AudioSection: React.FC = () => {
 
   // Update context whenever audio-related state changes
   useEffect(() => {
-    const isReady =
-      dialog.trim().length > 0 &&
-      !!(selectedAudioTask || generatedAudioBase64 || uploadedAudioFile);
+    const hasAudio = !!(
+      selectedAudioTask ||
+      generatedAudioBase64 ||
+      uploadedAudioFile
+    );
+    const isAudioValid =
+      audioDuration !== null && audioDuration >= MIN_AUDIO_DURATION;
+    const isReady = dialog.trim().length > 0 && hasAudio && isAudioValid;
 
     setAudioData({
       selectedAudioTask,
@@ -93,7 +100,13 @@ export const AudioSection: React.FC = () => {
       dialog,
       audioReady: isReady,
     });
-  }, [selectedAudioTask, generatedAudioBase64, uploadedAudioFile, dialog]);
+  }, [
+    selectedAudioTask,
+    generatedAudioBase64,
+    uploadedAudioFile,
+    dialog,
+    audioDuration,
+  ]);
 
   const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -249,7 +262,12 @@ export const AudioSection: React.FC = () => {
       />
 
       {/* Audio Player */}
-      {audioPlayerProps && <AudioPlayer {...audioPlayerProps} />}
+      {audioPlayerProps && (
+        <AudioPlayer
+          {...audioPlayerProps}
+          onDurationChange={setAudioDuration}
+        />
+      )}
     </div>
   );
 };

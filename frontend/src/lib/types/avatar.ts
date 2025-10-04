@@ -42,12 +42,14 @@ export const avatarFormSchema = z.object({
   personality: z
     .string()
     .min(10, 'Personality must be at least 10 characters')
-    .max(500, 'Personality must be no more than 500 characters'),
+    .max(500, 'Personality must be no more than 500 characters')
+    .optional(),
 
   backgroundKnowledge: z
     .string()
     .min(10, 'Background knowledge must be at least 10 characters')
-    .max(1000, 'Background knowledge must be no more than 1000 characters'),
+    .max(1000, 'Background knowledge must be no more than 1000 characters')
+    .optional(),
 
   image: z
     .instanceof(File, { message: 'Please select an image file' })

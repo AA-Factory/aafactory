@@ -13,3 +13,5 @@ export const VIDEO_TYPES = [
 export const SUPPORTED_TASK_TYPES = ['video', 'audio', 'image']
 
 export const DEFAULT_LANGUAGE = 'en-us';
+
+export const MIN_AUDIO_DURATION = 4;
