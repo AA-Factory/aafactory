@@ -190,8 +190,6 @@ export const useAvatars = () =>
   useQuery({
     queryKey: avatarKeys.lists(),
     queryFn: fetchAvatars,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   });
 
 export const useAvatar = (id?: string) =>
@@ -199,7 +197,6 @@ export const useAvatar = (id?: string) =>
     queryKey: avatarKeys.detail(id!),
     queryFn: async () => fetchAvatarById(id!),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
   });
 
 export const useDeleteAvatar = () => {
