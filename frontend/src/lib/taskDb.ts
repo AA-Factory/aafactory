@@ -2,12 +2,12 @@ import { getCollection } from './database';
 import { saveBase64File, SaveFileResult } from './fileUtils';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
-import { AudioTask, TaskDocument } from '@/lib/types/tasks';
+import { AudioTask, TaskDocument, TaskType } from '@/lib/types/tasks';
 import { CeleryTaskStatus } from '@/lib/types/celery'
 interface CreateTaskParams {
   taskId: string;
   avatarId: string;
-  taskType: 'audio' | 'video';
+  taskType: TaskType;
   userPrompt?: string;
 }
 
@@ -210,7 +210,7 @@ export async function getTask(taskId: string): Promise<TaskDocument | null> {
 
 export async function getTasks(
   avatarId: string,
-  taskType?: 'audio' | 'video' | 'image',
+  taskType?: TaskType,
   status?: CeleryTaskStatus,
 ): Promise<TaskDocument[]> {
   try {
@@ -264,6 +264,35 @@ export async function deleteTask(taskId: string): Promise<void> {
     console.error('Error deleting task:', error);
     throw new Error(
       `Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}
+
+export async function deleteOldPendingTasks(
+  avatarId: string,
+  taskType?: TaskType,
+  hoursOld: number = 24,
+): Promise<number> {
+  try {
+    const collection = await getCollection<TaskDocument>('tasks');
+    const cutoffDate = new Date(Date.now() - hoursOld * 60 * 60 * 1000);
+
+    const query: any = {
+      avatarId,
+      status: 'PENDING',
+      createdAt: { $lt: cutoffDate },
+    };
+
+    if (taskType) {
+      query.taskType = taskType;
+    }
+
+    const result = await collection.deleteMany(query);
+    return result.deletedCount;
+  } catch (error) {
+    console.error('Error deleting old pending tasks:', error);
+    throw new Error(
+      `Failed to delete old pending tasks: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }

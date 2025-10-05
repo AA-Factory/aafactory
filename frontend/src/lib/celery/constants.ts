@@ -18,3 +18,5 @@ export const POLLING_CONFIG = {
     BACKGROUND_REFETCH: true,
   },
 };
+
+export const MAX_PENDING_TASK_AGE_HOURS = 24; // Maximum age for pending tasks

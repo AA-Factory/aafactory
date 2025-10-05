@@ -100,8 +100,6 @@ export const useAudioTasks = (avatarId: string, status?: string) =>
     queryKey: taskKeys.audioByAvatar(avatarId, status),
     queryFn: async () => fetchAudioTasks(avatarId, status),
     enabled: !!avatarId,
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
 export const useVideoTasks = (avatarId: string, status?: string) =>
@@ -109,8 +107,6 @@ export const useVideoTasks = (avatarId: string, status?: string) =>
     queryKey: taskKeys.videoByAvatar(avatarId, status),
     queryFn: async () => fetchVideoTasks(avatarId, status),
     enabled: !!avatarId,
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
 export const usePollPendingVideoTasks = () => {
