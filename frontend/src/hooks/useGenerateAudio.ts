@@ -50,6 +50,7 @@ export function useGenerateAudio() {
             if (!response.ok) throw new Error('Failed to fetch task status');
             return response.json();
           },
+          staleTime: POLLING_CONFIG['audio'].STALE_TIME,
         });
 
         if (data.status === 'SUCCESS' && data.result) {
@@ -62,6 +63,7 @@ export function useGenerateAudio() {
               status: 'SUCCESS',
             }),
           });
+          queryClient.invalidateQueries({ queryKey: ['tasks', 'audio', { avatarId: payload.avatar?.id }] });
           return createAudioResponse(data.result, task_id);
         } else if (data.status === 'FAILURE') {
           await fetch(`/api/task/${task_id}`, {

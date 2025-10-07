@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
-import { updateTaskStatus, updateTaskWithFile, getTasks } from '@/lib/taskDb';
-import { CELERY_TASK_STATUS_SERVER } from '@/lib/celery/constants';
+import {
+  updateTaskStatus,
+  updateTaskWithFile,
+  getTasks,
+  deleteOldPendingTasks,
+} from '@/lib/taskDb';
+import { CELERY_TASK_STATUS_SERVER, MAX_PENDING_TASK_AGE_HOURS } from '@/lib/celery/constants';
 import { isCeleryTaskStatusResponse } from '@/lib/types/celery';
 import { SUPPORTED_TASK_TYPES } from '@/lib/task/constants';
 import { TaskType } from '@/lib/types/tasks';
@@ -105,6 +110,12 @@ export async function POST(request: Request, { params }: SyncParams) {
     }
 
     console.log(`🔍 Starting ${tasktype} task status sync...`);
+
+    // Delete old pending tasks (older than 24 hours)
+    const deletedCount = await deleteOldPendingTasks(avatarId, tasktype, MAX_PENDING_TASK_AGE_HOURS);
+    if (deletedCount > 0) {
+      console.log(`🗑️ Deleted ${deletedCount} old pending ${tasktype} tasks`);
+    }
 
     // Get pending tasks for the specified type
     const pendingTasks = await getTasks(avatarId, tasktype, 'PENDING');

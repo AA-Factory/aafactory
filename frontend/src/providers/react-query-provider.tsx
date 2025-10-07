@@ -2,6 +2,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { QUERY_DEFAULTS } from '@/lib/api/constants';
 import { useState } from 'react';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -10,12 +11,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
-            gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-            retry: (failureCount, error: any) => {
-              if (error?.status === 404) return false;
-              return failureCount < 3;
-            },
+            staleTime: QUERY_DEFAULTS.STALE_TIME,
+            gcTime: QUERY_DEFAULTS.GC_TIME,
+            retry: QUERY_DEFAULTS.RETRY_LIMIT,
+            refetchOnWindowFocus: QUERY_DEFAULTS.REFRESH_ON_WINDOW_FOCUS,
           },
         },
       }),

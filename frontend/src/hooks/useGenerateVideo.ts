@@ -64,6 +64,9 @@ export function useGenerateVideo() {
               status: 'SUCCESS',
             }),
           });
+          queryClient.invalidateQueries({
+            queryKey: ['tasks', 'video', { avatarId: payload.avatar?.id }],
+          });
           return createVideoResponse(data.result, task_id);
         } else if (data.status === 'FAILURE') {
           await fetch(`/api/task/${task_id}`, {

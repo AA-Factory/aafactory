@@ -12,9 +12,13 @@ export const POLLING_CONFIG = {
   audio: {
     REFETCH_INTERVAL: 5000,
     BACKGROUND_REFETCH: true,
+    STALE_TIME: 0,
   },
   video: {
-    REFETCH_INTERVAL: 50000,
+    REFETCH_INTERVAL: 5000,
     BACKGROUND_REFETCH: true,
+    STALE_TIME: 0,
   },
 };
+
+export const MAX_PENDING_TASK_AGE_HOURS = 24; // Maximum age for pending tasks
