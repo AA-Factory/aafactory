@@ -61,11 +61,13 @@
 Every remote server comes with its own instance of Redis. To use it, you just have to copy the Redis URL from one of your remote server
 and share it locally and with the other running servers.
 
-You can find the Redis URL here when running the server on Runpod:
-![Select Remote URL Screenshot](https://github.com/AA-Factory/aafactory/tree/master/assets/select_remote_redis_url_in_running_pod.png?raw=true)
+You can find the Redis URL in your RunPod server dashboard:
 
-Then you need to share the remote URL with remote instances (if any running):
-![Share URL to remote instances Screenshot](https://github.com/AA-Factory/aafactory/tree/master/assets/share_redis_url_to_remote_instances.png?raw=true)
+![Select Remote URL Screenshot](assets/select_remote_redis_url_in_running_pod.png)
+
+Then, share the remote Redis URL with other running instances as needed:
+
+![Share URL to remote instances Screenshot](assets/share_redis_url_to_remote_instances.png)
 
 ## What's Available
 
