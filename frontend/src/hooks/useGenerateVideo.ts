@@ -52,6 +52,7 @@ export function useGenerateVideo() {
             if (!response.ok) throw new Error('Failed to fetch task status');
             return response.json();
           },
+          staleTime: POLLING_CONFIG['video'].STALE_TIME,
         });
 
         if (data.status === 'SUCCESS' && data.result) {
