@@ -62,7 +62,7 @@ function createTaskRequest(
 
   return {
     server_name:
-      process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? 'mock' : 'zonos',
+      !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'zonos',
     task_name: 'custom_voice_to_audio',
     payload: {
       prompt: payload.dialog,

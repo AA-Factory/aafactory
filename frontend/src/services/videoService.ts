@@ -23,7 +23,7 @@ function createTaskRequest(
 ): VideoGenerationTaskRequest {
   return {
     server_name:
-      process.env.NEXT_PUBLIC_MOCK_SERVER === 'true' ? 'mock' : 'infinite_talk',
+      !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'infinite_talk',
     task_name: 'prompt_image_audio_to_video',
     payload: {
       prompt: payload.prompt,
