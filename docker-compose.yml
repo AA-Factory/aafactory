@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:8.2.1-alpine
     ports:
-      - '6379:6379'
+      - 6379:6379
     profiles:
       - backend-local
       - local
@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile
     command: uv run uvicorn --host 0.0.0.0 main:app
     ports:
-      - '8000:8000'
+      - 8000:8000
     environment:
       - CELERY_BROKER_URL=$CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
@@ -62,35 +62,11 @@ services:
       context: ./backend/servers/mock_server
     profiles:
       - local
-  # infinite-talk-server:
-  #   image: elliotcarery/infinite-talk-server:$INFINITE_TALK_SERVER_TAG
-  #   runtime: nvidia
-  #   environment:
-  #     - NVIDIA_VISIBLE_DEVICES=0
-  #   build:
-  #     context: ./backend/servers/infinite_talk
-  #   ports:
-  #     - "8000:8000"
-  #   profiles:
-  #     - servers
-
-  # zonos-server:
-  #   image: elliotcarery/zonos-server:$ZONOS_SERVER_TAG
-  #   build:
-  #     context: ./backend/servers/zonos
-  #   runtime: nvidia
-  #   environment:
-  #     - NVIDIA_VISIBLE_DEVICES=0
-  #   ports:
-  #     - "8002:8002"
-  #   profiles:
-  #     - servers
-
   mongodb:
     image: mongo:7-jammy
     container_name: mongodb-dev
     ports:
-      - '27017:27017'
+      - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -111,7 +87,7 @@ services:
           '--authenticationDatabase',
           'admin',
           '--eval',
-          "db.adminCommand('ping')",
+          'db.adminCommand("ping")',
         ]
       interval: 5s
       timeout: 5s
@@ -126,7 +102,7 @@ services:
       dockerfile: Dockerfile
     container_name: frontend-app
     ports:
-      - '3000:3000'
+      - 3000:3000
     environment:
       - MONGODB_URI=$MONGODB_URI
       - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL

@@ -11,5 +11,8 @@
   "prettier.configPath": "frontend/prettier.config.js",
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
