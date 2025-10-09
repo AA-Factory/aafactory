@@ -13,7 +13,7 @@ import {
   HiChevronUp,
   HiLightningBolt,
 } from 'react-icons/hi';
-import { avatarFormSchema, AvatarFormData } from '@/lib/types/avatar';
+import { createAvatarFormSchema, AvatarFormData } from '@/lib/types/avatar';
 import { ImageUploadSection } from './ImageUploadSection';
 import { AudioUploadSection } from './AudioUploadSection';
 import { generateFakeFormData } from '@/utils/fakeData';
@@ -135,7 +135,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
     const [isAudioDragging, setIsAudioDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const audioFileInputRef = useRef<HTMLInputElement>(null);
-
+    const avatarFormSchema = createAvatarFormSchema(editMode);
     const {
       register,
       handleSubmit,
@@ -367,7 +367,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         {/* Submit Button */}
         <div className="flex justify-between items-center pt-4">
           {/* Development Mode: Fake Data Button */}
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === 'development' && !editMode && (
             <button
               type="button"
               onClick={fillWithFakeData}
@@ -381,7 +381,9 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-block bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors ml-auto"
+            className={`inline-block bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ml-auto ${
+              editMode ? 'w-full' : ''
+            }`}
           >
             {isSubmitting
               ? editMode

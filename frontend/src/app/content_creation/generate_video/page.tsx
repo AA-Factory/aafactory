@@ -57,7 +57,9 @@ function GenerateVideoContent() {
         {/* Left panel: Stepper */}
         <aside className="w-80 min-w-[18rem] max-w-[22rem] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col p-6 h-174">
           {/* Step content */}
-          <div className="flex-1">{steps[state.step].content}</div>
+          <div className="flex-1 overflow-auto">
+            {steps[state.step].content}
+          </div>
 
           {/* Navigation buttons */}
           <div className="flex justify-between mt-8">
