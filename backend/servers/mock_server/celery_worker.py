@@ -28,3 +28,19 @@ def prompt_image_audio_to_video(prompt: str, image_bytes: str, audio_bytes: str)
         responses = json.load(f)  # Parse JSON into a Python dict
     sleep(120)
     return responses["prompt_image_audio_to_video"]
+
+
+@app.task(name="text_to_image", queue="mock")
+def text_to_image(positive_prompt: str, negative_prompt: str, image_ratio: str, image_quality: str) -> str:
+    with open("mock_responses.json", "r", encoding="utf-8") as f:
+        responses = json.load(f)  # Parse JSON into a Python dict
+    sleep(15)
+    return responses["text_to_image"]
+
+
+@app.task(name="image_to_image_edit", queue="mock")
+def image_to_image_edit(image_bytes: str, positive_prompt: str, negative_prompt: str, image_quality: str) -> str:
+    with open("mock_responses.json", "r", encoding="utf-8") as f:
+        responses = json.load(f)  # Parse JSON into a Python dict
+    sleep(120)
+    return responses["image_to_image_edit"]
