@@ -51,11 +51,13 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
     personality: z
       .string()
       .min(10, 'Personality must be at least 10 characters')
-      .max(1000, 'Personality must be at most 1000 characters'),
+      .max(1000, 'Personality must be at most 1000 characters')
+      .optional(),
     backgroundKnowledge: z
       .string()
       .min(10, 'Background knowledge must be at least 10 characters')
-      .max(2000, 'Background knowledge must be at most 2000 characters'),
+      .max(2000, 'Background knowledge must be at most 2000 characters')
+      .optional(),
     description: z
       .string()
       .max(200, 'Description must be at most 200 characters')
