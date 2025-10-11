@@ -63,12 +63,8 @@ export const AudioGenerateTab: React.FC<AudioGenerateTabProps> = ({
         className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
         onChange={(e) => onDialogChange(e.target.value)}
         placeholder="Type the dialog for your video here..."
-        maxLength={500}
       />
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          {dialog.length}/500 characters
-        </span>
         <div className="flex space-x-2">
           <button
             onClick={onAudioGeneration}
