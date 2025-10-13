@@ -18,6 +18,20 @@ export interface VideoTask {
   taskType: 'video';
 }
 
+export interface ImageTask {
+  taskId: string;
+  userPrompt: string;
+  filePath: string;
+  status: CeleryTaskStatus;
+  taskType: 'image';
+  metadata?: {
+    resultData?: {
+      fileName?: string;
+      fileType?: string;
+    };
+  };
+}
+
 // Audio Generation Task
 interface AudioGenerationPayload {
   prompt: string;
@@ -44,6 +58,37 @@ export interface VideoGenerationTaskRequest
   server_name: VideoGenerationServerName;
   task_name: 'prompt_image_audio_to_video';
 }
+
+// Image Generation Task
+export type ImageRatio = '1:1' | '4:5' | '16:9' | '9:16' | null;
+export type ImageQuality = 'low' | 'medium' | 'high' | 'ultra';
+export type ImageTaskType = 'text_to_image' | 'image_to_image_edit';
+interface ImageGenerationPayload {
+  task_name?: ImageTaskType;
+  positive_prompt: string;
+  negative_prompt: string;
+  image_ratio: ImageRatio;
+  image_quality: ImageQuality;
+  image_bytes: string | null;
+}
+export type ImageGenerationServerName = 'mock' | 'qwen_image';
+
+type BaseImageGenerationTaskRequest = {
+  server_name: ImageGenerationServerName;
+} & CeleryTaskRequest<ImageGenerationPayload>;
+
+type TextToImageRequest = BaseImageGenerationTaskRequest & {
+  task_name: 'text_to_image';
+};
+
+type ImageToImageEditRequest = BaseImageGenerationTaskRequest & {
+  task_name: 'image_to_image_edit';
+  image_bytes: string; // or Uint8Array, Buffer, etc. depending on your needs
+};
+
+export type ImageGenerationTaskRequest =
+  | TextToImageRequest
+  | ImageToImageEditRequest;
 export interface TaskDocument {
   _id?: string;
   taskId: string;

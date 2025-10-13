@@ -1,6 +1,13 @@
 // components/AvatarCard/AvatarCard.tsx
 import React, { useState } from 'react';
-import { HiPencil, HiTrash, HiVideoCamera, HiCheck, HiX } from 'react-icons/hi';
+import {
+  HiPencil,
+  HiTrash,
+  HiVideoCamera,
+  HiCamera,
+  HiCheck,
+  HiX,
+} from 'react-icons/hi';
 import { Avatar } from '@/lib/types/avatar';
 import { AVATAR_CONSTANTS } from '@/lib/avatar/constants';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
@@ -187,6 +194,13 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         >
           <HiVideoCamera className="w-4 h-4" />
           Create Video
+        </Link>
+        <Link
+          href={`/content_creation/generate_image`}
+          className="mt-3 w-full py-1 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
+        >
+          <HiCamera className="w-4 h-4" />
+          Create Image
         </Link>
         {/* Toggle Active Avatar Button */}
         {/* <button

@@ -120,14 +120,56 @@ export default function AvatarPage({
     setIsSubmitting(false);
   }, []);
 
-  const handleFormSubmitAndEncode = useCallback(
+  const handleSaveAndCreateImage = useCallback(
     async (data: AvatarFormData) => {
       setCurrentFormData(data);
       setIsSubmitting(true);
-      await handleSaveAndEncode(data);
-      setIsSubmitting(false);
+
+      try {
+        showNotification('Saving avatar...', 'info');
+
+        const avatarData = {
+          name: data.name,
+          description: data.description,
+          category: data.category,
+          personality: data.personality,
+          backgroundKnowledge: data.backgroundKnowledge,
+        } as any;
+
+        const file: File | null = data.image || null;
+        let fileName: string | null = null;
+        const trainingAudio: File | null = data.trainingAudio || null;
+
+        if (file) {
+          const extension = file.type.split('/')[1];
+          fileName = `${data.name || 'avatar'}-original.${extension}`;
+          avatarData.hasEncodedData = false;
+        }
+
+        if (file || trainingAudio) {
+          await createAvatarMutation.mutateAsync({
+            formData: avatarData,
+            file: file || undefined,
+            fileName: fileName || undefined,
+            trainingAudio: trainingAudio || undefined,
+          });
+        } else {
+          await createAvatarMutation.mutateAsync({ jsonData: avatarData });
+        }
+
+        showNotification('Avatar saved! Redirecting to image generation...', 'success');
+        refreshAll();
+
+        // Navigate to image generation page
+        router.push('/content_creation/generate_image');
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        showNotification(errorMessage, 'error');
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [],
+    [createAvatarMutation, refreshAll, router, showNotification],
   );
 
   const handleSaveOnly = useCallback(
@@ -328,6 +370,7 @@ export default function AvatarPage({
             existingAudioUrl={existingAudioUrl}
             existingAudioFileName={existingAudioFileName}
             editMode={editMode}
+            onSaveAndCreateImage={handleSaveAndCreateImage}
           />
           {/* 
           {currentFormData && (

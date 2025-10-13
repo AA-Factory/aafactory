@@ -144,7 +144,7 @@ export async function updateTaskWithFile(
     const fileResult = await saveBase64File(
       base64Data,
       taskId,
-      task.taskType.toLowerCase() as 'audio' | 'video',
+      task.taskType.toLowerCase() as 'audio' | 'video' | 'image'
     );
 
     // Update task with file path

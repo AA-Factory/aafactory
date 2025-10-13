@@ -26,6 +26,7 @@ interface AvatarFormProps {
   existingAudioUrl?: string | null;
   existingAudioFileName?: string | null;
   editMode?: boolean;
+  onSaveAndCreateImage?: (data: AvatarFormData) => void;
 }
 
 export interface AvatarFormRef {
@@ -123,6 +124,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       existingAudioUrl,
       existingAudioFileName,
       editMode = false,
+      onSaveAndCreateImage,
     },
     ref,
   ) => {
@@ -265,6 +267,25 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       setSelectedAudio(file);
     };
 
+    const handleSaveAndCreateImage = async () => {
+      // Create a placeholder image file
+      const response = await fetch('/placeholder-avatar.png');
+      const blob = await response.blob();
+      const placeholderFile = new File([blob], 'placeholder-avatar.png', {
+        type: 'image/png',
+      });
+
+      // Set the placeholder image
+      setValue('image', placeholderFile);
+
+      // Trigger form submission with the placeholder
+      handleSubmit((data) => {
+        if (onSaveAndCreateImage) {
+          onSaveAndCreateImage(data);
+        }
+      })();
+    };
+
     const avatarFields = [
       {
         name: 'name' as const,
@@ -378,21 +399,34 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
             </button>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`inline-block bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ml-auto ${
-              editMode ? 'w-full' : ''
-            }`}
-          >
-            {isSubmitting
-              ? editMode
-                ? 'Updating Avatar...'
-                : 'Creating Avatar...'
-              : editMode
-                ? 'Update Avatar'
-                : 'Create Avatar'}
-          </button>
+          <div className="flex gap-3 ml-auto">
+            {!editMode && onSaveAndCreateImage && (
+              <button
+                type="button"
+                onClick={handleSaveAndCreateImage}
+                disabled={isSubmitting}
+                className="inline-block bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+              >
+                {isSubmitting ? 'Saving...' : 'Save & Create Image'}
+              </button>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`inline-block bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                editMode && !onSaveAndCreateImage ? 'w-full' : ''
+              }`}
+            >
+              {isSubmitting
+                ? editMode
+                  ? 'Updating Avatar...'
+                  : 'Creating Avatar...'
+                : editMode
+                  ? 'Update Avatar'
+                  : 'Create Avatar'}
+            </button>
+          </div>
         </div>
       </form>
     );

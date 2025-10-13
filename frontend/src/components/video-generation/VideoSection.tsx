@@ -7,7 +7,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useVideoTasks } from '@/lib/api/tasks';
 import { fileToBase64, encodeMediaFile } from '@/lib/base64Utils';
-
+import { Spinner } from '../ui/Spinner';
 export const VideoSection: React.FC = () => {
   const queryClient = useQueryClient();
   const { data: avatars } = useAvatars();
@@ -174,12 +174,17 @@ export const VideoSection: React.FC = () => {
           !canGenerate || generateVideoMutation.isPending || isLimitReached
         }
       >
-        <TbSparkles className="w-4 h-4" />
-        <span>
-          {generateVideoMutation.isPending
-            ? 'Generating Video...'
-            : 'Generate Video'}
-        </span>
+        {generateVideoMutation.isPending ? (
+          <>
+            <Spinner />
+            <span>Generating...</span>
+          </>
+        ) : (
+          <>
+            <TbSparkles className="w-4 h-4" />
+            <span>Generate Video</span>
+          </>
+        )}
       </button>
     </div>
   );

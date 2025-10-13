@@ -32,6 +32,7 @@ const HeaderNav: React.FC = () => {
       icon: HiCode,
       submenu: [
         { name: 'Generate Video', href: '/content_creation/generate_video' },
+        { name: 'Generate Image', href: '/content_creation/generate_image' },
         { name: 'Editor', href: '/editor' },
       ],
     },

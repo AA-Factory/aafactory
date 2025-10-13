@@ -190,6 +190,7 @@ export const useAvatars = () =>
   useQuery({
     queryKey: avatarKeys.lists(),
     queryFn: fetchAvatars,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
 export const useAvatar = (id?: string) =>

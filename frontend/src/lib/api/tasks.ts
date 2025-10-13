@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AudioTask, VideoTask } from '@/lib/types/tasks';
+import { AudioTask, VideoTask, ImageTask } from '@/lib/types/tasks';
 
 /** -----------------
  * Query Keys
@@ -12,6 +12,9 @@ const taskKeys = {
     [...taskKeys.audio(), { avatarId, status }] as const,
   videoByAvatar: (avatarId: string, status?: string) =>
     [...taskKeys.video(), { avatarId, status }] as const,
+  image: () => [...taskKeys.all, 'image'] as const,
+  imageByAvatar: (avatarId: string, status?: string) =>
+    [...taskKeys.image(), { avatarId, status }] as const,
 };
 
 /** -----------------
@@ -46,6 +49,23 @@ const fetchVideoTasks = async (
   if (data.tasks) {
     return status
       ? data.tasks.filter((task: VideoTask) => task.status === status)
+      : data.tasks;
+  }
+  return [];
+};
+
+const fetchImageTasks = async (
+  avatarId: string,
+  status?: string,
+): Promise<ImageTask[]> => {
+  const response = await fetch(`/api/tasks/avatar/${avatarId}/image`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image tasks: ${response.statusText}`);
+  }
+  const data = await response.json();
+  if (data.tasks) {
+    return status
+      ? data.tasks.filter((task: ImageTask) => task.status === status)
       : data.tasks;
   }
   return [];
@@ -92,6 +112,28 @@ const pollPendingAudioTasks = async (
   }
   return { updatedCount: 0 };
 };
+
+const pollPendingImageTasks = async (
+  avatarId: string,
+): Promise<{ updatedCount: number }> => {
+  const response = await fetch(`/api/tasks/avatar/${avatarId}/image/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Failed to poll pending image tasks: ${response.statusText}`,
+    );
+  }
+  const data = await response.json();
+  if (data.success) {
+    return { updatedCount: data.stats.updated };
+  }
+  return { updatedCount: 0 };
+};
+
 /** -----------------
  * React Query Hooks
  * ----------------- */
@@ -107,6 +149,14 @@ export const useVideoTasks = (avatarId: string, status?: string) =>
     queryKey: taskKeys.videoByAvatar(avatarId, status),
     queryFn: async () => fetchVideoTasks(avatarId, status),
     enabled: !!avatarId,
+  });
+
+export const useImageTasks = (avatarId: string, status?: string) =>
+  useQuery({
+    queryKey: taskKeys.imageByAvatar(avatarId, status),
+    queryFn: async () => fetchImageTasks(avatarId, status),
+    enabled: !!avatarId,
+    staleTime: 0,
   });
 
 export const usePollPendingVideoTasks = () => {
@@ -135,6 +185,22 @@ export const usePollPendingAudioTasks = () => {
         // Invalidate all audio task queries for this avatar
         queryClient.invalidateQueries({
           queryKey: taskKeys.audioByAvatar(avatarId),
+        });
+      }
+    },
+  });
+};
+
+export const usePollPendingImageTasks = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['pollPendingImageTasks'],
+    mutationFn: pollPendingImageTasks,
+    onSuccess: (data, avatarId) => {
+      if (data.updatedCount > 0) {
+        // Invalidate all image task queries for this avatar
+        queryClient.invalidateQueries({
+          queryKey: taskKeys.imageByAvatar(avatarId),
         });
       }
     },
