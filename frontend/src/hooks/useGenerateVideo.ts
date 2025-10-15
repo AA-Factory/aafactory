@@ -34,14 +34,14 @@ export function useGenerateVideo() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           taskId: task_id,
-          avatarId: payload.avatar?.id || '',
+          avatarId: payload.avatarId || '',
           taskType: 'video',
           userPrompt: payload.prompt,
           status: 'PENDING',
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: ['tasks', 'video', { avatarId: payload.avatar?.id }],
+        queryKey: ['tasks', 'video', { avatarId: payload.avatarId }],
       });
       // 4. Poll for completion
       const pollStatus = async (): Promise<any> => {
@@ -66,7 +66,7 @@ export function useGenerateVideo() {
             }),
           });
           queryClient.invalidateQueries({
-            queryKey: ['tasks', 'video', { avatarId: payload.avatar?.id }],
+            queryKey: ['tasks', 'video', { avatarId: payload.avatarId }],
           });
           return createVideoResponse(data.result, task_id);
         } else if (data.status === 'FAILURE') {

@@ -69,15 +69,15 @@ export default function AvatarPage({
 
     const avatarData = {
       name: existingAvatar.name || '',
-      description: existingAvatar.description || '',
-      category:
-        (existingAvatar.category as
-          | 'realistic'
-          | 'stylized'
-          | 'cartoon'
-          | 'fantasy') || 'realistic',
-      personality: existingAvatar.personality || '',
-      backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
+      // description: existingAvatar.description || '',
+      // category:
+      //   (existingAvatar.category as
+      //     | 'realistic'
+      //     | 'stylized'
+      //     | 'cartoon'
+      //     | 'fantasy') || 'realistic',
+      // personality: existingAvatar.personality || '',
+      // backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
     };
 
     setDefaultValues(avatarData);
@@ -157,7 +157,10 @@ export default function AvatarPage({
           await createAvatarMutation.mutateAsync({ jsonData: avatarData });
         }
 
-        showNotification('Avatar saved! Redirecting to image generation...', 'success');
+        showNotification(
+          'Avatar saved! Redirecting to image generation...',
+          'success',
+        );
         refreshAll();
 
         // Navigate to image generation page

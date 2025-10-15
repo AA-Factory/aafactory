@@ -4,7 +4,8 @@ import { type VideoGenerationTaskRequest } from '@/lib/types/tasks';
 
 // Types
 export type GenerateVideoPayload = {
-  avatar: Avatar | null; // Avatar object containing image
+  avatarId: string; // Avatar ID
+  imageSrc: string; // Avatar image source URL
   audioBase64?: string; // Optional - Base64 audio data from useGenerateAudio (not used in API)
   prompt: string;
 };
@@ -52,20 +53,20 @@ export async function prepareVideoData(payload: GenerateVideoPayload): Promise<{
   imageBase64: string;
   audioBase64: string;
 }> {
-  if (!payload.avatar) {
-    throw new Error('No avatar provided for video generation');
+  if (!payload.avatarId) {
+    throw new Error('No avatar ID provided for video generation');
   }
 
   if (!payload.prompt?.trim()) {
     throw new Error('No prompt text provided');
   }
 
-  if (!payload.avatar.src) {
-    throw new Error('Avatar image source is missing');
+  if (!payload.imageSrc) {
+    throw new Error('Image source is missing');
   }
 
   // Encode avatar image
-  const { base64: imageBase64 } = await encodeMediaFile(payload.avatar.src);
+  const { base64: imageBase64 } = await encodeMediaFile(payload.imageSrc);
 
   // Format audio data - extract raw base64 if it has data URL prefix
   const rawAudioBase64 = payload.audioBase64?.includes(',')

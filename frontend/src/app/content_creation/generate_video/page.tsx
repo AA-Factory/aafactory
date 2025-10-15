@@ -10,7 +10,7 @@ import { VideoSection } from '@/components/video-generation/VideoSection';
 import { VideoPlayer } from '@/components/video-generation/VideoPlayer';
 import { VideoGallery } from '@/components/video-generation/VideoGallery';
 import { StepProgress } from '@/components/video-generation/StepProgress';
-
+import { AvatarImageSelector } from '@/components/video-generation/AvatarImageSelector';
 // Import context
 import {
   VideoGenerationProvider,
@@ -18,7 +18,7 @@ import {
 } from '@/contexts/VideoGenerationContext';
 
 function GenerateVideoContent() {
-  const { state, setStep, canProceedToNextStep } = useVideoGeneration();
+  const { state, setStep } = useVideoGeneration();
 
   const steps = [
     {
@@ -30,6 +30,11 @@ function GenerateVideoContent() {
       label: 'Select avatar',
       content: <AvatarSelector />,
       canNext: !!state.avatar,
+    },
+    {
+      label: 'Select Image',
+      content: <AvatarImageSelector />,
+      canNext: !!state.selectedImageFilePath,
     },
     {
       label: 'Generate audio',
@@ -78,16 +83,14 @@ function GenerateVideoContent() {
 
             <button
               className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition-colors text-sm ${
-                !canProceedToNextStep || state.step === steps.length - 1
+                !steps[state.step].canNext
                   ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
               onClick={() =>
                 setStep(Math.min(steps.length - 1, state.step + 1))
               }
-              disabled={
-                !canProceedToNextStep || state.step === steps.length - 1
-              }
+              disabled={steps[state.step].canNext === false}
             >
               <span>Next</span>
               <FiChevronRight className="w-4 h-4" />

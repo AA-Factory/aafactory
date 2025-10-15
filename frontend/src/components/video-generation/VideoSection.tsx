@@ -89,7 +89,8 @@ export const VideoSection: React.FC = () => {
         return;
       }
       const payload = {
-        avatar: state.avatar,
+        avatarId: state.avatar.id,
+        imageSrc: state.selectedImageFilePath,
         audioBase64: audioToUse,
         prompt: videoPrompt,
       };

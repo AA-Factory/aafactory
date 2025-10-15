@@ -8,8 +8,7 @@ import React, {
   useEffect,
 } from 'react';
 import { Avatar } from '@/lib/types/avatar';
-import { VideoTask } from '@/lib/types/tasks';
-import { AudioTask } from '@/lib/types/tasks';
+import { VideoTask, AudioTask, ImageTask } from '@/lib/types/tasks';
 import {
   useVideoTasks,
   usePollPendingVideoTasks,
@@ -36,6 +35,7 @@ interface VideoGenerationState {
   generatedVideoUrl: string | null;
   selectedVideoTask: VideoTask | null;
 
+  selectedImageFilePath: string;
   // UI state
   step: number;
 }
@@ -66,8 +66,8 @@ interface VideoGenerationContextType {
   loadingVideoTasks: boolean;
   videoTasksError: Error | null;
 
-  // Computed values
-  canProceedToNextStep: boolean;
+  // Image file path is a url string
+  setImageFilePath: (filePath: string | null) => void;
 }
 
 const VideoGenerationContext = createContext<
@@ -92,6 +92,7 @@ export const VideoGenerationProvider: React.FC<{
     generatedVideoUrl: null,
     selectedVideoTask: null,
     step: 0,
+    selectedImageFilePath: null,
   });
 
   // React Query hooks for video tasks
@@ -131,6 +132,10 @@ export const VideoGenerationProvider: React.FC<{
     setState((prev) => ({ ...prev, step }));
   }, []);
 
+  const setImageFilePath = useCallback((filePath: string | null) => {
+    setState((prev) => ({ ...prev, selectedImageFilePath: filePath }));
+  }, []);
+
   const setAudioData = useCallback(
     (audioData: {
       selectedAudioTask: AudioTask | null;
@@ -161,22 +166,6 @@ export const VideoGenerationProvider: React.FC<{
     setState((prev) => ({ ...prev, selectedVideoTask: task }));
   }, []);
 
-  // Computed values
-  const canProceedToNextStep = (() => {
-    switch (state.step) {
-      case 0: // Video type selection
-        return true;
-      case 1: // Avatar selection
-        return !!state.avatar;
-      case 2: // Audio generation
-        return state.audioReady;
-      case 3: // Video generation
-        return false;
-      default:
-        return false;
-    }
-  })();
-
   const contextValue: VideoGenerationContextType = {
     state,
     setVideoType,
@@ -188,7 +177,7 @@ export const VideoGenerationProvider: React.FC<{
     videoTasks: processedVideoTasks,
     loadingVideoTasks,
     videoTasksError,
-    canProceedToNextStep,
+    setImageFilePath,
   };
 
   return (
