@@ -2,7 +2,7 @@ import React from 'react';
 import { TbSparkles } from 'react-icons/tb';
 import { FiInfo } from 'react-icons/fi';
 import { Avatar } from '@/lib/types/avatar';
-import { Spinner } from '../ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 interface AudioGenerateTabProps {
   avatar: Avatar | null;
   selectedAudioSource: 'avatar' | 'rick_and_morty' | 'japanese';

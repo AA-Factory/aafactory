@@ -5,7 +5,7 @@ import { PiFileVideoBold } from 'react-icons/pi';
 // Import components
 import { AvatarSelector } from '@/components/content_generation/AvatarSelector';
 import { GenerationTypeSelector } from '@/components/content_generation/GenerationTypeSelector';
-import { StepProgress } from '@/components/video-generation/StepProgress';
+import { StepProgress } from '@/components/content_generation/generate_video/StepProgress';
 import { ImageSection } from '@/components/content_generation/generate_image/ImageSection';
 import { GenerationGallery } from '@/components/content_generation/GenerationGallery';
 import { ImageViewer } from '@/components/content_generation/generate_image/ImageViewer';

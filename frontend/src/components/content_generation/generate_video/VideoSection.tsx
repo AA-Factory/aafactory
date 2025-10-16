@@ -7,7 +7,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useVideoTasks } from '@/lib/api/tasks';
 import { fileToBase64, encodeMediaFile } from '@/lib/base64Utils';
-import { Spinner } from '../ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import { type VideoGenerationConfig } from '@/lib/types/tasks';
 
@@ -70,7 +70,7 @@ export const VideoSection: React.FC = () => {
       };
       generateVideoMutation.mutate(payload, {
         onSuccess: (videoResponse) => {
-          showNotification('Video generation started', 'info');
+          showNotification('Video generation completed!', 'success');
           // Invalidate video tasks to refresh the list
           queryClient.invalidateQueries({
             queryKey: ['tasks', 'video', { avatarId: state.avatar?.id }],

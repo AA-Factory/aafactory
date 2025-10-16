@@ -3,14 +3,14 @@ import React from 'react';
 import { FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 
 // Import components
-import { VideoTypeSelector } from '@/components/video-generation/VideoTypeSelector';
-import { AvatarSelector } from '@/components/video-generation/AvatarSelector';
-import { AudioSection } from '@/components/video-generation/AudioSection';
-import { VideoSection } from '@/components/video-generation/VideoSection';
-import { VideoPlayer } from '@/components/video-generation/VideoPlayer';
-import { VideoGallery } from '@/components/video-generation/VideoGallery';
-import { StepProgress } from '@/components/video-generation/StepProgress';
-import { AvatarImageSelector } from '@/components/video-generation/AvatarImageSelector';
+import { VideoTypeSelector } from '@/components/content_generation/generate_video/VideoTypeSelector';
+import { AvatarSelector } from '@/components/content_generation/generate_video/AvatarSelector';
+import { AudioSection } from '@/components/content_generation/generate_video/AudioSection';
+import { VideoSection } from '@/components/content_generation/generate_video/VideoSection';
+import { VideoPlayer } from '@/components/content_generation/generate_video/VideoPlayer';
+import { VideoGallery } from '@/components/content_generation/generate_video/VideoGallery';
+import { StepProgress } from '@/components/content_generation/generate_video/StepProgress';
+import { AvatarImageSelector } from '@/components/content_generation/generate_video/AvatarImageSelector';
 // Import context
 import {
   VideoGenerationProvider,
