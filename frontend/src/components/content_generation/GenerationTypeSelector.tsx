@@ -1,6 +1,4 @@
 import React from 'react';
-import { PiFileVideoBold } from 'react-icons/pi';
-
 interface GenerationType {
   id: string;
   label: string;
@@ -18,7 +16,7 @@ export const GenerationTypeSelector: React.FC<GenerationTypeSelectorProps> = ({
   setType,
   types,
   title = 'Select generation type',
-  icon: Icon = PiFileVideoBold,
+  icon: Icon = () => <div></div>,
 }) => {
   // Get the current selected type - works for videoType, imageType, etc.
 

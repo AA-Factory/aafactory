@@ -5,6 +5,7 @@ import HeaderNav from '@/components/Header';
 import Providers from '@/providers/react-query-provider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ActiveAvatarsProvider } from '@/contexts/ActiveAvatarsContext';
+import Script from 'next/script';
 
 import Notification from '@/components/Notification';
 const inter = Inter({ subsets: ['latin'] });
@@ -23,12 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV === 'development' && (
           <Script
             src="https://unpkg.com/react-scan/dist/auto.global.js"
             strategy="beforeInteractive"
           />
-        )} */}
+        )}
         <NotificationProvider>
           <ActiveAvatarsProvider>
             <Providers>

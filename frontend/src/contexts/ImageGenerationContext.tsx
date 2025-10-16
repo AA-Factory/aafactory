@@ -26,7 +26,6 @@ interface ImageGenerationContextType {
   setType: (type: { id: string; label: string } | null) => void;
   setAvatar: (avatar: Avatar | null) => void;
   setStep: (step: number) => void;
-  canProceedToNextStep: boolean;
 
   setTask: (task: ImageTask | null) => void;
   // Image tasks (future use)
@@ -91,23 +90,12 @@ export const ImageGenerationProvider: React.FC<{
   const setTask = useCallback((task: ImageTask | null) => {
     setState((prev) => ({ ...prev, selectedImageTask: task }));
   }, []);
-  const canProceedToNextStep = useMemo(() => {
-    switch (state.step) {
-      case 0:
-        return !!state.type;
-      case 1:
-        return !!state.avatar;
-      default:
-        return false;
-    }
-  }, [state.step, state.avatar, state.type]);
 
   const contextValue: ImageGenerationContextType = {
     state,
     setType,
     setAvatar,
     setStep,
-    canProceedToNextStep,
     tasks: processedImageTasks,
     loadingImageTasks,
     videoTasksError,

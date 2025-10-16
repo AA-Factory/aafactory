@@ -35,7 +35,7 @@ interface VideoGenerationState {
   generatedVideoUrl: string | null;
   selectedVideoTask: VideoTask | null;
 
-  selectedImageFilePath: string;
+  selectedImageFilePath: string | null;
   // UI state
   step: number;
 }

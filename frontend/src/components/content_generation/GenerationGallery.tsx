@@ -1,30 +1,32 @@
 import React from 'react';
 import { VideoTask, ImageTask } from '@/lib/types/tasks';
-import {
-  ImageGenerationProvider,
-  useImageGeneration,
-} from '@/contexts/ImageGenerationContext';
 
-// You might want to create a more generic type or extend VideoTask
+// Generic task type that can be extended
 type MediaTask = VideoTask | ImageTask;
-interface GenerationGalleryProps {
+
+interface GenerationGalleryProps<T extends MediaTask = MediaTask> {
+  tasks: T[];
+  selectedTask: T | null;
+  onTaskSelect: (task: T) => void;
   loading?: boolean;
   emptyMessage?: string;
   mediaType?: 'image' | 'video';
 }
 
-export const GenerationGallery: React.FC<GenerationGalleryProps> = ({
+export const GenerationGallery = <T extends MediaTask = MediaTask>({
+  tasks,
+  selectedTask,
+  onTaskSelect,
   loading = false,
   emptyMessage = 'No media generated yet.',
-}) => {
-  const { state, tasks, loadingImageTasks, setTask } = useImageGeneration();
-  const handleMediaClick = (task: ImageTask) => {
+}: GenerationGalleryProps<T>) => {
+  const handleMediaClick = (task: T) => {
     if (task.status === 'SUCCESS' && task.filePath) {
-      setTask(task);
+      onTaskSelect(task);
     }
   };
 
-  const getMediaType = (task: ImageTask): 'image' | 'video' => {
+  const getMediaType = (task: T): 'image' | 'video' => {
     // Check explicit mediaType if available
     if (task.taskType) {
       return task.taskType;
@@ -48,7 +50,7 @@ export const GenerationGallery: React.FC<GenerationGalleryProps> = ({
     return 'image';
   };
 
-  const renderMediaThumbnail = (task: ImageTask) => {
+  const renderMediaThumbnail = (task: T) => {
     if (task.status === 'SUCCESS' && task.filePath) {
       const mediaType = getMediaType(task);
 
@@ -97,7 +99,7 @@ export const GenerationGallery: React.FC<GenerationGalleryProps> = ({
     }
   };
 
-  if (loadingImageTasks || loading) {
+  if (loading) {
     return (
       <div className="flex items-center space-x-2 min-w-[120px] p-2 justify-center h-full">
         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -108,7 +110,7 @@ export const GenerationGallery: React.FC<GenerationGalleryProps> = ({
     );
   }
 
-  if (tasks.length === 0) {
+  if (tasks?.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
         {emptyMessage}
@@ -118,13 +120,13 @@ export const GenerationGallery: React.FC<GenerationGalleryProps> = ({
 
   return (
     <div className="flex items-center space-x-4 overflow-x-auto">
-      {tasks.map((task) => (
+      {tasks?.map((task) => (
         <button
           key={task.taskId}
           onClick={() => handleMediaClick(task)}
           className={`flex flex-col items-center space-y-1 min-w-[120px] max-w-[140px] p-2 rounded-lg border-2 transition-all ${
             task.status === 'SUCCESS'
-              ? state.selectedImageTask?.taskId === task.taskId
+              ? selectedTask?.taskId === task.taskId
                 ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30'
                 : 'border-gray-200 dark:border-gray-700 hover:border-blue-400'
               : 'border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'

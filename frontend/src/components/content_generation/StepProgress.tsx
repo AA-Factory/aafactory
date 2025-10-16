@@ -42,7 +42,7 @@ export const StepProgress: React.FC<StepProgressProps> = ({
               idx + 1
             )}
           </span>
-          <span className="hidden sm:inline-flex">{step.label}</span>
+          <span className="hidden w-full sm:inline-flex">{step.label}</span>
           <span className="sm:hidden">{idx + 1}</span>
           {idx < steps.length - 1 && (
             <svg
