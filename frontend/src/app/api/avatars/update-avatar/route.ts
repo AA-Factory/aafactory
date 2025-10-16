@@ -90,9 +90,9 @@ export async function PUT(req: NextRequest) {
         : null,
       audioUploadResult: audioUploadResult
         ? {
-          filePath: audioUploadResult.filePath,
-          fileName: audioUploadResult.fileName,
-        }
+            filePath: audioUploadResult.filePath,
+            fileName: audioUploadResult.fileName,
+          }
         : null,
     });
   } catch (error: any) {

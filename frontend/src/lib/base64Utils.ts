@@ -107,8 +107,8 @@ export async function fileToBase64(file: File): Promise<string> {
           error instanceof EncodingError
             ? error
             : new EncodingError(
-              `File encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            ),
+                `File encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ),
         );
       }
     };
@@ -152,8 +152,8 @@ async function blobToBase64(blob: Blob): Promise<string> {
           error instanceof EncodingError
             ? error
             : new EncodingError(
-              `Blob encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            ),
+                `Blob encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ),
         );
       }
     };
