@@ -1,6 +1,5 @@
-import { Avatar } from '@/lib/types/avatar';
 import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
-import { type VideoGenerationTaskRequest } from '@/lib/types/tasks';
+import { type VideoGenerationTaskRequest, VideoGenerationConfig, VideoGenerationPayload } from '@/lib/types/tasks';
 
 // Types
 export type GenerateVideoPayload = {
@@ -8,6 +7,8 @@ export type GenerateVideoPayload = {
   imageSrc: string; // Avatar image source URL
   audioBase64?: string; // Optional - Base64 audio data from useGenerateAudio (not used in API)
   prompt: string;
+  config?: VideoGenerationConfig;
+  lowVram?: boolean;
 };
 
 export type GenerateVideoResponse = {
@@ -30,6 +31,8 @@ function createTaskRequest(
       prompt: payload.prompt,
       image_bytes: imageBase64,
       audio_bytes: audioBase64,
+      config: payload.config,
+      low_vram: payload.lowVram,
     },
   };
 }

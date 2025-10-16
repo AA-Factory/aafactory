@@ -47,10 +47,13 @@ export interface AudioGenerationTaskRequest
 }
 
 // Video Generation Task
-interface VideoGenerationPayload {
+export type VideoGenerationConfig = '6_steps' | '8_steps' | 'high_quality' | 'medium_quality' | 'quantize_model';
+export interface VideoGenerationPayload {
   prompt: string;
   image_bytes: string;
   audio_bytes: string;
+  config?: VideoGenerationConfig;
+  low_vram?: boolean;
 }
 export type VideoGenerationServerName = 'mock' | 'infinite_talk';
 export interface VideoGenerationTaskRequest
