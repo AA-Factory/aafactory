@@ -5,6 +5,9 @@ import clientPromise from '@/lib/mongodb';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
+// Force dynamic rendering (no static generation at build time)
+export const dynamic = 'force-dynamic';
+
 // GET - Retrieve single avatar by ID
 export async function GET(req: NextRequest) {
   try {

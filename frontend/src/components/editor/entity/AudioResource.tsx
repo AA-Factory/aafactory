@@ -64,7 +64,7 @@ export const AudioResource = observer(
           ref={ref}
           className="max-h-[100px] max-w-[150px] min-h-[50px] min-w-[100px]"
           // controls
-          src={audio.src}
+          src={`/api/file/audio/${audio.filename}`}
           id={audio.id}
           controls
         />

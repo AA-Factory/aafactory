@@ -39,6 +39,11 @@ function GenerateImageContent() {
     return displayTask.filePath.split('/').pop() || 'No image selected';
   };
 
+  const getSrc = () => {
+    if (!displayTask?.filePath) return undefined;
+    return `/api/file/image/${displayTask.fileName}`;
+  };
+
   const setAvatarDefaultImg = async (
     imgUrl: string,
     avatarId: string,
@@ -104,7 +109,7 @@ function GenerateImageContent() {
       viewerComponent={
         <MediaViewer
           type="image"
-          src={displayTask?.filePath}
+          src={getSrc()}
           alt="Generated"
           fileName={getFileName()}
           showDownload={true}

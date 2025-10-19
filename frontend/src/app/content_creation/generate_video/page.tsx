@@ -28,7 +28,21 @@ function GenerateVideoContent() {
     loadingVideoTasks,
     selectVideoTask,
   } = useVideoGeneration();
-  const videoSrc = state.generatedVideoUrl || state.selectedVideoTask?.filePath;
+
+  // Determine video source
+  const videoSrc = state.selectedVideoTask?.filePath
+    ? state.selectedVideoTask
+    : videoTasks[0];
+
+  const getFileName = () => {
+    if (!videoSrc) return 'No video selected';
+    return videoSrc.filePath.split('/').pop() || 'No video selected';
+  };
+
+  const getSrc = () => {
+    if (!videoSrc) return undefined;
+    return `/api/file/video/${videoSrc.fileName}`;
+  };
 
   const steps = [
     {
@@ -84,8 +98,9 @@ function GenerateVideoContent() {
       viewerComponent={
         <MediaViewer
           type="video"
-          src={videoSrc}
+          src={getSrc()}
           alt="Generated video"
+          fileName={getFileName()}
           showDownload={true}
           aspectRatio="video"
           maxWidth="max-w-2xl"

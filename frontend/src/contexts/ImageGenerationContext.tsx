@@ -31,7 +31,7 @@ interface ImageGenerationContextType {
   // Image tasks (future use)
   tasks: ImageTask[];
   loadingImageTasks?: boolean;
-  videoTasksError?: Error | null;
+  imageTasksError?: Error | null;
   // refreshImageTasks: () => void;
 }
 
@@ -52,7 +52,7 @@ export const ImageGenerationProvider: React.FC<{
   const {
     data: tasks = [],
     isLoading: loadingImageTasks,
-    error: videoTasksError,
+    error: imageTasksError,
   } = useImageTasks(state.avatar?.id || '');
   const processedImageTasks = useMemo(() => {
     return tasks.map((task) => ({
@@ -90,7 +90,7 @@ export const ImageGenerationProvider: React.FC<{
     setStep,
     tasks: processedImageTasks,
     loadingImageTasks,
-    videoTasksError,
+    imageTasksError,
     setTask,
   };
 

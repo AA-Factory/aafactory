@@ -75,7 +75,7 @@ export async function prepareVideoData(payload: GenerateVideoPayload): Promise<{
   }
 
   // Encode avatar image
-  const { base64: imageBase64 } = await encodeMediaFile(payload.imageSrc);
+  const { base64: imageBase64 } = await encodeMediaFile(`image/${payload.imageSrc}`);
 
   // Format audio data - extract raw base64 if it has data URL prefix
   const rawAudioBase64 = payload.audioBase64?.includes(',')

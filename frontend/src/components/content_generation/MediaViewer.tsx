@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FiImage, FiPlayCircle, FiMusic } from 'react-icons/fi';
 import { MediaActionButton } from './MediaActionButton';
 
@@ -29,6 +29,14 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
   actions,
   maxWidth = 'max-w-full',
 }) => {
+  const defaultDownloadName = useMemo(() => {
+    if (downloadName) return downloadName;
+    const timestamp = Date.now();
+    const extension =
+      type === 'audio' ? 'mp3' : type === 'video' ? 'mp4' : 'png';
+    return `generated-${type}-${timestamp}.${extension}`;
+  }, [downloadName, type]);
+
   const getDefaultEmptyMessage = () => {
     switch (type) {
       case 'image':
@@ -65,14 +73,6 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
     }
   };
 
-  const getDefaultDownloadName = () => {
-    if (downloadName) return downloadName;
-    const timestamp = Date.now();
-    const extension =
-      type === 'audio' ? 'mp3' : type === 'video' ? 'mp4' : 'png';
-    return `generated-${type}-${timestamp}.${extension}`;
-  };
-
   const renderMediaContent = () => {
     if (!src) {
       return (
@@ -89,27 +89,33 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
       <div className="relative w-full h-full p-3">
         {type === 'image' && (
           <img
-            src={src}
+            src={`/api/file/image/${fileName}`}
             alt={alt}
             className="w-full h-full rounded-xl object-contain bg-black"
           />
         )}
         {type === 'video' && (
           <video
-            src={src}
+            src={`/api/file/video/${fileName}`}
             controls
             className="w-full h-full rounded-xl object-contain bg-black"
           />
         )}
         {type === 'audio' && (
-          <audio src={src} controls className="w-full h-25 max-w-md" />
+          <div className="flex items-center justify-center w-full h-full">
+            <audio
+              src={`/api/file/audio/${fileName}`}
+              controls
+              className="w-full max-w-md"
+            />
+          </div>
         )}
         {(showDownload || actions) && (
           <div className="flex justify-center space-x-2 mt-5">
             {showDownload && (
               <MediaActionButton
-                href={src}
-                download={getDefaultDownloadName()}
+                href={`/api/file/${type}/${fileName}`}
+                download={defaultDownloadName}
                 variant="primary"
               >
                 Download
@@ -126,7 +132,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
     <div
       className={`w-full ${maxWidth} ${getAspectRatioClass()} bg-black rounded-xl shadow-lg flex items-center justify-center relative`}
     >
-      {fileName && (
+      {fileName && src && (
         <span className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded z-10">
           {fileName}
         </span>

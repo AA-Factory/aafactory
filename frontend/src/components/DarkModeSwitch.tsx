@@ -4,8 +4,10 @@ import { HiSun, HiMoon } from 'react-icons/hi';
 
 const DarkModeSwitch: React.FC = () => {
   const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Check for saved preference in localStorage first
     const savedPreference = localStorage.getItem('darkMode');
     if (savedPreference !== null) {
@@ -18,6 +20,8 @@ const DarkModeSwitch: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+
     // Toggle dark class on body
     if (isDark) {
       document.body.classList.add('dark');
@@ -26,7 +30,7 @@ const DarkModeSwitch: React.FC = () => {
     }
     // Save preference to localStorage
     localStorage.setItem('darkMode', String(isDark));
-  }, [isDark]);
+  }, [isDark, mounted]);
 
   const toggleDarkMode = () => {
     setIsDark((prev) => !prev);

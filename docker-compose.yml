@@ -6,6 +6,7 @@ services:
     profiles:
       - backend-local
       - local
+      - frontend-prod
   backend-app:
     container_name: backend-app
     build:
@@ -22,6 +23,7 @@ services:
     profiles:
       - backend-local
       - local
+      - frontend-prod
 
   celery-worker:
     container_name: celery_worker
@@ -38,6 +40,7 @@ services:
     profiles:
       - backend-local
       - local
+      - frontend-prod
   flower:
     container_name: flower
     build:
@@ -57,11 +60,13 @@ services:
     profiles:
       - backend-local
       - local
+      - frontend-prod
   mock-server:
     build:
       context: ./backend/servers/mock_server
     profiles:
       - local
+      - frontend-prod
   mongodb:
     image: mongo:7-jammy
     container_name: mongodb-dev
@@ -95,12 +100,40 @@ services:
     profiles:
       - frontend
       - local
+      - frontend-prod
 
   frontend-app:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
+        - NEXT_PUBLIC_RUNPOD_ENDPOINT=$RUNPOD_ENDPOINT
+        - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
     container_name: frontend-app
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=$MONGODB_URI
+      - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
+      - NEXT_PUBLIC_RUNPOD_ENDPOINT=$RUNPOD_ENDPOINT
+      - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
+    volumes:
+      - uploaded-files:/data/uploads
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    profiles:
+      - frontend-prod
+
+  frontend-app-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: frontend-app-dev
     ports:
       - 3000:3000
     environment:
@@ -109,8 +142,10 @@ services:
       - NEXT_PUBLIC_RUNPOD_ENDPOINT=$RUNPOD_ENDPOINT
       - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
     volumes:
+      - uploaded-files:/data/uploads
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
     depends_on:
       - mongodb
     networks:
@@ -121,7 +156,7 @@ services:
 
 volumes:
   mongodb_data:
-
+  uploaded-files:
 networks:
   app-network:
     driver: bridge

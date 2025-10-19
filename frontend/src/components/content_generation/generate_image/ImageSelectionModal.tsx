@@ -59,7 +59,7 @@ export const ImageSelectionModal: React.FC<ImageSelectionModalProps> = ({
                 >
                   <div className="w-full h-48 flex items-center justify-center">
                     <img
-                      src={task.filePath}
+                      src={`/api/file/image/${task.fileName}`}
                       alt={task.userPrompt || 'Generated image'}
                       className="max-w-full max-h-full object-contain"
                     />

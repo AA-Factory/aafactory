@@ -14,6 +14,7 @@ export interface VideoTask {
   taskId: string;
   userPrompt: string;
   filePath: string;
+  fileName?: string;
   status: CeleryTaskStatus;
   thumbnailPath?: string; // optional thumbnail path for videos
   taskType: 'video';

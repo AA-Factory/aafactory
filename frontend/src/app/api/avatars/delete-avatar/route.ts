@@ -6,6 +6,9 @@ import { deleteFile } from '@/lib/fileUtils';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
+// Force dynamic rendering (no static generation at build time)
+export const dynamic = 'force-dynamic';
+
 // DELETE - Delete avatar by ID
 export async function DELETE(req: NextRequest) {
   try {

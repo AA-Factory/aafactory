@@ -28,7 +28,7 @@ export const ImageSection: React.FC = () => {
   const handleSelectExistingImage = async (imageTask: ImageTask) => {
     try {
       // Fetch the image from the URL
-      const response = await fetch(imageTask.filePath);
+      const response = await fetch(`/api/file/image/${imageTask.fileName}`);
       const blob = await response.blob();
 
       // Create a File object from the blob

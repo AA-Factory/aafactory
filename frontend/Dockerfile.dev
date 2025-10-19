@@ -1,0 +1,26 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Install wait-port to wait for MongoDB port update
+RUN npm install -g wait-port
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+RUN chown -R nextjs:nodejs /app
+RUN mkdir -p /data/uploads && chown -R nextjs:nodejs /data/uploads
+RUN if [ -d "public/uploads" ]; then \
+      cp -r public/uploads/* /data/uploads/ 2>/dev/null || true; \
+    fi
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD sh -c "wait-port mongodb:27017 && node scripts/db-setup.js && npm run dev --turbo"

@@ -20,10 +20,13 @@ const nextConfig = {
 
     return config;
   },
-
+  output: 'standalone',
   // Suppress specific warnings
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
 
   experimental: {

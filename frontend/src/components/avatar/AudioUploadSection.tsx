@@ -30,7 +30,13 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
     },
     [fileSelect],
   );
-
+  const getAudioSrc = () => {
+    if (selectedAudio) {
+      return URL.createObjectURL(selectedAudio);
+    } else {
+      return `/api/file/audio/${existingAudioFileName}`;
+    }
+  };
   const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
     useFileDragDrop(handleFileSelect, ['audio/*']);
   return (
@@ -75,11 +81,7 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
               {(selectedAudio.size / (1024 * 1024)).toFixed(2)} MB - Click to
               change or drag a new file
             </p>
-            <audio
-              controls
-              className="mx-auto max-w-full"
-              src={URL.createObjectURL(selectedAudio)}
-            >
+            <audio controls className="mx-auto max-w-full" src={getAudioSrc()}>
               Your browser does not support the audio element.
             </audio>
           </div>
@@ -97,7 +99,7 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
             <audio
               controls
               className="mx-auto max-w-full"
-              src={existingAudioUrl}
+              src={`/api/file/audio/${existingAudioFileName}`}
             >
               Your browser does not support the audio element.
             </audio>

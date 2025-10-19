@@ -62,7 +62,7 @@ export const GenerationGallery = <T extends MediaTask = MediaTask>({
       if (mediaType === 'video') {
         return (
           <video
-            src={task.filePath}
+            src={`/api/file/video/${task.fileName}`}
             className="w-24 h-16 object-cover rounded"
             muted
             preload="metadata"
@@ -81,7 +81,7 @@ export const GenerationGallery = <T extends MediaTask = MediaTask>({
       } else {
         return (
           <img
-            src={task.filePath}
+            src={`/api/file/image/${task.fileName}`}
             alt="Media thumbnail"
             className="w-24 h-16 object-cover rounded"
           />

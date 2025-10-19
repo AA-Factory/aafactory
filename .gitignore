@@ -39,6 +39,7 @@ public/uploads/
 .vscode/settings.json
 backend/data/comfyui/output
 frontend/.next
-frontend/public
+frontend/public/**
+!frontend/public/favicon.ico
 */__pycache__/*
 frontend/uploads

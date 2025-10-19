@@ -40,7 +40,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
               }`}
             >
               <img
-                src={avatar.src}
+                src={`/api/file/image/${avatar.fileName}`}
                 alt={avatar.name}
                 className="w-14 h-14 object-cover rounded-full"
               />

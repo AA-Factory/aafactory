@@ -17,7 +17,7 @@ export const AvatarImageSelector: React.FC = () => {
     : null;
 
   const isAvatarImageSelected =
-    state.selectedImageFilePath === avatarCurrentImage?.filePath;
+    state.selectedImageFilePath === avatarCurrentImage?.fileName;
 
   return (
     <div className="space-y-6">
@@ -50,7 +50,7 @@ export const AvatarImageSelector: React.FC = () => {
               }`}
             >
               <img
-                src={avatarCurrentImage.filePath}
+                src={`/api/file/image/${avatarCurrentImage.fileName}`}
                 alt="Avatar current image"
                 className="w-full h-32 object-cover rounded-md"
               />
@@ -73,13 +73,13 @@ export const AvatarImageSelector: React.FC = () => {
                   setImage(task.filePath || null, task.fileName || null);
                 }}
                 className={`rounded-lg border-2 flex flex-col items-center p-3 space-y-2 transition-all w-full max-h-fit ${
-                  state.selectedImageFilePath === task.filePath
+                  state.selectedImageFilePath === task.fileName
                     ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30'
                     : 'border-gray-200 dark:border-gray-700 hover:border-blue-400'
                 }`}
               >
                 <img
-                  src={task.filePath || ''}
+                  src={`/api/file/image/${task.fileName || ''}`}
                   alt={`Image Task ${task.taskId}`}
                   className="w-full h-32 object-cover rounded-md"
                 />

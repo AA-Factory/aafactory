@@ -84,13 +84,12 @@ export default function AvatarPage({
     if (avatarFormRef.current) {
       avatarFormRef.current.reset(avatarData);
     }
-
     // Load existing image if available
     if (
-      existingAvatar.src &&
+      existingAvatar.fileName &&
       existingAvatar.src !== '/placeholder-avatar.png'
     ) {
-      setExistingImageUrl(existingAvatar.src);
+      setExistingImageUrl(existingAvatar.fileName);
     } else {
       setExistingImageUrl(null);
     }

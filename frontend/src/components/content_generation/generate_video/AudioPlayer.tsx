@@ -17,10 +17,20 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const audioRef = React.useRef<HTMLAudioElement>(null);
   const [audioDuration, setAudioDuration] = React.useState<number | null>(null);
   const [isValid, setIsValid] = React.useState<boolean>(true);
-
+  const audioFileName = audioUrl ? audioUrl.split('/').pop() : null;
   if (!audioUrl) {
     return null;
   }
+
+  const getAudioSrc = () => {
+    if (
+      audioSource === 'uploaded' ||
+      (audioSource === 'generated' && audioFileName)
+    ) {
+      return audioUrl;
+    }
+    return `/api/file/audio/${audioFileName}`;
+  };
 
   const getAudioLabel = () => {
     switch (audioSource) {
@@ -82,7 +92,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       <audio
         ref={audioRef}
         controls
-        src={audioUrl}
+        src={getAudioSrc()}
         className="w-full"
         preload="metadata"
         onLoadedMetadata={handleLoadedMetadata}

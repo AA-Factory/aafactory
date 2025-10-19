@@ -61,35 +61,46 @@ export interface Avatar {
   createdAt: string;
   updatedAt: string;
 }
+
+// Check if File is available (browser environment)
+const isClient = typeof window !== 'undefined';
+
 export const createAvatarFormSchema = (isEdit: boolean) => {
+  // Use z.any() for SSR, z.instanceof(File) for client
+  const fileSchema = isClient
+    ? z.instanceof(File, { message: 'Please select an image file' })
+    : z.any();
+
   let image = isEdit
-    ? z
-      .instanceof(File, { message: 'Please select an image file' })
+    ? fileSchema
       .refine(
-        (file) => file.size <= 5 * 1024 * 1024,
+        (file) => !isClient || file.size <= 5 * 1024 * 1024,
         'File size must be less than 5MB',
       )
       .refine(
         (file) =>
-          ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+          !isClient || ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
             file.type,
           ),
         'File must be a JPEG, PNG, or WebP image',
       )
       .optional()
-    : z
-      .instanceof(File, { message: 'Please select an image file' })
+    : fileSchema
       .refine(
-        (file) => file.size <= 5 * 1024 * 1024,
+        (file) => !isClient || file.size <= 5 * 1024 * 1024,
         'File size must be less than 5MB',
       )
       .refine(
         (file) =>
-          ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+          !isClient || ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
             file.type,
           ),
         'File must be a JPEG, PNG, or WebP image',
       );
+
+  const audioFileSchema = isClient
+    ? z.instanceof(File, { message: 'Please select an audio file' })
+    : z.any();
 
   return z.object({
     name: z
@@ -115,15 +126,13 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
       .enum(['realistic', 'stylized', 'cartoon', 'fantasy'])
       .optional(),
     image: image,
-    trainingAudio: z
-      .instanceof(File, { message: 'Please select an audio file' })
+    trainingAudio: audioFileSchema
       .refine(
-        (file) => file.size <= 10 * 1024 * 1024,
+        (file) => !isClient || file.size <= 10 * 1024 * 1024,
         'File size must be less than 10MB',
       )
       .refine(
-        (file) =>
-          ['audio/mpeg', 'audio/wav', 'audio/x-wav'].includes(file.type),
+        (file) => !isClient || ['audio/mpeg', 'audio/wav', 'audio/x-wav'].includes(file.type),
         'File must be an MP3 or WAV audio',
       )
       .optional(),

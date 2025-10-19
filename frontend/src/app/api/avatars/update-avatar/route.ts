@@ -5,6 +5,9 @@ import { uploadFile, uploadTrainingAudio } from '@/lib/fileUtils';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
+// Force dynamic rendering (no static generation at build time)
+export const dynamic = 'force-dynamic';
+
 export async function PUT(req: NextRequest) {
   try {
     const client = await clientPromise;
@@ -90,9 +93,9 @@ export async function PUT(req: NextRequest) {
         : null,
       audioUploadResult: audioUploadResult
         ? {
-            filePath: audioUploadResult.filePath,
-            fileName: audioUploadResult.fileName,
-          }
+          filePath: audioUploadResult.filePath,
+          fileName: audioUploadResult.fileName,
+        }
         : null,
     });
   } catch (error: any) {

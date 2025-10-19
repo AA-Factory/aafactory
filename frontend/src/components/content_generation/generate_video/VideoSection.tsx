@@ -50,7 +50,9 @@ export const VideoSection: React.FC = () => {
       if (state.uploadedAudioFile && !audioToUse) {
         audioToUse = await fileToBase64(state.uploadedAudioFile);
       } else if (state.selectedAudioTask && !audioToUse) {
-        const result = await encodeMediaFile(state.selectedAudioTask.filePath);
+        const result = await encodeMediaFile(
+          `audio/${state.selectedAudioTask.fileName}`,
+        );
         audioToUse = result.base64;
       }
 

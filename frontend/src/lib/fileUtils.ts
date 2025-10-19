@@ -33,7 +33,7 @@ export async function saveBase64File(
     const fileName = `${taskId}.${extension}`;
 
     // Create public directory path
-    const publicDir = path.join(process.cwd(), 'public/uploads', fileType);
+    const publicDir = path.join('/data/uploads', fileType);
     const filePath = path.join(publicDir, fileName);
 
     // Ensure directory exists
@@ -150,7 +150,7 @@ export async function uploadFile(
   destination = 'image',
 ): Promise<UploadResult> {
   try {
-    const uploadsDir = path.join(process.cwd(), 'public/uploads', destination);
+    const uploadsDir = path.join('/data/uploads', destination);
     await mkdir(uploadsDir, { recursive: true });
 
     const timestamp = Date.now();

@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  Suspense,
 } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PiFileImageBold } from 'react-icons/pi';
@@ -136,7 +137,9 @@ function GalleryPageContent() {
 export default function GalleryPage() {
   return (
     <MediaGalleryProvider>
-      <GalleryPageContent />
+      <Suspense fallback={<div>Loading...</div>}>
+        <GalleryPageContent />
+      </Suspense>
     </MediaGalleryProvider>
   );
 }

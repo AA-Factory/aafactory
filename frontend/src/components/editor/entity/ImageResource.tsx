@@ -63,7 +63,7 @@ export const ImageResource = observer(
           }}
           ref={ref}
           className="max-h-[100px] max-w-[150px]"
-          src={image.src}
+          src={`/api/file/image/${image.filename}`}
           height={200}
           width={200}
           id={image.id}

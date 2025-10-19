@@ -145,7 +145,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         </div>
 
         <img
-          src={avatar.src}
+          src={`/api/file/image/${avatar.fileName}`}
           alt={avatar.name}
           className="w-14 h-14 rounded-full mx-auto object-cover mb-3 transition-transform"
           onError={handleImageError}

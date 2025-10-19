@@ -36,7 +36,7 @@ async function getTrainingAudioForSource(
   // Handle avatar source
   if (audioSource === 'avatar' && avatar?.trainingAudioPath) {
     try {
-      const audioResponse = await fetch(avatar.trainingAudioPath);
+      const audioResponse = await fetch(`/api/file/audio/${avatar.trainingAudioFileName}`);
       if (audioResponse.ok) {
         const audioBlob = await audioResponse.blob();
         const audioFile = new File(
@@ -109,7 +109,7 @@ export async function prepareAudioData(
   // Encode audio
   const { base64: audioBase64 } = await encodeMediaFile(
     trainingAudio,
-    '/test/training_audio/',
+    '/audio/',
   );
 
   // Create task request

@@ -103,7 +103,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
     // Set existing image when provided
     useEffect(() => {
       if (existingImageUrl && existingImageUrl !== '/placeholder-avatar.png') {
-        setSelectedImage(existingImageUrl);
+        // setSelectedImage(existingImageUrl);
       }
     }, [existingImageUrl]);
 
@@ -242,6 +242,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
             error={errors.image?.message}
             existingImageUrl={existingImageUrl}
             fileSelect={handleFileSelect}
+            editMode={editMode}
           />
 
           <AudioUploadSection

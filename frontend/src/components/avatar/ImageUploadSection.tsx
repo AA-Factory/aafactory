@@ -11,6 +11,7 @@ interface ImageUploadSectionProps {
   error?: string;
   existingImageUrl?: string | null;
   fileSelect: (file: File) => void;
+  editMode: boolean;
 }
 
 export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
@@ -21,6 +22,7 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   error,
   existingImageUrl,
   fileSelect,
+  editMode,
 }) => {
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -31,7 +33,13 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
 
   const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
     useFileDragDrop(handleFileSelect, ['image/*']);
-
+  const getImageSrc = () => {
+    if (editMode && !selectedImage) {
+      return `/api/file/image/${existingImageUrl}`;
+    } else {
+      return selectedImage || existingImageUrl || undefined;
+    }
+  };
   return (
     <div className="mb-3">
       <Label htmlFor="image">Avatar Image</Label>
@@ -64,7 +72,7 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
         {selectedImage || existingImageUrl ? (
           <div className="space-y-2">
             <img
-              src={selectedImage || existingImageUrl || ''}
+              src={getImageSrc() || ''}
               alt="Avatar image"
               className="mx-auto h-24 w-24 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
             />
