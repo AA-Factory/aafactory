@@ -1,6 +1,7 @@
-// hooks/useAvatars.ts
+// frontend/src/hooks/use-avatars.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/lib/types/avatar';
+import { useCallback } from 'react';
 
 /** -----------------
  * Query Keys
@@ -177,7 +178,7 @@ const updateAvatar = async (
   } else {
     data = await apiRequest<{ avatar: any }>('/api/avatars/update-avatar', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...rest }),
+      body: JSON.stringify({ id, fileName, ...rest }),
     });
   }
   return mapAvatar(data.avatar);
@@ -190,8 +191,18 @@ export const useAvatars = () =>
   useQuery({
     queryKey: avatarKeys.lists(),
     queryFn: fetchAvatars,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
+
+export const usePrefetchAvatars = () => {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.prefetchQuery({
+      queryKey: avatarKeys.lists(),
+      queryFn: fetchAvatars,
+    });
+  };
+};
 
 export const useAvatar = (id?: string) =>
   useQuery({
@@ -199,6 +210,17 @@ export const useAvatar = (id?: string) =>
     queryFn: async () => fetchAvatarById(id!),
     enabled: !!id,
   });
+
+export const usePrefetchAvatar = () => {
+  const queryClient = useQueryClient(); // Gets the client from React context
+
+  return useCallback((avatarId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: avatarKeys.detail(avatarId),
+      queryFn: () => fetchAvatarById(avatarId),
+    });
+  }, [queryClient]);
+};
 
 export const useDeleteAvatar = () => {
   const queryClient = useQueryClient();
@@ -227,56 +249,9 @@ export const useCreateAvatar = () => {
   return useMutation({
     mutationKey: ['createAvatar'],
     mutationFn: createAvatar,
-    onMutate: async (newData) => {
-      await queryClient.cancelQueries({ queryKey: avatarKeys.lists() });
-      const prev = queryClient.getQueryData<Avatar[]>(avatarKeys.lists());
-      const tempId = `temp-${Date.now()}`;
-      queryClient.setQueryData<Avatar[]>(avatarKeys.lists(), (old) => [
-        {
-          id: tempId,
-          name:
-            newData.jsonData?.name || newData.formData?.name || 'New Avatar',
-          src: '/placeholder-avatar.png',
-          personality:
-            newData.jsonData?.personality ||
-            newData.formData?.personality ||
-            '',
-          backgroundKnowledge:
-            newData.jsonData?.backgroundKnowledge ||
-            newData.formData?.backgroundKnowledge ||
-            '',
-          hasEncodedData:
-            newData.jsonData?.hasEncodedData ||
-            newData.formData?.hasEncodedData ||
-            false,
-          fileName: newData.fileName,
-          createdAt: new Date().toLocaleDateString(),
-          updatedAt: new Date().toLocaleDateString(),
-          description:
-            newData.jsonData?.description ||
-            newData.formData?.description ||
-            '',
-          category:
-            newData.jsonData?.category ||
-            newData.formData?.category ||
-            'realistic',
-        },
-        ...(old ?? []),
-      ]);
-      return { prev, tempId };
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: avatarKeys.lists() });
     },
-    onSuccess: (newAvatar, _, ctx) => {
-      queryClient.setQueryData<Avatar[]>(
-        avatarKeys.lists(),
-        (old) => old?.map((a) => (a.id === ctx?.tempId ? newAvatar : a)) ?? [],
-      );
-      queryClient.setQueryData(avatarKeys.detail(newAvatar.id), newAvatar);
-    },
-    onError: (_, __, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(avatarKeys.lists(), ctx.prev);
-    },
-    onSettled: async () =>
-      queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
   });
 };
 
@@ -285,46 +260,8 @@ export const useUpdateAvatar = () => {
   return useMutation({
     mutationKey: ['updateAvatar'],
     mutationFn: updateAvatar,
-    onMutate: async (updated) => {
-      await queryClient.cancelQueries({
-        queryKey: avatarKeys.detail(updated.id),
-      });
-      await queryClient.cancelQueries({ queryKey: avatarKeys.lists() });
-      const prevAvatar = queryClient.getQueryData<Avatar>(
-        avatarKeys.detail(updated.id),
-      );
-      const prevList = queryClient.getQueryData<Avatar[]>(avatarKeys.lists());
-      queryClient.setQueryData<Avatar>(avatarKeys.detail(updated.id), (old) =>
-        old ? { ...old, ...updated } : undefined,
-      );
-      queryClient.setQueryData<Avatar[]>(
-        avatarKeys.lists(),
-        (old) =>
-          old?.map((a) => (a.id === updated.id ? { ...a, ...updated } : a)) ??
-          [],
-      );
-      return { prevAvatar, prevList };
-    },
-    onSuccess: (updatedAvatar) => {
-      queryClient.setQueryData(
-        avatarKeys.detail(updatedAvatar.id),
-        updatedAvatar,
-      );
-      queryClient.setQueryData<Avatar[]>(
-        avatarKeys.lists(),
-        (old) =>
-          old?.map((a) => (a.id === updatedAvatar.id ? updatedAvatar : a)) ??
-          [],
-      );
-    },
-    onError: (_, vars, ctx) => {
-      if (ctx?.prevAvatar)
-        queryClient.setQueryData(avatarKeys.detail(vars.id), ctx.prevAvatar);
-      if (ctx?.prevList)
-        queryClient.setQueryData(avatarKeys.lists(), ctx.prevList);
-    },
-    onSettled: (_, __, vars) => {
-      queryClient.invalidateQueries({ queryKey: avatarKeys.detail(vars.id) });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: avatarKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: avatarKeys.lists() });
     },
   });
@@ -333,20 +270,6 @@ export const useUpdateAvatar = () => {
 /** -----------------
  * Extra Hooks
  * ----------------- */
-export const useRefreshAvatars = () => {
-  const queryClient = useQueryClient();
-  return {
-    refreshAll: async () =>
-      queryClient.invalidateQueries({ queryKey: avatarKeys.all }),
-    refreshList: async () =>
-      queryClient.invalidateQueries({ queryKey: avatarKeys.lists() }),
-    refreshAvatar: async (id: string) =>
-      queryClient.invalidateQueries({ queryKey: avatarKeys.detail(id) }),
-    forceRefreshList: async () =>
-      queryClient.refetchQueries({ queryKey: avatarKeys.lists() }),
-  };
-};
-
 export const useActiveAvatar = () => {
   const { data: avatars } = useAvatars();
   const getActiveAvatarId = () =>

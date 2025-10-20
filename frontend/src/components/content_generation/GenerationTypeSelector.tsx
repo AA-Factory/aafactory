@@ -1,9 +1,10 @@
 import React from 'react';
-import { PiFileVideoBold } from 'react-icons/pi';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 interface GenerationType {
   id: string;
   label: string;
+  disabled?: boolean;
 }
 interface GenerationTypeSelectorProps {
   state: { type: GenerationType | null };
@@ -18,13 +19,14 @@ export const GenerationTypeSelector: React.FC<GenerationTypeSelectorProps> = ({
   setType,
   types,
   title = 'Select generation type',
-  icon: Icon = PiFileVideoBold,
+  icon: Icon = () => <div></div>,
 }) => {
-  // Get the current selected type - works for videoType, imageType, etc.
-
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold mb-4 dark:text-white">{title}</h2>
+      <div className="flex items-center space-x-2">
+        <h2 className="text-lg font-bold mb-1 dark:text-white">{title}</h2>
+        <Tooltip text="Choose the type of content generation you want to perform" />
+      </div>
       <div className="grid grid-cols-1 gap-3 overflow-scroll">
         {types.map((type) => {
           return (
@@ -34,10 +36,10 @@ export const GenerationTypeSelector: React.FC<GenerationTypeSelectorProps> = ({
               className={`p-4 rounded-lg border-2 flex justify-center flex-col items-center space-y-2 transition-all w-full dark:text-white min-h-[130px] ${
                 state.type?.id === type.id
                   ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-400'
+                  : `border-gray-200 dark:border-gray-700 ${type.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400'}`
               }`}
+              disabled={type.disabled}
             >
-              {/* Render the icon if provided */}
               <Icon
                 className={`w-6 h-6 ${
                   state.type?.id === type.id
@@ -53,11 +55,11 @@ export const GenerationTypeSelector: React.FC<GenerationTypeSelectorProps> = ({
                 }`}
               >
                 {type.label}
-                {/* {state.type?.id !== type.id && (
+                {type.disabled && (
                   <span className="block text-xs font-normal mt-1">
                     Coming Soon
                   </span>
-                )} */}
+                )}
               </span>
             </button>
           );

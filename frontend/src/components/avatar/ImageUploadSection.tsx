@@ -1,36 +1,40 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { HiCamera, HiUpload } from 'react-icons/hi';
+import { useFileDragDrop } from '@/hooks/use-file-drag-drop';
+import { Label } from '@/components/ui/Label';
 
 interface ImageUploadSectionProps {
-  register: any;
+  register: (name: 'image') => Record<string, unknown>;
   selectedImage: string | null;
-  isDragging: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   existingImageUrl?: string | null;
+  fileSelect: (file: File) => void;
 }
 
 export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   register,
   selectedImage,
-  isDragging,
   fileInputRef,
-  onDragOver,
-  onDragLeave,
-  onDrop,
   onFileSelect,
   error,
   existingImageUrl,
+  fileSelect,
 }) => {
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      fileSelect(file);
+    },
+    [fileSelect],
+  );
+
+  const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
+    useFileDragDrop(handleFileSelect, ['image/*']);
+
   return (
     <div className="mb-3">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Avatar Image
-      </label>
+      <Label htmlFor="image">Avatar Image</Label>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
         Upload an image for the avatar (optional), If none is provided a default
         will be used
@@ -44,9 +48,9 @@ export const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
               ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
               : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50'
         }`}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <input
           {...register('image')}

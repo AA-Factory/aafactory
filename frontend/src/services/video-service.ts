@@ -1,5 +1,9 @@
 import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
-import { type VideoGenerationTaskRequest, VideoGenerationConfig, VideoGenerationPayload } from '@/lib/types/tasks';
+import {
+  type VideoGenerationTaskRequest,
+  VideoGenerationConfig,
+  VideoGenerationPayload,
+} from '@/lib/types/tasks';
 
 // Types
 export type GenerateVideoPayload = {
@@ -14,7 +18,7 @@ export type GenerateVideoPayload = {
 export type GenerateVideoResponse = {
   videoUrl: string;
   filename: string;
-  promptId: string;
+  taskId: string;
   base64Video: string;
 };
 
@@ -24,8 +28,9 @@ function createTaskRequest(
   audioBase64: string,
 ): VideoGenerationTaskRequest {
   return {
-    server_name:
-      !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'infinite_talk',
+    server_name: !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT
+      ? 'mock'
+      : 'infinite_talk',
     task_name: 'prompt_image_audio_to_video',
     payload: {
       prompt: payload.prompt,
@@ -46,7 +51,7 @@ export function createVideoResponse(
     base64Video: response.base64,
     videoUrl: response.url,
     filename: response.filename,
-    promptId: response.promptId,
+    taskId: response.taskId,
   };
 }
 

@@ -41,7 +41,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     isFading: false,
   });
 
-  const pathname = usePathname();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
 

@@ -3,7 +3,7 @@ import { saveBase64File, SaveFileResult } from './fileUtils';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
 import { AudioTask, TaskDocument, TaskType } from '@/lib/types/tasks';
-import { CeleryTaskStatus } from '@/lib/types/celery'
+import { CeleryTaskStatus } from '@/lib/types/celery';
 interface CreateTaskParams {
   taskId: string;
   avatarId: string;
@@ -37,19 +37,9 @@ export async function createTask(
       _id: result.insertedId.toString(),
     };
   } catch (error) {
-    console.error(
-      'issue',
-      JSON.stringify(
-        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
-        null,
-        4,
-      ),
-    );
-
     console.error('Error creating task:', error);
-
-    return Promise.reject(
-      `Failed to create task: ${JSON.stringify(error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied, null, 4)}`,
+    throw new Error(
+      `Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }
@@ -77,15 +67,6 @@ export async function updateTaskStatus(
       throw new Error(`Task with ID ${taskId} not found`);
     }
   } catch (error) {
-    console.error(
-      'issue',
-      JSON.stringify(
-        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
-        null,
-        4,
-      ),
-    );
-
     console.error('Error updating task status:', error);
     throw new Error(
       `Failed to update task status: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -144,7 +125,7 @@ export async function updateTaskWithFile(
     const fileResult = await saveBase64File(
       base64Data,
       taskId,
-      task.taskType.toLowerCase() as 'audio' | 'video' | 'image'
+      task.taskType.toLowerCase() as 'audio' | 'video' | 'image',
     );
 
     // Update task with file path
@@ -164,31 +145,8 @@ export async function updateTaskWithFile(
         },
       },
     );
-    // const resourceType = task.taskType as ResourceType;
-    // const config = RESOURCE_CONFIG[resourceType];
-    // const fileInfo = {
-    //   filename: `${taskId}.${fileResult.fileType}`,
-    //   path: `/uploads/${resourceType}/${fileResult.fileName}`,
-    //   url: `/uploads/${resourceType}/${fileResult.fileName}`,
-    //   type: fileResult.fileType,
-    //   size: 1251304, // Placeholder size, replace with actual if available
-    //   resourceType: resourceType,
-    //   uploadedAt: new Date(),
-    // };
-
-    // const resourceCollection = await getCollection(config.collection);
-    // await resourceCollection.insertOne(fileInfo);
     return fileResult;
   } catch (error) {
-    console.error(
-      'issue',
-      JSON.stringify(
-        error.errInfo.details.schemaRulesNotSatisfied[0].propertiesNotSatisfied,
-        null,
-        4,
-      ),
-    );
-
     console.error('Error updating task with file:', error);
     throw new Error(
       `Failed to update task with file: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -7,17 +7,15 @@ import React, {
 } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  HiExclamationCircle,
-  HiChevronDown,
-  HiChevronUp,
-  HiLightningBolt,
-} from 'react-icons/hi';
+import { HiChevronDown, HiChevronUp, HiLightningBolt } from 'react-icons/hi';
 import { createAvatarFormSchema, AvatarFormData } from '@/lib/types/avatar';
 import { ImageUploadSection } from './ImageUploadSection';
 import { AudioUploadSection } from './AudioUploadSection';
-import { generateFakeFormData } from '@/utils/fakeData';
+import { FormField } from './FormField';
+import { getRandomSeed } from '@/utils/fakeData';
 import { CATEGORY_OPTIONS } from '@/lib/avatar/constants';
+import { Button } from '@/components/ui/Button';
+
 interface AvatarFormProps {
   onSubmit: (data: AvatarFormData) => void;
   defaultValues?: Partial<AvatarFormData>;
@@ -33,86 +31,6 @@ export interface AvatarFormRef {
   reset: (values?: Partial<AvatarFormData>) => void;
   fillWithFakeData: () => void;
 }
-
-interface FormFieldProps {
-  name: keyof AvatarFormData;
-  label: string;
-  type?: 'text' | 'textarea' | 'select';
-  rows?: number;
-  placeholder?: string;
-  register: any;
-  error?: string;
-  options?: ReadonlyArray<{ label: string; value: string }> | undefined;
-  hidden?: boolean;
-  required?: boolean;
-}
-
-const FormField: React.FC<FormFieldProps> = ({
-  name,
-  label,
-  type = 'text',
-  rows,
-  placeholder,
-  register,
-  error,
-  options,
-  hidden,
-  required = false,
-}) => {
-  if (hidden) return null;
-  const baseClasses =
-    'w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm';
-  const errorClasses = error
-    ? 'border-red-300 dark:border-red-600'
-    : 'border-gray-300 dark:border-gray-600';
-
-  return (
-    <div className="mb-3">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-        {required && <span className="text-red-500 dark:text-red-400"> *</span>}
-      </label>
-
-      {type === 'textarea' ? (
-        <textarea
-          {...register(name)}
-          rows={rows}
-          placeholder={placeholder}
-          className={`${baseClasses} resize-none placeholder-gray-500 dark:placeholder-gray-400 ${errorClasses}`}
-        />
-      ) : type === 'select' && options ? (
-        <div className="relative">
-          <select
-            {...register(name)}
-            className={`${baseClasses} appearance-none cursor-pointer ${errorClasses}`}
-          >
-            <option value="">Select {label.toLowerCase()}</option>
-            {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <HiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
-        </div>
-      ) : (
-        <input
-          type="text"
-          {...register(name)}
-          placeholder={placeholder}
-          className={`${baseClasses} placeholder-gray-500 dark:placeholder-gray-400 ${errorClasses}`}
-        />
-      )}
-
-      {error && (
-        <div className="mt-1 flex items-center space-x-1 text-red-600 dark:text-red-400">
-          <HiExclamationCircle className="h-3 w-3" />
-          <span className="text-xs">{error}</span>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
   (
@@ -133,8 +51,6 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
     });
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedAudio, setSelectedAudio] = useState<File | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isAudioDragging, setIsAudioDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const audioFileInputRef = useRef<HTMLInputElement>(null);
     const avatarFormSchema = createAvatarFormSchema(editMode);
@@ -151,7 +67,9 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
 
     // Generate fake data function
     const fillWithFakeData = () => {
-      const fakeData = generateFakeFormData();
+      const fakeData = {
+        name: getRandomSeed('name'),
+      };
       reset(fakeData);
       setSelectedImage(null); // Clear any existing image
       setSelectedAudio(null); // Clear any existing audio
@@ -196,26 +114,6 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
       }));
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleFileSelect(files[0]);
-      }
-    };
-
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (files && files.length > 0) {
@@ -230,27 +128,6 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         setSelectedImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-    };
-
-    // Audio drag and drop handlers
-    const handleAudioDragOver = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsAudioDragging(true);
-    };
-
-    const handleAudioDragLeave = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsAudioDragging(false);
-    };
-
-    const handleAudioDrop = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsAudioDragging(false);
-
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleAudioFileSelect(files[0]);
-      }
     };
 
     const handleAudioFileInputChange = (
@@ -360,28 +237,22 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           <ImageUploadSection
             register={register}
             selectedImage={selectedImage}
-            isDragging={isDragging}
             fileInputRef={fileInputRef}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
             onFileSelect={handleFileInputChange}
             error={errors.image?.message}
             existingImageUrl={existingImageUrl}
+            fileSelect={handleFileSelect}
           />
 
           <AudioUploadSection
             register={register}
             selectedAudio={selectedAudio}
-            isDragging={isAudioDragging}
             fileInputRef={audioFileInputRef}
-            onDragOver={handleAudioDragOver}
-            onDragLeave={handleAudioDragLeave}
-            onDrop={handleAudioDrop}
             onFileSelect={handleAudioFileInputChange}
             error={errors.trainingAudio?.message}
             existingAudioUrl={existingAudioUrl}
             existingAudioFileName={existingAudioFileName}
+            fileSelect={handleAudioFileSelect}
           />
         </Section>
 
@@ -389,34 +260,29 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
         <div className="flex justify-between items-center pt-4">
           {/* Development Mode: Fake Data Button */}
           {process.env.NODE_ENV === 'development' && !editMode && (
-            <button
-              type="button"
-              onClick={fillWithFakeData}
-              className="inline-flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
+            <Button type="button" variant="yellow" onClick={fillWithFakeData}>
               <HiLightningBolt className="h-4 w-4" />
               <span>Fill with Fake Data</span>
-            </button>
+            </Button>
           )}
 
           <div className="flex gap-3 ml-auto">
             {!editMode && onSaveAndCreateImage && (
-              <button
+              <Button
                 type="button"
                 onClick={handleSaveAndCreateImage}
                 disabled={isSubmitting}
-                className="inline-block bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                variant="green"
               >
                 {isSubmitting ? 'Saving...' : 'Save & Create Image'}
-              </button>
+              </Button>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className={`inline-block bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                editMode && !onSaveAndCreateImage ? 'w-full' : ''
-              }`}
+              variant="info"
+              className={`${editMode && !onSaveAndCreateImage ? 'w-full' : ''}`}
             >
               {isSubmitting
                 ? editMode
@@ -425,7 +291,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
                 : editMode
                   ? 'Update Avatar'
                   : 'Create Avatar'}
-            </button>
+            </Button>
           </div>
         </div>
       </form>

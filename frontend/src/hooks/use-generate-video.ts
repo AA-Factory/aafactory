@@ -1,22 +1,23 @@
+// frontend/src/hooks/use-generate-video.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  prepareAudioData,
-  createAudioResponse,
-  type GenerateAudioPayload,
-} from '@/services/audioService';
+  prepareVideoData,
+  createVideoResponse,
+  type GenerateVideoPayload,
+} from '@/services/video-service';
 import {
   CELERY_RUN_TASK,
   CELERY_TASK_STATUS,
   POLLING_CONFIG,
 } from '@/lib/celery/constants';
 
-export function useGenerateAudio() {
+export function useGenerateVideo() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['generateAudio'],
-    mutationFn: async (payload: GenerateAudioPayload) => {
-      // 1. Prepare audio data
-      const { taskRequest } = await prepareAudioData(payload);
+    mutationKey: ['generateVideo'],
+    mutationFn: async (payload: GenerateVideoPayload) => {
+      // 1. Prepare video data
+      const { taskRequest } = await prepareVideoData(payload);
 
       // 2. Call CELERY_RUN_TASK
       const response = await fetch(CELERY_RUN_TASK, {
@@ -34,23 +35,25 @@ export function useGenerateAudio() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           taskId: task_id,
-          avatarId: payload.avatar?.id || '',
-          taskType: 'audio',
-          userPrompt: payload.dialog,
+          avatarId: payload.avatarId || '',
+          taskType: 'video',
+          userPrompt: payload.prompt,
           status: 'PENDING',
         }),
       });
-
+      queryClient.invalidateQueries({
+        queryKey: ['tasks', 'video', { avatarId: payload.avatarId }],
+      });
       // 4. Poll for completion
       const pollStatus = async (): Promise<any> => {
         const data = await queryClient.fetchQuery({
-          queryKey: ['audioTaskStatus', task_id],
+          queryKey: ['videoTaskStatus', task_id],
           queryFn: async () => {
             const response = await fetch(`${CELERY_TASK_STATUS}${task_id}`);
             if (!response.ok) throw new Error('Failed to fetch task status');
             return response.json();
           },
-          staleTime: POLLING_CONFIG['audio'].STALE_TIME,
+          staleTime: POLLING_CONFIG['video'].STALE_TIME,
         });
 
         if (data.status === 'SUCCESS' && data.result) {
@@ -63,8 +66,10 @@ export function useGenerateAudio() {
               status: 'SUCCESS',
             }),
           });
-          queryClient.invalidateQueries({ queryKey: ['tasks', 'audio', { avatarId: payload.avatar?.id }] });
-          return createAudioResponse(data.result, task_id);
+          queryClient.invalidateQueries({
+            queryKey: ['tasks', 'video', { avatarId: payload.avatarId }],
+          });
+          return createVideoResponse(data.result, task_id);
         } else if (data.status === 'FAILURE') {
           await fetch(`/api/task/${task_id}`, {
             method: 'PUT',
@@ -74,12 +79,12 @@ export function useGenerateAudio() {
               error: data.error || 'No result returned from task',
             }),
           });
-          throw new Error(data.error || 'Audio generation failed');
+          throw new Error(data.error || 'Video generation failed');
         }
 
         // Still pending, wait and try again
         await new Promise((resolve) =>
-          setTimeout(resolve, POLLING_CONFIG['audio'].REFETCH_INTERVAL),
+          setTimeout(resolve, POLLING_CONFIG['video'].REFETCH_INTERVAL),
         );
         return pollStatus();
       };

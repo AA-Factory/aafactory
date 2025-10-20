@@ -27,7 +27,7 @@ export default function Home() {
           character, or an AI-powered presenter — AAFactory gives you the tools
           to bring your avatars to life.
         </p>
-        <p className="mt-4 text-md text-gray-500 dark:text-gray-400 animate-fade-in-delayed-2">
+        <p className="mt-4 text-md text-gray-700 dark:text-gray-300 animate-fade-in-delayed-2">
           Get started by creating your own avatar or exploring our documentation
         </p>
         <div className="mt-8 animate-fade-in-delayed-3">

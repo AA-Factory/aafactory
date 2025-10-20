@@ -1,8 +1,8 @@
 import { writeFile, mkdir, unlink } from 'fs/promises';
-import { existsSync } from 'fs';
-import fs from 'fs';
 import path from 'path';
+import fs, { existsSync } from 'fs';
 import { RESOURCE_DIRECTORIES } from './resource/constants';
+
 export interface SaveFileResult {
   filePath: string;
   fileName: string;
@@ -61,7 +61,7 @@ export async function saveBase64File(
 
 function getFileExtension(
   base64Data: string,
-  defaultType: 'audio' | 'video' | 'image'
+  defaultType: 'audio' | 'video' | 'image',
 ): string {
   // Check data URL for MIME type
   const dataUrlMatch = base64Data.match(/^data:([^;]+);base64,/);
@@ -107,7 +107,17 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
 
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
-    const absolutePath = path.join(process.cwd(), 'public/uploads', filePath);
+    // Remove leading /uploads/ if present, since we'll add public/ prefix
+    const cleanPath = filePath.startsWith('/uploads/')
+      ? filePath.substring('/uploads/'.length)
+      : filePath;
+
+    const absolutePath = path.join(
+      process.cwd(),
+      'public',
+      'uploads',
+      cleanPath,
+    );
 
     if (!existsSync(absolutePath)) {
       return {
@@ -230,7 +240,6 @@ export async function cleanAllDirectories() {
 
 export async function cleanSpecificDirectories(directories: string[]) {
   const baseDir = path.join(process.cwd(), 'public/uploads');
-
 
   for (const dir of directories) {
     if (!RESOURCE_DIRECTORIES.includes(dir)) {

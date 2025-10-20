@@ -6,22 +6,14 @@ import { CreateAvatarCard } from '@/components/avatars/CreateAvatarCard';
 import EmptyState from '@/components/avatars/EmptyState';
 import LoadingState from '@/components/avatars/LoadingState';
 import { useNotification } from '@/contexts/NotificationContext';
-import { useAvatars, useDeleteAvatar } from '@/hooks/useAvatars';
+import { useAvatars, useDeleteAvatar } from '@/hooks/use-avatars';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 
 const Avatars: React.FC = () => {
-  // ====== Hooks & Context ======
-  const { showNotification, hideNotification, notification } =
-    useNotification();
-  const {
-    activeAvatarIds,
-    toggleActiveAvatar,
-    removeActiveAvatar,
-    isAvatarActive,
-  } = useActiveAvatars();
+  const { showNotification } = useNotification();
+  const { removeActiveAvatar, isAvatarActive } = useActiveAvatars();
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
-  // ====== Data Fetching (TanStack Query) ======
-  const { data: avatars = [], isLoading, error, refetch } = useAvatars();
+  const { data: avatars = [], isLoading } = useAvatars();
   const deleteAvatarMutation = useDeleteAvatar();
 
   const handleDeleteAvatar = (e: React.MouseEvent, avatarId: string) => {
@@ -35,7 +27,6 @@ const Avatars: React.FC = () => {
     try {
       await deleteAvatarMutation.mutateAsync(selectedAvatar);
 
-      // Remove from active avatars if it was active
       if (isAvatarActive(selectedAvatar)) {
         removeActiveAvatar(selectedAvatar);
       }
@@ -55,7 +46,6 @@ const Avatars: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section with Active Avatars Display */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             Choose Your Avatars

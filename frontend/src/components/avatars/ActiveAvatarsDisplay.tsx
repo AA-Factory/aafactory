@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
-import { useAvatars } from '@/hooks/useAvatars';
+import { useAvatars } from '@/hooks/use-avatars';
 
 interface ActiveAvatarsDisplayProps {
   maxDisplay?: number;

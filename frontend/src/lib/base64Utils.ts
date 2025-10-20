@@ -52,10 +52,7 @@ function isValidBase64(str: string): boolean {
 /**
  * Converts a base64 string to a Blob
  */
-function base64ToBlob(
-  base64String: string,
-  mimeType = 'audio/wav',
-): Blob {
+function base64ToBlob(base64String: string, mimeType = 'audio/wav'): Blob {
   try {
     const cleanedBase64 = cleanBase64(base64String);
 
@@ -250,7 +247,7 @@ export function createMediaResponse(
   taskId: string,
   mediaType: 'audio' | 'video' | 'image',
   customMimeType?: string,
-): { base64: string; url: string; filename: string; promptId: string } {
+): { base64: string; url: string; filename: string; taskId: string } {
   try {
     // Handle case where base64Data might be wrapped in an object
     const cleanData =
@@ -290,7 +287,7 @@ export function createMediaResponse(
       base64: cleanData,
       url,
       filename,
-      promptId: taskId,
+      taskId: taskId,
     };
   } catch (error) {
     if (error instanceof Base64Error) throw error;

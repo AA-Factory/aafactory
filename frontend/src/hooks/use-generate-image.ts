@@ -1,9 +1,10 @@
+// frontend/src/hooks/use-generate-image.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   prepareImageData,
   createImageResponse,
   type GenerateImagePayload,
-} from '@/services/imageService';
+} from '@/services/image-service';
 import {
   CELERY_RUN_TASK,
   CELERY_TASK_STATUS,

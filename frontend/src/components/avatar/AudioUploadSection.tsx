@@ -1,37 +1,43 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useFileDragDrop } from '@/hooks/use-file-drag-drop';
+import { HiMicrophone, HiUpload } from 'react-icons/hi';
+import { Label } from '@/components/ui/Label';
 
 interface AudioUploadSectionProps {
-  register: any;
+  register: (name: 'trainingAudio') => Record<string, unknown>;
   selectedAudio: File | null;
-  isDragging: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   existingAudioUrl?: string | null;
   existingAudioFileName?: string | null;
+  fileSelect: (file: File) => void;
 }
 
 export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
   register,
   selectedAudio,
-  isDragging,
   fileInputRef,
-  onDragOver,
-  onDragLeave,
-  onDrop,
   onFileSelect,
   error,
   existingAudioUrl,
   existingAudioFileName,
+  fileSelect,
 }) => {
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      fileSelect(file);
+    },
+    [fileSelect],
+  );
+
+  const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
+    useFileDragDrop(handleFileSelect, ['audio/*']);
   return (
     <div className="mb-3">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <Label htmlFor="trainingAudio" className="mb-1">
         Training Audio
-      </label>
+      </Label>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
         Upload audio samples for voice training (optional)
       </p>
@@ -44,9 +50,9 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
               ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
               : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-700/50'
         }`}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <input
           {...register('trainingAudio')}
@@ -98,13 +104,13 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
           </div>
         ) : (
           <div className="space-y-2">
-            {/* <div className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">
+            <div className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">
               {isDragging ? (
                 <HiUpload className="h-full w-full" />
               ) : (
                 <HiMicrophone className="h-full w-full" />
               )}
-            </div> */}
+            </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
               {isDragging ? (
                 <span className="font-medium text-blue-600 dark:text-blue-400">

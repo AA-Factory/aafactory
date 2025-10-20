@@ -10,8 +10,7 @@ import {
   useCreateAvatar,
   useUpdateAvatar,
   useDeleteAvatar,
-  useRefreshAvatars,
-} from '@/hooks/useAvatars';
+} from '@/hooks/use-avatars';
 import Link from 'next/link';
 import { encodeFormDataIntoImage } from '@/utils/steganography';
 import { useRouter } from 'next/navigation';
@@ -36,7 +35,6 @@ export default function AvatarPage({
   const createAvatarMutation = useCreateAvatar();
   const updateAvatarMutation = useUpdateAvatar();
   const deleteAvatarMutation = useDeleteAvatar();
-  const { refreshAll } = useRefreshAvatars();
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -142,7 +140,7 @@ export default function AvatarPage({
 
         if (file) {
           const extension = file.type.split('/')[1];
-          fileName = `${data.name || 'avatar'}-original.${extension}`;
+          fileName = file.name;
           avatarData.hasEncodedData = false;
         }
 
@@ -161,18 +159,17 @@ export default function AvatarPage({
           'Avatar saved! Redirecting to image generation...',
           'success',
         );
-        refreshAll();
 
         // Navigate to image generation page
         router.push('/content_creation/generate_image');
-      } catch (err: any) {
+      } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         showNotification(errorMessage, 'error');
       } finally {
         setIsSubmitting(false);
       }
     },
-    [createAvatarMutation, refreshAll, router, showNotification],
+    [createAvatarMutation, router, showNotification],
   );
 
   const handleSaveOnly = useCallback(
@@ -223,7 +220,6 @@ export default function AvatarPage({
           showNotification('Avatar successfully saved!', 'success');
         }
 
-        refreshAll();
         router.push('/avatars');
       } catch (err: any) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -235,7 +231,6 @@ export default function AvatarPage({
       avatarId,
       createAvatarMutation,
       updateAvatarMutation,
-      refreshAll,
       router,
       showNotification,
     ],

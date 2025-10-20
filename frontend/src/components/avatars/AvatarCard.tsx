@@ -12,7 +12,7 @@ import { Avatar } from '@/lib/types/avatar';
 import { AVATAR_CONSTANTS } from '@/lib/avatar/constants';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import Link from 'next/link';
-
+import { usePrefetchAvatar } from '@/hooks/use-avatars';
 interface AvatarCardProps {
   avatar: Avatar;
   avatarToDeleteId?: string | null;
@@ -32,7 +32,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
   const isActive = isAvatarActive(avatar.id);
   const isInDeleteMode = avatarToDeleteId === avatar.id;
-
+  const prefetchAvatar = usePrefetchAvatar();
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).src = AVATAR_CONSTANTS.FALLBACK_IMAGE;
   };
@@ -40,7 +40,9 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
   const handleToggleActive = () => {
     toggleActiveAvatar(avatar.id);
   };
-
+  const handleMouseEnter = () => {
+    prefetchAvatar(avatar.id);
+  };
   const handleCancelDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirmation(false);
@@ -91,6 +93,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
                 : 'transform translate-x-0 opacity-100'
             }`}
             title="Edit Avatar"
+            onMouseEnter={() => handleMouseEnter()}
           >
             <HiPencil className="w-3 h-3 text-white" />
           </Link>

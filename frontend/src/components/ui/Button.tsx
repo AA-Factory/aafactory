@@ -1,8 +1,16 @@
 // components/Button.tsx
 import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'danger' | 'info' | 'secondary' | 'outline';
+  variant?:
+    | 'primary'
+    | 'danger'
+    | 'info'
+    | 'secondary'
+    | 'outline'
+    | 'green'
+    | 'yellow';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   children: React.ReactNode;
@@ -36,6 +44,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white',
       outline:
         'border-2 border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20',
+      green:
+        'bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white',
+      yellow:
+        'bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-400 dark:hover:bg-yellow-500 text-white',
     };
 
     // Size styles
@@ -49,13 +61,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const widthStyle = fullWidth ? 'w-full' : '';
 
     // Combine all styles
-    const combinedClassName = `
-      ${baseStyles}
-      ${variantStyles[variant]}
-      ${sizeStyles[size]}
-      ${widthStyle}
-      ${className}
-    `.trim();
+    const combinedClassName = cn(
+      baseStyles,
+      variantStyles[variant],
+      sizeStyles[size],
+      widthStyle,
+      className,
+    );
 
     return (
       <button
@@ -69,5 +81,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
   },
 );
-
 Button.displayName = 'Button';

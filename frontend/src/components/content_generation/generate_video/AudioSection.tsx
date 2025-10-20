@@ -3,17 +3,13 @@ import { AudioGenerateTab } from './AudioGenerateTab';
 import { AudioUploadTab } from './AudioUploadTab';
 import { AudioSelector } from './AudioSelector';
 import { AudioPlayer } from './AudioPlayer';
-import { useGenerateAudio } from '@/hooks/useGenerateAudio';
+import { useGenerateAudio } from '@/hooks/use-generate-audio';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useAudioTasks } from '@/lib/api/tasks';
 import { AudioTask } from '@/lib/types/tasks';
-import { DIALOG_SEEDS } from '@/utils/fakeData';
+import { getRandomSeed } from '@/utils/fakeData';
 import { MIN_AUDIO_DURATION } from '@/lib/task/constants';
-
-const getRandomDialogSeed = () => {
-  return DIALOG_SEEDS[Math.floor(Math.random() * DIALOG_SEEDS.length)];
-};
 
 export const AudioSection: React.FC = () => {
   const { state, setAudioData } = useVideoGeneration();
@@ -21,7 +17,7 @@ export const AudioSection: React.FC = () => {
   const [selectedAudioSource, setSelectedAudioSource] = useState<
     'avatar' | 'rick_and_morty' | 'japanese'
   >('avatar');
-  const [dialog, setDialog] = useState(getRandomDialogSeed());
+  const [dialog, setDialog] = useState(getRandomSeed('dialog'));
   const [uploadedAudioFile, setUploadedAudioFile] = useState<File | null>(null);
   const [uploadedAudioUrl, setUploadedAudioUrl] = useState<string | null>(null);
   const [selectedAudioTask, setSelectedAudioTask] = useState<AudioTask | null>(
@@ -33,14 +29,14 @@ export const AudioSection: React.FC = () => {
   const [generatedAudioBase64, setGeneratedAudioBase64] = useState<
     string | null
   >(null);
-  const [loadingAudioTasks, setLoadingAudioTasks] = useState(false);
+
   const [isInitialized, setIsInitialized] = useState(false);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
 
   const generateAudioMutation = useGenerateAudio();
 
   const { showNotification } = useNotification();
-  const { data: audioTasks = [] } = useAudioTasks(
+  const { data: audioTasks = [], isLoading: loadingAudioTasks } = useAudioTasks(
     state.avatar?.id || '',
     'SUCCESS',
   );
@@ -74,7 +70,7 @@ export const AudioSection: React.FC = () => {
       );
       if (contextTask) {
         setSelectedAudioTask(contextTask);
-        setDialog(contextTask.userPrompt || getRandomDialogSeed());
+        setDialog(contextTask.userPrompt || getRandomSeed('dialog'));
       }
       setIsInitialized(true);
     } else if (!isInitialized && memoizedAudioTasks.length > 0) {

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { UploadButton } from '../shared/UploadButton';
-import { useResourceAPI } from '@/hooks/useResourceAPI';
+import { useResourceAPI } from '@/hooks/use-resource';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
 interface ResourcePanelProps {

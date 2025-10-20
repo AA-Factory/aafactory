@@ -1,27 +1,21 @@
 import React, { useState } from 'react';
 import { TextToImageTab } from './TextToImageTab';
 import { ImageToImageTab } from './ImageToImageTab';
-import { useGenerateImage } from '@/hooks/useGenerateImage';
+import { useGenerateImage } from '@/hooks/use-generate-image';
 import { useNotification } from '@/contexts/NotificationContext';
 import { type ImageRatio, ImageQuality, ImageTask } from '@/lib/types/tasks';
 import { fileToBase64 } from '@/lib/base64Utils';
 import { useImageGeneration } from '@/contexts/ImageGenerationContext';
-
+import { getRandomSeed } from '@/utils/fakeData';
 export const ImageSection: React.FC = () => {
   const [positivePrompt, setPositivePrompt] = useState(
-    'a professional headshot of a software developer',
+    getRandomSeed('image_avatar_prompt'),
   );
   const { state, setTask, tasks } = useImageGeneration();
   const [negativePrompt, setNegativePrompt] = useState('low quality');
   const [imageRatio, setImageRatio] = useState<ImageRatio>('1:1');
   const [imageQuality, setImageQuality] = useState<ImageQuality>('medium');
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
-    null,
-  );
-  const [generatedImageBase64, setGeneratedImageBase64] = useState<
-    string | null
-  >(null);
 
   const generateImageMutation = useGenerateImage();
   const { showNotification } = useNotification();
@@ -38,8 +32,7 @@ export const ImageSection: React.FC = () => {
       const blob = await response.blob();
 
       // Create a File object from the blob
-      const fileName =
-        imageTask.metadata?.resultData?.fileName || 'selected-image.png';
+      const fileName = imageTask.fileName || 'selected-image.png';
       const file = new File([blob], fileName, { type: blob.type });
 
       setUploadedImageFile(file);
@@ -78,7 +71,7 @@ export const ImageSection: React.FC = () => {
 
     const payload = {
       avatar: state.avatar,
-      taskName: state.type,
+      taskName: state.type?.id,
       positivePrompt: positivePrompt,
       negativePrompt: negativePrompt,
       imageRatio: imageRatio || null,
@@ -88,13 +81,9 @@ export const ImageSection: React.FC = () => {
 
     generateImageMutation.mutate(payload, {
       onSuccess: (imageResponse) => {
-        setGeneratedImageBase64(imageResponse.base64Image);
-        setGeneratedImageUrl(imageResponse.imageUrl);
-        showNotification('Image generation started', 'info');
         if (imageResponse.base64Image && imageResponse.imageUrl) {
           showNotification('Image generation completed', 'success');
         }
-        // Clear selected task to reset state
         setTask(null);
       },
       onError: (error) => {

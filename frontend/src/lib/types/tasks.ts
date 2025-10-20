@@ -1,4 +1,4 @@
-import { CeleryTaskRequest, CeleryTaskStatus, ServerName } from './celery';
+import { CeleryTaskRequest, CeleryTaskStatus } from './celery';
 
 export type TaskType = 'audio' | 'video' | 'image';
 export interface AudioTask {
@@ -24,9 +24,9 @@ export interface ImageTask {
   filePath: string;
   status: CeleryTaskStatus;
   taskType: 'image';
+  fileName?: string;
   metadata?: {
     resultData?: {
-      fileName?: string;
       fileType?: string;
     };
   };
@@ -47,7 +47,12 @@ export interface AudioGenerationTaskRequest
 }
 
 // Video Generation Task
-export type VideoGenerationConfig = '6_steps' | '8_steps' | 'high_quality' | 'medium_quality' | 'quantize_model';
+export type VideoGenerationConfig =
+  | '6_steps'
+  | '8_steps'
+  | 'high_quality'
+  | 'medium_quality'
+  | 'quantize_model';
 export interface VideoGenerationPayload {
   prompt: string;
   image_bytes: string;
@@ -105,6 +110,9 @@ export interface TaskDocument {
   userPrompt?: string;
   metadata?: {
     originalRequest?: any;
-    resultData?: any;
+    resultData?: {
+      fileName?: string;
+      fileType?: string;
+    };
   };
 }

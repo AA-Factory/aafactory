@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import {
   updateTaskStatus,
   updateTaskWithFile,
-  getTasks,
   deleteOldPendingTasks,
 } from '@/lib/taskDb';
 import {
@@ -10,25 +9,17 @@ import {
   MAX_PENDING_TASK_AGE_HOURS,
 } from '@/lib/celery/constants';
 import { isCeleryTaskStatusResponse } from '@/lib/types/celery';
-import { SUPPORTED_TASK_TYPES } from '@/lib/task/constants';
-import { TaskType } from '@/lib/types/tasks';
+import { TaskType, TaskDocument } from '@/lib/types/tasks';
+import { getCollection } from '@/lib/database';
+
 interface TaskCheckResult {
   taskId: string;
+  avatarId: string;
+  taskType: TaskType;
   oldStatus: string;
   newStatus: string;
   statusChanged: boolean;
   error?: string;
-}
-
-interface SyncParams {
-  params: {
-    tasktype: string;
-    avatarId: string;
-  };
-}
-
-function isValidTaskType(taskType: string): taskType is TaskType {
-  return SUPPORTED_TASK_TYPES.includes(taskType as TaskType);
 }
 
 async function checkCeleryTaskStatus(taskId: string): Promise<any> {
@@ -95,43 +86,46 @@ async function updateTaskBasedOnStatus(
   }
 }
 
-export async function POST(request: Request, { params }: SyncParams) {
-  const { tasktype, avatarId } = params;
-
+async function getAllPendingTasks(): Promise<TaskDocument[]> {
   try {
-    // Validate task type
-    if (!isValidTaskType(tasktype)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Unsupported task type: ${tasktype}. Supported types: ${SUPPORTED_TASK_TYPES.join(', ')}`,
-          stats: { pending: 0, checked: 0, updated: 0, failed: 0 },
-          tasks: [],
-        },
-        { status: 400 },
-      );
-    }
-
-    console.log(`🔍 Starting ${tasktype} task status sync...`);
-
-    // Delete old pending tasks (older than 24 hours)
-    const deletedCount = await deleteOldPendingTasks(
-      avatarId,
-      tasktype,
-      MAX_PENDING_TASK_AGE_HOURS,
+    const collection = await getCollection<TaskDocument>('tasks');
+    return await collection
+      .find({ status: 'PENDING' })
+      .sort({ createdAt: -1 })
+      .toArray();
+  } catch (error) {
+    console.error('Error getting pending tasks:', error);
+    throw new Error(
+      `Failed to get pending tasks: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
-    if (deletedCount > 0) {
-      console.log(`🗑️ Deleted ${deletedCount} old pending ${tasktype} tasks`);
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    console.log(`🔍 Starting task status sync for all pending tasks...`);
+
+    // Delete old pending tasks (older than 24 hours) - no filter by avatarId or taskType
+    const collection = await getCollection<TaskDocument>('tasks');
+    const cutoffDate = new Date(
+      Date.now() - MAX_PENDING_TASK_AGE_HOURS * 60 * 60 * 1000,
+    );
+    const deleteResult = await collection.deleteMany({
+      status: 'PENDING',
+      createdAt: { $lt: cutoffDate },
+    });
+
+    if (deleteResult.deletedCount > 0) {
+      console.log(`🗑️ Deleted ${deleteResult.deletedCount} old pending tasks`);
     }
 
-    // Get pending tasks for the specified type
-    const pendingTasks = await getTasks(avatarId, tasktype, 'PENDING');
+    // Get all pending tasks
+    const pendingTasks = await getAllPendingTasks();
 
     if (pendingTasks.length === 0) {
       return NextResponse.json({
         success: true,
-        message: `No pending ${tasktype} tasks found`,
-        taskType: tasktype,
+        message: 'No pending tasks found',
         stats: {
           pending: 0,
           checked: 0,
@@ -142,7 +136,7 @@ export async function POST(request: Request, { params }: SyncParams) {
       });
     }
 
-    console.log(`📋 Found ${pendingTasks.length} pending ${tasktype} tasks`);
+    console.log(`📋 Found ${pendingTasks.length} pending tasks`);
 
     const results: TaskCheckResult[] = [];
     let updatedCount = 0;
@@ -160,7 +154,7 @@ export async function POST(request: Request, { params }: SyncParams) {
           const statusChanged = await updateTaskBasedOnStatus(
             task.taskId,
             taskResult,
-            tasktype,
+            task.taskType,
           );
 
           if (statusChanged) {
@@ -169,6 +163,8 @@ export async function POST(request: Request, { params }: SyncParams) {
 
           return {
             taskId: task.taskId,
+            avatarId: task.avatarId,
+            taskType: task.taskType,
             oldStatus: 'PENDING',
             newStatus: taskResult.status,
             statusChanged,
@@ -178,12 +174,14 @@ export async function POST(request: Request, { params }: SyncParams) {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error';
           console.error(
-            `❌ ${tasktype} task ${task.taskId} failed:`,
+            `❌ ${task.taskType} task ${task.taskId} failed:`,
             errorMessage,
           );
 
           return {
             taskId: task.taskId,
+            avatarId: task.avatarId,
+            taskType: task.taskType,
             oldStatus: 'PENDING',
             newStatus: 'ERROR',
             statusChanged: false,
@@ -202,13 +200,12 @@ export async function POST(request: Request, { params }: SyncParams) {
     }
 
     console.log(
-      `✅ ${tasktype} sync complete. Updated: ${updatedCount}, Failed: ${failedCount}`,
+      `✅ Sync complete. Updated: ${updatedCount}, Failed: ${failedCount}`,
     );
 
     return NextResponse.json({
       success: true,
-      message: `Synced ${pendingTasks.length} ${tasktype} tasks: ${updatedCount} updated, ${failedCount} failed`,
-      taskType: tasktype,
+      message: `Synced ${pendingTasks.length} tasks: ${updatedCount} updated, ${failedCount} failed`,
       stats: {
         pending: pendingTasks.length,
         checked: results.length,
@@ -220,13 +217,12 @@ export async function POST(request: Request, { params }: SyncParams) {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-    console.error(`❌ ${tasktype} task sync failed:`, errorMessage);
+    console.error(`❌ Task sync failed:`, errorMessage);
 
     return NextResponse.json(
       {
         success: false,
-        error: `${tasktype} task sync failed: ${errorMessage}`,
-        taskType: tasktype,
+        error: `Task sync failed: ${errorMessage}`,
         stats: {
           pending: 0,
           checked: 0,

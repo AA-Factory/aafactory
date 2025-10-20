@@ -1,13 +1,17 @@
 import { createMediaResponse } from '@/lib/base64Utils';
-import { type ImageGenerationTaskRequest, ImageTaskType, ImageRatio, ImageQuality } from '@/lib/types/tasks';
+import {
+  type ImageGenerationTaskRequest,
+  ImageTaskType,
+  ImageRatio,
+  ImageQuality,
+} from '@/lib/types/tasks';
 import { Avatar } from '@/lib/types/avatar';
 // Types
-
 
 type GenerateImageResponse = {
   imageUrl: string;
   filename: string;
-  promptId: string;
+  taskId: string;
   base64Image: string;
 };
 
@@ -16,21 +20,24 @@ export type GenerateImagePayload = {
   avatar?: Avatar | null;
   positivePrompt: string;
   negativePrompt?: string;
-  imageRatio?: ImageRatio | null;
+  imageRatio?: ImageRatio;
   imageQuality?: ImageQuality;
   base64Image?: string | null;
-
 };
 
 function createTaskRequest(
   payload: GenerateImagePayload,
 ): ImageGenerationTaskRequest {
   return {
-    server_name: !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'qwen_image',
-    task_name: payload.taskName.id || 'text_to_image',
+    server_name: !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT
+      ? 'mock'
+      : 'qwen_image',
+    task_name: payload.taskName || 'text_to_image',
     payload: {
       positive_prompt: payload.positivePrompt,
-      ...(payload.negativePrompt && { negative_prompt: payload.negativePrompt }),
+      ...(payload.negativePrompt && {
+        negative_prompt: payload.negativePrompt,
+      }),
       ...(payload.imageRatio && { image_ratio: payload.imageRatio }),
       ...(payload.imageQuality && { image_quality: payload.imageQuality }),
       ...(payload.base64Image && { image_bytes: payload.base64Image }),
@@ -47,7 +54,7 @@ export function createImageResponse(
     base64Image: response.base64,
     imageUrl: response.url,
     filename: response.filename,
-    promptId: response.promptId,
+    taskId: response.taskId,
   };
 }
 

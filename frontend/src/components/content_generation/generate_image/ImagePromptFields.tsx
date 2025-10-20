@@ -5,6 +5,9 @@ import { Spinner } from '@/components/ui/Spinner';
 import { type ImageRatio, ImageQuality } from '@/lib/types/tasks';
 import { IMAGE_QUALITIES, IMAGE_RATIOS } from '@/lib/task/constants';
 import { Button } from '@/components/ui/Button';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TextArea } from '@/components/ui/TextArea';
+import { Label } from '@/components/ui/Label';
 
 interface ImagePromptFieldsProps {
   positivePrompt: string;
@@ -37,24 +40,19 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
     <div className="space-y-4">
       {/* Positive Prompt */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <div className="flex items-center space-x-2">
-            <span>
-              Positive Prompt <span className="text-red-500">*</span>
-            </span>
-            <div className="relative group">
-              <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                Describe what you want in the image
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
-              </div>
-            </div>
-          </div>
-        </label>
-        <textarea
+        <Label
+          htmlFor="positivePrompt"
+          className="mb-2"
+          tooltipText="Describe the image you want to generate"
+          required
+        >
+          Positive Prompt
+        </Label>
+        <TextArea
+          id="positivePrompt"
           value={positivePrompt}
-          onChange={(e) => onPositivePromptChange(e.target.value)}
-          className="w-full h-24 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
+          onChange={onPositivePromptChange}
+          className="w-full h-24"
           placeholder="Describe the image you want to generate..."
           maxLength={500}
         />
@@ -65,22 +63,18 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
 
       {/* Negative Prompt */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <div className="flex items-center space-x-2">
-            <span>Negative Prompt</span>
-            <div className="relative group">
-              <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                Describe what you don&apos;t want in the image
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
-              </div>
-            </div>
-          </div>
-        </label>
-        <textarea
+        <Label
+          htmlFor="negativePrompt"
+          className="mb-2"
+          tooltipText="Describe what you don't want in the image"
+        >
+          Negative Prompt
+        </Label>
+        <TextArea
+          id="negativePrompt"
           value={negativePrompt}
-          onChange={(e) => onNegativePromptChange(e.target.value)}
-          className="w-full h-20 p-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800"
+          onChange={onNegativePromptChange}
+          className="w-full h-20"
           placeholder="Describe what you don't want..."
           maxLength={300}
         />
@@ -95,10 +89,15 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
       >
         {showImageRatio && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <Label
+              htmlFor="imageRatio"
+              className="mb-2"
+              tooltipText="Select the image aspect ratio"
+            >
               Image Ratio
-            </label>
+            </Label>
             <select
+              name="imageRatio"
               value={imageRatio}
               onChange={(e) => onImageRatioChange(e.target.value as ImageRatio)}
               className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
@@ -113,10 +112,15 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <Label
+            htmlFor="imageQuality"
+            className="mb-2"
+            tooltipText="Select the quality of the generated image"
+          >
             Quality
-          </label>
+          </Label>
           <select
+            name="imageQuality"
             value={imageQuality}
             onChange={(e) =>
               onImageQualityChange(e.target.value as ImageQuality)

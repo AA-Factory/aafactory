@@ -8,11 +8,13 @@ interface Step {
 interface StepProgressProps {
   steps: Step[];
   currentStep: number;
+  onStepChange: (step: number) => void;
 }
 
 export const StepProgress: React.FC<StepProgressProps> = ({
   steps,
   currentStep,
+  onStepChange,
 }) => {
   return (
     <ol className="flex justify-between items-center w-full p-3 space-x-2 text-sm font-medium text-center text-gray-500rounded-lg shadow-xs dark:text-gray-400 sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
@@ -23,9 +25,14 @@ export const StepProgress: React.FC<StepProgressProps> = ({
             currentStep === idx
               ? 'text-blue-600 dark:text-blue-500'
               : currentStep > idx
-                ? 'text-green-600 dark:text-green-500'
+                ? 'text-green-600 dark:text-green-500 cursor-pointer'
                 : 'text-gray-500 dark:text-gray-400'
           }`}
+          onClick={() => {
+            if (idx <= currentStep) {
+              onStepChange(idx);
+            }
+          }}
         >
           <span
             className={`flex items-center justify-center w-5 h-5 me-2 text-xs border rounded-full shrink-0 ${
@@ -42,7 +49,7 @@ export const StepProgress: React.FC<StepProgressProps> = ({
               idx + 1
             )}
           </span>
-          <span className="hidden sm:inline-flex">{step.label}</span>
+          <span className="hidden w-full sm:inline-flex">{step.label}</span>
           <span className="sm:hidden">{idx + 1}</span>
           {idx < steps.length - 1 && (
             <svg

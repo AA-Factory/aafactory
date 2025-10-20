@@ -1,26 +1,28 @@
 import React, { useState, useMemo } from 'react';
 import { TbSparkles } from 'react-icons/tb';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAvatars } from '@/hooks/useAvatars';
-import { useGenerateVideo } from '@/hooks/useGenerateVideo';
+import { useGenerateVideo } from '@/hooks/use-generate-video';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useVideoTasks } from '@/lib/api/tasks';
 import { fileToBase64, encodeMediaFile } from '@/lib/base64Utils';
-import { Spinner } from '../ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
+import { TextArea } from '@/components/ui/TextArea';
+import { Label } from '@/components/ui/Label';
 import { type VideoGenerationConfig } from '@/lib/types/tasks';
+import { VIDEO_CONFIG } from '@/lib/task/constants';
+import { getRandomSeed } from '@/utils/fakeData';
 
 export const VideoSection: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: avatars } = useAvatars();
   const { state } = useVideoGeneration();
 
   const generateVideoMutation = useGenerateVideo();
 
   const { showNotification } = useNotification();
   const [videoPrompt, setVideoPrompt] = useState(
-    'An ultra-realistic video of the avatar speaking the provided dialog, with natural facial expressions and lip-syncing, set against a simple background.',
+    getRandomSeed('video_avatar_prompt'),
   );
   const [config, setConfig] = useState<VideoGenerationConfig>('6_steps');
   const [lowVram, setLowVram] = useState(true);
@@ -60,17 +62,22 @@ export const VideoSection: React.FC = () => {
         showNotification('No avatar selected for video generation.', 'error');
         return;
       }
+      if (!state.selectedImageFilePath) {
+        showNotification('No image selected for video generation.', 'error');
+        return;
+      }
       const payload = {
         avatarId: state.avatar.id,
         imageSrc: state.selectedImageFilePath,
         audioBase64: audioToUse,
         prompt: videoPrompt,
+        dialog: state.dialog,
         config: config,
         lowVram: lowVram,
       };
       generateVideoMutation.mutate(payload, {
         onSuccess: (videoResponse) => {
-          showNotification('Video generation started', 'info');
+          showNotification('Video generation completed!', 'success');
           // Invalidate video tasks to refresh the list
           queryClient.invalidateQueries({
             queryKey: ['tasks', 'video', { avatarId: state.avatar?.id }],
@@ -96,7 +103,7 @@ export const VideoSection: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <TbSparkles className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+      {/* <TbSparkles className="w-10 h-10 text-blue-600 dark:text-blue-400" /> */}
       <h2 className="text-lg font-bold mb-4 dark:text-white">
         Ready to generate!
       </h2>
@@ -106,8 +113,7 @@ export const VideoSection: React.FC = () => {
           <strong>Video type:</strong> {state.videoType.label}
         </li>
         <li>
-          <strong>Avatar:</strong>{' '}
-          {avatars?.find((a) => a.id === state.avatar?.id)?.name}
+          <strong>Avatar:</strong> {state.avatar ? state.avatar.name : 'None'}
         </li>
         <li>
           <strong>Dialog:</strong> {state.dialog}
@@ -119,41 +125,36 @@ export const VideoSection: React.FC = () => {
 
       {/* Video Prompt Input */}
       <div className="w-full space-y-2">
-        <label
-          htmlFor="video-prompt"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-        >
-          Video Prompt
-        </label>
-        <textarea
+        <Label htmlFor="video-prompt">Video Prompt</Label>
+        <TextArea
           id="video-prompt"
           value={videoPrompt}
-          onChange={(e) => setVideoPrompt(e.target.value)}
+          className="max-w-xs w-full"
+          onChange={setVideoPrompt}
           placeholder="Describe how you want the video to look..."
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-          rows={3}
+          rows={5}
         />
       </div>
 
       {/* Config Selection */}
       <div className="w-full space-y-2">
-        <label
+        <Label
           htmlFor="config"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+          tooltipText="Select the video generation configuration"
         >
           Config
-        </label>
+        </Label>
         <select
           id="config"
           value={config}
           onChange={(e) => setConfig(e.target.value as VideoGenerationConfig)}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
         >
-          <option value="6_steps">6 steps</option>
-          <option value="8_steps">8 steps</option>
-          <option value="high_quality">High quality</option>
-          <option value="medium_quality">Medium quality</option>
-          <option value="quantize_model">Quantize model</option>
+          {VIDEO_CONFIG.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -166,12 +167,7 @@ export const VideoSection: React.FC = () => {
           onChange={(e) => setLowVram(e.target.checked)}
           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         />
-        <label
-          htmlFor="low-vram"
-          className="text-sm font-medium text-gray-700 dark:text-gray-200"
-        >
-          Low VRAM
-        </label>
+        <Label htmlFor="low-vram">Low VRAM</Label>
       </div>
 
       {isLimitReached && (
@@ -182,11 +178,12 @@ export const VideoSection: React.FC = () => {
       )}
 
       <Button
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        variant="primary"
         onClick={handleVideoGeneration}
         disabled={
           !canGenerate || generateVideoMutation.isPending || isLimitReached
         }
+        fullWidth
       >
         {generateVideoMutation.isPending ? (
           <>
