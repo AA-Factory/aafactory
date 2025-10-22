@@ -1,8 +1,8 @@
 import { writeFile, mkdir, unlink } from 'fs/promises';
-import { existsSync } from 'fs';
-import fs from 'fs';
 import path from 'path';
+import fs, { existsSync } from 'fs';
 import { RESOURCE_DIRECTORIES } from './resource/constants';
+
 export interface SaveFileResult {
   filePath: string;
   fileName: string;
@@ -22,7 +22,7 @@ interface DeleteResult {
 export async function saveBase64File(
   base64Data: string,
   taskId: string,
-  fileType: 'audio' | 'video',
+  fileType: 'audio' | 'video' | 'image',
 ): Promise<SaveFileResult> {
   try {
     // Remove data URL prefix if present (e.g., "data:audio/mp3;base64,")
@@ -61,7 +61,7 @@ export async function saveBase64File(
 
 function getFileExtension(
   base64Data: string,
-  defaultType: 'audio' | 'video',
+  defaultType: 'audio' | 'video' | 'image',
 ): string {
   // Check data URL for MIME type
   const dataUrlMatch = base64Data.match(/^data:([^;]+);base64,/);
@@ -81,10 +81,20 @@ function getFileExtension(
     if (mimeType.includes('video/webm')) return 'webm';
     if (mimeType.includes('video/ogg')) return 'ogv';
     if (mimeType.includes('video/avi')) return 'avi';
-  }
 
-  // Default extensions
-  return defaultType === 'audio' ? 'mp3' : 'mp4';
+    // Image extensions
+    if (mimeType.includes('image/png')) return 'png';
+    if (mimeType.includes('image/jpeg')) return 'jpg';
+    if (mimeType.includes('image/jpg')) return 'jpg';
+    if (mimeType.includes('image/gif')) return 'gif';
+    if (mimeType.includes('image/webp')) return 'webp';
+  }
+  // check fileType for default extensions
+  if (defaultType === 'video') return 'mp4'; // Default video extension
+  if (defaultType === 'image') return 'png';
+  if (defaultType === 'audio') return 'mp3'; // Default audio extension
+
+  return 'bin'; // Fallback generic binary extension
 }
 
 async function ensureDirectoryExists(dirPath: string): Promise<void> {
@@ -97,7 +107,17 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
 
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
-    const absolutePath = path.join(process.cwd(), 'public/uploads', filePath);
+    // Remove leading /uploads/ if present, since we'll add public/ prefix
+    const cleanPath = filePath.startsWith('/uploads/')
+      ? filePath.substring('/uploads/'.length)
+      : filePath;
+
+    const absolutePath = path.join(
+      process.cwd(),
+      'public',
+      'uploads',
+      cleanPath,
+    );
 
     if (!existsSync(absolutePath)) {
       return {
@@ -220,7 +240,6 @@ export async function cleanAllDirectories() {
 
 export async function cleanSpecificDirectories(directories: string[]) {
   const baseDir = path.join(process.cwd(), 'public/uploads');
-
 
   for (const dir of directories) {
     if (!RESOURCE_DIRECTORIES.includes(dir)) {

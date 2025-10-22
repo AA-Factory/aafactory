@@ -1,11 +1,18 @@
 // components/AvatarCard/AvatarCard.tsx
 import React, { useState } from 'react';
-import { HiPencil, HiTrash, HiVideoCamera, HiCheck, HiX } from 'react-icons/hi';
+import {
+  HiPencil,
+  HiTrash,
+  HiVideoCamera,
+  HiCamera,
+  HiCheck,
+  HiX,
+} from 'react-icons/hi';
 import { Avatar } from '@/lib/types/avatar';
 import { AVATAR_CONSTANTS } from '@/lib/avatar/constants';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import Link from 'next/link';
-
+import { usePrefetchAvatar } from '@/hooks/use-avatars';
 interface AvatarCardProps {
   avatar: Avatar;
   avatarToDeleteId?: string | null;
@@ -25,7 +32,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 
   const isActive = isAvatarActive(avatar.id);
   const isInDeleteMode = avatarToDeleteId === avatar.id;
-
+  const prefetchAvatar = usePrefetchAvatar();
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).src = AVATAR_CONSTANTS.FALLBACK_IMAGE;
   };
@@ -33,7 +40,9 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
   const handleToggleActive = () => {
     toggleActiveAvatar(avatar.id);
   };
-
+  const handleMouseEnter = () => {
+    prefetchAvatar(avatar.id);
+  };
   const handleCancelDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirmation(false);
@@ -84,6 +93,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
                 : 'transform translate-x-0 opacity-100'
             }`}
             title="Edit Avatar"
+            onMouseEnter={() => handleMouseEnter()}
           >
             <HiPencil className="w-3 h-3 text-white" />
           </Link>
@@ -187,6 +197,13 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         >
           <HiVideoCamera className="w-4 h-4" />
           Create Video
+        </Link>
+        <Link
+          href={`/content_creation/generate_image`}
+          className="mt-3 w-full py-1 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
+        >
+          <HiCamera className="w-4 h-4" />
+          Create Image
         </Link>
         {/* Toggle Active Avatar Button */}
         {/* <button

@@ -36,14 +36,6 @@ interface CeleryTaskStatusResponse<T = any> {
   timestamp?: string;
 }
 
-
-// Type guards
-export function isCeleryTaskResponse(obj: any): obj is CeleryTaskResponse {
-  return (
-    obj && typeof obj.task_id === 'string' && typeof obj.status === 'string'
-  );
-}
-
 export function isCeleryTaskStatusResponse(
   obj: any,
 ): obj is CeleryTaskStatusResponse {

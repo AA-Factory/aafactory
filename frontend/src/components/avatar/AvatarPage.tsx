@@ -10,8 +10,7 @@ import {
   useCreateAvatar,
   useUpdateAvatar,
   useDeleteAvatar,
-  useRefreshAvatars,
-} from '@/hooks/useAvatars';
+} from '@/hooks/use-avatars';
 import Link from 'next/link';
 import { encodeFormDataIntoImage } from '@/utils/steganography';
 import { useRouter } from 'next/navigation';
@@ -36,7 +35,6 @@ export default function AvatarPage({
   const createAvatarMutation = useCreateAvatar();
   const updateAvatarMutation = useUpdateAvatar();
   const deleteAvatarMutation = useDeleteAvatar();
-  const { refreshAll } = useRefreshAvatars();
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -69,15 +67,15 @@ export default function AvatarPage({
 
     const avatarData = {
       name: existingAvatar.name || '',
-      description: existingAvatar.description || '',
-      category:
-        (existingAvatar.category as
-          | 'realistic'
-          | 'stylized'
-          | 'cartoon'
-          | 'fantasy') || 'realistic',
-      personality: existingAvatar.personality || '',
-      backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
+      // description: existingAvatar.description || '',
+      // category:
+      //   (existingAvatar.category as
+      //     | 'realistic'
+      //     | 'stylized'
+      //     | 'cartoon'
+      //     | 'fantasy') || 'realistic',
+      // personality: existingAvatar.personality || '',
+      // backgroundKnowledge: existingAvatar.backgroundKnowledge || '',
     };
 
     setDefaultValues(avatarData);
@@ -120,14 +118,58 @@ export default function AvatarPage({
     setIsSubmitting(false);
   }, []);
 
-  const handleFormSubmitAndEncode = useCallback(
+  const handleSaveAndCreateImage = useCallback(
     async (data: AvatarFormData) => {
       setCurrentFormData(data);
       setIsSubmitting(true);
-      await handleSaveAndEncode(data);
-      setIsSubmitting(false);
+
+      try {
+        showNotification('Saving avatar...', 'info');
+
+        const avatarData = {
+          name: data.name,
+          description: data.description,
+          category: data.category,
+          personality: data.personality,
+          backgroundKnowledge: data.backgroundKnowledge,
+        } as any;
+
+        const file: File | null = data.image || null;
+        let fileName: string | null = null;
+        const trainingAudio: File | null = data.trainingAudio || null;
+
+        if (file) {
+          const extension = file.type.split('/')[1];
+          fileName = file.name;
+          avatarData.hasEncodedData = false;
+        }
+
+        if (file || trainingAudio) {
+          await createAvatarMutation.mutateAsync({
+            formData: avatarData,
+            file: file || undefined,
+            fileName: fileName || undefined,
+            trainingAudio: trainingAudio || undefined,
+          });
+        } else {
+          await createAvatarMutation.mutateAsync({ jsonData: avatarData });
+        }
+
+        showNotification(
+          'Avatar saved! Redirecting to image generation...',
+          'success',
+        );
+
+        // Navigate to image generation page
+        router.push('/content_creation/generate_image');
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        showNotification(errorMessage, 'error');
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [],
+    [createAvatarMutation, router, showNotification],
   );
 
   const handleSaveOnly = useCallback(
@@ -178,7 +220,6 @@ export default function AvatarPage({
           showNotification('Avatar successfully saved!', 'success');
         }
 
-        refreshAll();
         router.push('/avatars');
       } catch (err: any) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -190,7 +231,6 @@ export default function AvatarPage({
       avatarId,
       createAvatarMutation,
       updateAvatarMutation,
-      refreshAll,
       router,
       showNotification,
     ],
@@ -328,6 +368,7 @@ export default function AvatarPage({
             existingAudioUrl={existingAudioUrl}
             existingAudioFileName={existingAudioFileName}
             editMode={editMode}
+            onSaveAndCreateImage={handleSaveAndCreateImage}
           />
           {/* 
           {currentFormData && (

@@ -1,5 +1,51 @@
 // types/avatar.ts
+import type { FieldError, FieldValues, Path, UseFormRegister } from 'react-hook-form';
 import { z } from 'zod';
+
+// File validation types
+export interface FileConstraints {
+  maxSize: number;
+  allowedTypes: string[];
+}
+
+export interface FileValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+// Form field types
+export interface FormFieldProps<T extends FieldValues = FieldValues> {
+  name: Path<T>;
+  label: string;
+  type?: 'text' | 'textarea' | 'select';
+  rows?: number;
+  placeholder?: string;
+  register: UseFormRegister<T>;
+  error?: FieldError;
+  options?: ReadonlyArray<{ label: string; value: string }>;
+  hidden?: boolean;
+  required?: boolean;
+  showError?: boolean;
+}
+
+// Upload states
+export type UploadState = 'idle' | 'uploading' | 'success' | 'error';
+
+export interface FileUploadState {
+  image: UploadState;
+  audio: UploadState;
+}
+
+// Form state
+export interface AvatarFormState {
+  expandedSections: Record<string, boolean>;
+  files: {
+    image: string | null;
+    audio: File | null;
+  };
+  uploadStates: FileUploadState;
+}
+
 export interface Avatar {
   id: string;
   name: string;
@@ -16,20 +62,22 @@ export interface Avatar {
   updatedAt: string;
 }
 export const createAvatarFormSchema = (isEdit: boolean) => {
-  let image = isEdit ? z
-    .instanceof(File, { message: 'Please select an image file' })
-    .refine(
-      (file) => file.size <= 5 * 1024 * 1024,
-      'File size must be less than 5MB',
-    )
-    .refine(
-      (file) =>
-        ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
-          file.type,
-        ),
-      'File must be a JPEG, PNG, or WebP image',
-    )
-    .optional() : z
+  let image = isEdit
+    ? z
+      .instanceof(File, { message: 'Please select an image file' })
+      .refine(
+        (file) => file.size <= 5 * 1024 * 1024,
+        'File size must be less than 5MB',
+      )
+      .refine(
+        (file) =>
+          ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+            file.type,
+          ),
+        'File must be a JPEG, PNG, or WebP image',
+      )
+      .optional()
+    : z
       .instanceof(File, { message: 'Please select an image file' })
       .refine(
         (file) => file.size <= 5 * 1024 * 1024,
@@ -64,9 +112,7 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
       .optional()
       .or(z.literal('')),
     category: z
-      .enum(['realistic', 'stylized', 'cartoon', 'fantasy'], {
-        errorMap: () => ({ message: 'Please select a valid category' }),
-      })
+      .enum(['realistic', 'stylized', 'cartoon', 'fantasy'])
       .optional(),
     image: image,
     trainingAudio: z
@@ -76,7 +122,8 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
         'File size must be less than 10MB',
       )
       .refine(
-        (file) => ['audio/mpeg', 'audio/wav', 'audio/x-wav'].includes(file.type),
+        (file) =>
+          ['audio/mpeg', 'audio/wav', 'audio/x-wav'].includes(file.type),
         'File must be an MP3 or WAV audio',
       )
       .optional(),

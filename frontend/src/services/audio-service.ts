@@ -2,7 +2,7 @@ import { Avatar } from '@/lib/types/avatar';
 import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
 import { type AudioGenerationTaskRequest } from '@/lib/types/tasks';
 import { DEFAULT_LANGUAGE } from '@/lib/task/constants';
-
+import { DEFAULT_AVATAR_TRAINING_AUDIOS } from '@/lib/avatar/constants';
 // Types
 type AudioSource = 'avatar' | 'rick_and_morty' | 'japanese';
 
@@ -16,7 +16,7 @@ export type GenerateAudioPayload = {
 type GenerateAudioResponse = {
   audioUrl: string;
   filename: string;
-  promptId: string;
+  taskId: string;
   base64Audio: string;
 };
 
@@ -26,11 +26,11 @@ async function getTrainingAudioForSource(
 ): Promise<string | File | null> {
   // Handle specific sources
   if (audioSource === 'rick_and_morty') {
-    return 'rick_and_morty_voice_training.wav';
+    return DEFAULT_AVATAR_TRAINING_AUDIOS.rick_and_morty.filename;
   }
 
   if (audioSource === 'japanese') {
-    return 'japanese_voice_training.wav';
+    return DEFAULT_AVATAR_TRAINING_AUDIOS.japanese.filename;
   }
 
   // Handle avatar source
@@ -51,7 +51,7 @@ async function getTrainingAudioForSource(
   }
 
   // Fallback
-  return 'rick_and_morty_voice_training.wav';
+  return DEFAULT_AVATAR_TRAINING_AUDIOS.default.filename;
 }
 
 function createTaskRequest(
@@ -61,8 +61,7 @@ function createTaskRequest(
   const language = payload.language || DEFAULT_LANGUAGE;
 
   return {
-    server_name:
-      !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'zonos',
+    server_name: !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'zonos',
     task_name: 'custom_voice_to_audio',
     payload: {
       prompt: payload.dialog,
@@ -81,7 +80,7 @@ export function createAudioResponse(
     base64Audio: response.base64,
     audioUrl: response.url,
     filename: response.filename,
-    promptId: response.promptId,
+    taskId: response.taskId,
   };
 }
 

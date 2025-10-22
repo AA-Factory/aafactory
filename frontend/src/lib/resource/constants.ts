@@ -49,4 +49,4 @@ export const RESOURCE_ENDPOINTS = {
   image: '/api/resources/image',
 } as const;
 
-export const RESOURCE_DIRECTORIES = ['video', 'audio', 'image']
+export const RESOURCE_DIRECTORIES = ['video', 'audio', 'image'];

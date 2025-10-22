@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { uploadFile, uploadTrainingAudio } from '@/lib/fileUtils';
-import { DEFAULT_AVATAR_IMAGES } from '@/lib/avatar/constants';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
@@ -46,7 +45,7 @@ export async function POST(req: NextRequest) {
         uploadResult = await uploadFile(fileEntry, fileName, 'image');
 
         data.src = uploadResult.filePath;
-        data.fileName = uploadResult.fileName;
+        data.fileName = fileName;
       }
 
       // Handle training audio file upload
@@ -63,11 +62,6 @@ export async function POST(req: NextRequest) {
     } else {
       // Handle JSON data (without file upload)
       data = await req.json();
-      data = {
-        ...data,
-        src: DEFAULT_AVATAR_IMAGES[Math.floor(Math.random() * DEFAULT_AVATAR_IMAGES.length)].src,
-        fileName: DEFAULT_AVATAR_IMAGES[Math.floor(Math.random() * DEFAULT_AVATAR_IMAGES.length)].filename
-      };
     }
 
     // Validate required fields

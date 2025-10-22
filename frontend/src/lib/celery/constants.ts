@@ -19,6 +19,11 @@ export const POLLING_CONFIG = {
     BACKGROUND_REFETCH: true,
     STALE_TIME: 0,
   },
+  image: {
+    REFETCH_INTERVAL: 5000,
+    BACKGROUND_REFETCH: true,
+    STALE_TIME: 0,
+  },
 };
 
 export const MAX_PENDING_TASK_AGE_HOURS = 24; // Maximum age for pending tasks

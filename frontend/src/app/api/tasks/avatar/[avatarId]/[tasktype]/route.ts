@@ -48,6 +48,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       tasks: filteredTasks.map((task) => ({
+        avatarId: task.avatarId,
         taskType: task.taskType,
         status: task.status,
         taskId: task.taskId,

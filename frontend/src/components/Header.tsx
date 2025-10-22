@@ -16,7 +16,7 @@ interface NavLink {
 
 const HeaderNav: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { activeAvatarIds, clearActiveAvatars } = useActiveAvatars();
+  const { activeAvatarIds } = useActiveAvatars();
 
   const navLinks: NavLink[] = [
     {
@@ -32,6 +32,7 @@ const HeaderNav: React.FC = () => {
       icon: HiCode,
       submenu: [
         { name: 'Generate Video', href: '/content_creation/generate_video' },
+        { name: 'Generate Image', href: '/content_creation/generate_image' },
         { name: 'Editor', href: '/editor' },
       ],
     },
@@ -51,9 +52,9 @@ const HeaderNav: React.FC = () => {
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
   const closeMenu = () => setIsMenuOpen(false);
 
-  const handleClearAvatars = () => {
-    clearActiveAvatars();
-  };
+  // const handleClearAvatars = () => {
+  //   clearActiveAvatars();
+  // };
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors duration-300">

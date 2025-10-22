@@ -1,3 +1,4 @@
+// frontend/src/hooks/use-resource.ts
 import { useState, useEffect } from 'react';
 import { useNotification } from '@/contexts/NotificationContext';
 import { ResourceData, ResourceType } from '@/lib/types/resource';

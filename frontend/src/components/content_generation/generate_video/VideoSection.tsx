@@ -1,24 +1,31 @@
 import React, { useState, useMemo } from 'react';
 import { TbSparkles } from 'react-icons/tb';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAvatars } from '@/hooks/useAvatars';
-import { useGenerateVideo } from '@/hooks/useGenerateVideo';
+import { useGenerateVideo } from '@/hooks/use-generate-video';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useVideoTasks } from '@/lib/api/tasks';
 import { fileToBase64, encodeMediaFile } from '@/lib/base64Utils';
+import { Spinner } from '@/components/ui/Spinner';
+import { Button } from '@/components/ui/Button';
+import { TextArea } from '@/components/ui/TextArea';
+import { Label } from '@/components/ui/Label';
+import { type VideoGenerationConfig } from '@/lib/types/tasks';
+import { VIDEO_CONFIG } from '@/lib/task/constants';
+import { getRandomSeed } from '@/utils/fakeData';
 
 export const VideoSection: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: avatars } = useAvatars();
   const { state } = useVideoGeneration();
 
   const generateVideoMutation = useGenerateVideo();
 
   const { showNotification } = useNotification();
   const [videoPrompt, setVideoPrompt] = useState(
-    'An ultra-realistic video of the avatar speaking the provided dialog, with natural facial expressions and lip-syncing, set against a simple background.',
+    getRandomSeed('video_avatar_prompt'),
   );
+  const [config, setConfig] = useState<VideoGenerationConfig>('6_steps');
+  const [lowVram, setLowVram] = useState(true);
 
   // Fetch video tasks to check pending count
   const { data: videoTasks = [] } = useVideoTasks(
@@ -31,44 +38,7 @@ export const VideoSection: React.FC = () => {
     return videoTasks.filter((task) => task.status === 'PENDING').length;
   }, [videoTasks]);
 
-  // Handle task status updates
-  // useEffect(() => {
-  //   if (taskStatus.data) {
-  //     showNotification("Video generation completed! Check the gallery.", "success");
-  //     // Invalidate video tasks query to refresh the list
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["tasks", "video", { avatarId: state.avatar?.id }]
-  //     });
-  //     setTaskId(null); // Clear taskId after completion
-  //   }
-  // }, [taskStatus.data, queryClient, state.avatar?.id]);
-
   const handleVideoGeneration = async () => {
-    if (!state.avatar) {
-      showNotification('Please select an avatar first.', 'error');
-      return;
-    }
-
-    if (
-      !state.selectedAudioTask &&
-      !state.generatedAudioBase64 &&
-      !state.uploadedAudioFile
-    ) {
-      showNotification(
-        'Please select an audio generation, generate new audio, or upload an audio file first.',
-        'error',
-      );
-      return;
-    }
-
-    if (pendingTasksCount >= 5) {
-      showNotification(
-        'Maximum of 5 videos can be generated at once. Please wait for some to complete.',
-        'error',
-      );
-      return;
-    }
-
     showNotification(
       'Generating video, video will be added to the gallery once complete.',
       'info',
@@ -88,14 +58,26 @@ export const VideoSection: React.FC = () => {
         showNotification('No audio available for video generation.', 'error');
         return;
       }
+      if (!state.avatar?.id) {
+        showNotification('No avatar selected for video generation.', 'error');
+        return;
+      }
+      if (!state.selectedImageFilePath) {
+        showNotification('No image selected for video generation.', 'error');
+        return;
+      }
       const payload = {
-        avatar: state.avatar,
+        avatarId: state.avatar.id,
+        imageSrc: state.selectedImageFilePath,
         audioBase64: audioToUse,
         prompt: videoPrompt,
+        dialog: state.dialog,
+        config: config,
+        lowVram: lowVram,
       };
       generateVideoMutation.mutate(payload, {
         onSuccess: (videoResponse) => {
-          showNotification('Video generation started', 'info');
+          showNotification('Video generation completed!', 'success');
           // Invalidate video tasks to refresh the list
           queryClient.invalidateQueries({
             queryKey: ['tasks', 'video', { avatarId: state.avatar?.id }],
@@ -121,7 +103,7 @@ export const VideoSection: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <TbSparkles className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+      {/* <TbSparkles className="w-10 h-10 text-blue-600 dark:text-blue-400" /> */}
       <h2 className="text-lg font-bold mb-4 dark:text-white">
         Ready to generate!
       </h2>
@@ -131,8 +113,7 @@ export const VideoSection: React.FC = () => {
           <strong>Video type:</strong> {state.videoType.label}
         </li>
         <li>
-          <strong>Avatar:</strong>{' '}
-          {avatars?.find((a) => a.id === state.avatar?.id)?.name}
+          <strong>Avatar:</strong> {state.avatar ? state.avatar.name : 'None'}
         </li>
         <li>
           <strong>Dialog:</strong> {state.dialog}
@@ -144,20 +125,49 @@ export const VideoSection: React.FC = () => {
 
       {/* Video Prompt Input */}
       <div className="w-full space-y-2">
-        <label
-          htmlFor="video-prompt"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-        >
-          Video Prompt
-        </label>
-        <textarea
+        <Label htmlFor="video-prompt">Video Prompt</Label>
+        <TextArea
           id="video-prompt"
           value={videoPrompt}
-          onChange={(e) => setVideoPrompt(e.target.value)}
+          className="max-w-xs w-full"
+          onChange={setVideoPrompt}
           placeholder="Describe how you want the video to look..."
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-          rows={3}
+          rows={5}
         />
+      </div>
+
+      {/* Config Selection */}
+      <div className="w-full space-y-2">
+        <Label
+          htmlFor="config"
+          tooltipText="Select the video generation configuration"
+        >
+          Config
+        </Label>
+        <select
+          id="config"
+          value={config}
+          onChange={(e) => setConfig(e.target.value as VideoGenerationConfig)}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          {VIDEO_CONFIG.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Low VRAM Checkbox */}
+      <div className="w-full flex items-center space-x-2">
+        <input
+          id="low-vram"
+          type="checkbox"
+          checked={lowVram}
+          onChange={(e) => setLowVram(e.target.checked)}
+          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        />
+        <Label htmlFor="low-vram">Low VRAM</Label>
       </div>
 
       {isLimitReached && (
@@ -167,20 +177,26 @@ export const VideoSection: React.FC = () => {
         </p>
       )}
 
-      <button
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      <Button
+        variant="primary"
         onClick={handleVideoGeneration}
         disabled={
           !canGenerate || generateVideoMutation.isPending || isLimitReached
         }
+        fullWidth
       >
-        <TbSparkles className="w-4 h-4" />
-        <span>
-          {generateVideoMutation.isPending
-            ? 'Generating Video...'
-            : 'Generate Video'}
-        </span>
-      </button>
+        {generateVideoMutation.isPending ? (
+          <>
+            <Spinner />
+            <span>Generating...</span>
+          </>
+        ) : (
+          <>
+            <TbSparkles className="w-4 h-4" />
+            <span>Generate Video</span>
+          </>
+        )}
+      </Button>
     </div>
   );
 };

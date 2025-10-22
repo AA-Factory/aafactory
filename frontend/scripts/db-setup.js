@@ -17,14 +17,26 @@ async function createCollectionWithSchema(db, collectionName, schema) {
       .toArray();
 
     if (existingCollections.length > 0) {
-      console.log(`📋 Collection "${collectionName}" already exists`);
-      return;
-    }
+      console.log(
+        `📋 Collection "${collectionName}" already exists, updating schema...`,
+      );
 
-    await db.createCollection(collectionName, { validator: schema.validator });
-    console.log(
-      `✅ Created collection "${collectionName}" with schema validation`,
-    );
+      // Update the validator for existing collection
+      await db.command({
+        collMod: collectionName,
+        validator: schema.validator,
+        validationLevel: 'strict',
+        validationAction: 'error',
+      });
+      console.log(`✅ Updated schema validation for "${collectionName}"`);
+    } else {
+      await db.createCollection(collectionName, {
+        validator: schema.validator,
+      });
+      console.log(
+        `✅ Created collection "${collectionName}" with schema validation`,
+      );
+    }
 
     if (schema.indexes && schema.indexes.length > 0) {
       await db.collection(collectionName).createIndexes(schema.indexes);
@@ -34,7 +46,7 @@ async function createCollectionWithSchema(db, collectionName, schema) {
     }
   } catch (error) {
     console.error(
-      `❌ Failed to create collection "${collectionName}": ${error.message}`,
+      `❌ Failed to create/update collection "${collectionName}": ${error.message}`,
     );
     throw error;
   }

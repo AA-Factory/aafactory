@@ -1,15 +1,17 @@
-export const DEFAULT_AVATAR_IMAGES = [
-  { src: '/uploads/defaults/image/person_1.jpeg', filename: 'person_1.jpeg' },
-  { src: '/uploads/defaults/image/person_2.jpeg', filename: 'person_2.jpeg' },
-  { src: '/uploads/defaults/image/person_3.jpeg', filename: 'person_3.jpeg' },
-  { src: '/uploads/defaults/image/person_4.jpeg', filename: 'person_4.jpeg' },
-  { src: '/uploads/defaults/image/person_5.jpeg', filename: 'person_5.jpeg' }
-];
-
-export const DEFAULT_AVATAR_TRAINING_AUDIOS = [
-  { src: '/uploads/defaults/audio/japanese_voice_training.wav', filename: 'japanese_voice_training.wav' },
-  { src: '/uploads/defaults/audio/rick_and_morty_voice_training.wav', filename: 'rick_and_morty_voice_training.wav' }
-];
+export const DEFAULT_AVATAR_TRAINING_AUDIOS = {
+  default: {
+    src: '/test/training_audio/rick_and_morty_voice_training.wav',
+    filename: 'rick_and_morty_voice_training.wav',
+  },
+  japanese: {
+    src: '/test/training_audio/japanese_voice_training.wav',
+    filename: 'japanese_voice_training.wav',
+  },
+  rick_and_morty: {
+    src: '/test/training_audio/rick_and_morty_voice_training.wav',
+    filename: 'rick_and_morty_voice_training.wav',
+  },
+};
 
 export const AVATAR_CONSTANTS = {
   FALLBACK_IMAGE: '/placeholder-avatar.png',

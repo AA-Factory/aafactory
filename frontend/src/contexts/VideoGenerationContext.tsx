@@ -8,14 +8,8 @@ import React, {
   useEffect,
 } from 'react';
 import { Avatar } from '@/lib/types/avatar';
-import { VideoTask } from '@/lib/types/tasks';
-import { AudioTask } from '@/lib/types/tasks';
-import {
-  useVideoTasks,
-  usePollPendingVideoTasks,
-  usePollPendingAudioTasks,
-} from '@/lib/api/tasks';
-import { DIALOG_SEEDS } from '@/utils/fakeData';
+import { VideoTask, AudioTask } from '@/lib/types/tasks';
+import { useVideoTasks } from '@/lib/api/tasks';
 import { VIDEO_TYPES } from '@/lib/task/constants';
 interface VideoGenerationState {
   // video type and avatar
@@ -36,6 +30,8 @@ interface VideoGenerationState {
   generatedVideoUrl: string | null;
   selectedVideoTask: VideoTask | null;
 
+  selectedImageFilePath: string | null;
+  selectedImageFileName: string | null;
   // UI state
   step: number;
 }
@@ -58,7 +54,6 @@ interface VideoGenerationContextType {
   }) => void;
 
   // video actions
-  refreshVideoTasks: () => void;
   selectVideoTask: (task: VideoTask | null) => void;
 
   // Video data from React Query
@@ -66,17 +61,13 @@ interface VideoGenerationContextType {
   loadingVideoTasks: boolean;
   videoTasksError: Error | null;
 
-  // Computed values
-  canProceedToNextStep: boolean;
+  // Image file path is a url string
+  setImage: (filePath: string | null, fileName: string | null) => void;
 }
 
 const VideoGenerationContext = createContext<
   VideoGenerationContextType | undefined
 >(undefined);
-
-const getRandomDialogSeed = () => {
-  return DIALOG_SEEDS[Math.floor(Math.random() * DIALOG_SEEDS.length)];
-};
 
 export const VideoGenerationProvider: React.FC<{
   children: React.ReactNode;
@@ -87,37 +78,27 @@ export const VideoGenerationProvider: React.FC<{
     selectedAudioTask: null,
     generatedAudioBase64: null,
     uploadedAudioFile: null,
-    dialog: getRandomDialogSeed(),
+    dialog: '',
     audioReady: false,
     generatedVideoUrl: null,
     selectedVideoTask: null,
     step: 0,
+    selectedImageFilePath: null,
+    selectedImageFileName: null,
   });
 
-  // React Query hooks for video tasks
   const {
     data: videoTasks = [],
     isLoading: loadingVideoTasks,
     error: videoTasksError,
   } = useVideoTasks(state.avatar?.id || '');
 
-  const pollPendingVideoTasksMutation = usePollPendingVideoTasks();
-  const pollPendingAudioTasksMutation = usePollPendingAudioTasks();
-  // Process video tasks with default filePath
   const processedVideoTasks = useMemo(() => {
     return videoTasks.map((task) => ({
       ...task,
       filePath: task.filePath ?? '',
     }));
   }, [videoTasks]);
-
-  // Poll pending video tasks when avatar changes
-  useEffect(() => {
-    if (state.avatar?.id) {
-      pollPendingVideoTasksMutation.mutate(state.avatar.id);
-      pollPendingAudioTasksMutation.mutate(state.avatar.id);
-    }
-  }, [state.avatar?.id]);
 
   const setVideoType = useCallback((type: { id: string; label: string }) => {
     setState((prev) => ({ ...prev, videoType: type }));
@@ -130,6 +111,17 @@ export const VideoGenerationProvider: React.FC<{
   const setStep = useCallback((step: number) => {
     setState((prev) => ({ ...prev, step }));
   }, []);
+
+  const setImage = useCallback(
+    (filePath: string | null, fileName: string | null) => {
+      setState((prev) => ({
+        ...prev,
+        selectedImageFilePath: filePath,
+        selectedImageFileName: fileName,
+      }));
+    },
+    [],
+  );
 
   const setAudioData = useCallback(
     (audioData: {
@@ -151,31 +143,9 @@ export const VideoGenerationProvider: React.FC<{
     [],
   );
 
-  const refreshVideoTasks = useCallback(() => {
-    if (state.avatar?.id) {
-      pollPendingVideoTasksMutation.mutate(state.avatar.id);
-    }
-  }, [state.avatar?.id, pollPendingVideoTasksMutation]);
-
   const selectVideoTask = useCallback((task: VideoTask | null) => {
     setState((prev) => ({ ...prev, selectedVideoTask: task }));
   }, []);
-
-  // Computed values
-  const canProceedToNextStep = (() => {
-    switch (state.step) {
-      case 0: // Video type selection
-        return true;
-      case 1: // Avatar selection
-        return !!state.avatar;
-      case 2: // Audio generation
-        return state.audioReady;
-      case 3: // Video generation
-        return false;
-      default:
-        return false;
-    }
-  })();
 
   const contextValue: VideoGenerationContextType = {
     state,
@@ -183,12 +153,11 @@ export const VideoGenerationProvider: React.FC<{
     setAvatar,
     setStep,
     setAudioData,
-    refreshVideoTasks,
     selectVideoTask,
     videoTasks: processedVideoTasks,
     loadingVideoTasks,
     videoTasksError,
-    canProceedToNextStep,
+    setImage,
   };
 
   return (

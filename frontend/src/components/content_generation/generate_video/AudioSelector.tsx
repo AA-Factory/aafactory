@@ -1,6 +1,9 @@
 import React from 'react';
 import { FiInfo } from 'react-icons/fi';
 import { AudioTask } from '@/lib/types/tasks';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { Label } from '@/components/ui/Label';
+
 interface AudioSelectorProps {
   availableAudioTasks: AudioTask[];
   selectedAudioTask: AudioTask | null;
@@ -16,27 +19,17 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
   onAudioTaskSelect,
   loadingAudioTasks,
 }) => {
-  // if (availableAudioTasks.length === 0 && !generatedAudioUrl) {
-  //   return null;
-  // }
-
   return (
     <div className="mt-4">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        <div className="flex items-center space-x-2">
-          <span>Select Audio For Video Generation</span>
-          <div className="relative group">
-            <FiInfo className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-              Select audio to be used for video generation either the latest
-              generation or previous generations
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45"></div>
-            </div>
-          </div>
-        </div>
-      </label>
+      <Label
+        htmlFor="audioTask"
+        className="mb-2"
+        tooltipText="Choose from previously generated audio tasks or use the current generated audio"
+      >
+        Select Audio For Video Generation
+      </Label>
       <select
-        name="audioTask"
+        id="audioTask"
         value={
           selectedAudioTask?.taskId ||
           (generatedAudioUrl && !selectedAudioTask ? 'generated' : '')
