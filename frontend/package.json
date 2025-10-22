@@ -43,6 +43,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.10",
     "typescript": "5.1.6",
+    "usehooks-ts": "^3.1.1",
     "uuid": "^11.1.0",
     "zod": "^4.0.17"
   },

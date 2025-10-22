@@ -9,7 +9,8 @@ import React, {
   ReactNode,
 } from 'react';
 import { usePathname } from 'next/navigation';
-
+import { useLocalStorage } from 'usehooks-ts';
+import { LOCAL_STORAGE_KEY } from '@/lib/task/constants';
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 interface NotificationState {
@@ -19,14 +20,26 @@ interface NotificationState {
   isFading: boolean;
 }
 
+export interface NotificationHistoryItem {
+  id: string;
+  message: string;
+  type: NotificationType;
+  read: boolean;
+}
+
 interface NotificationContextType {
   notification: NotificationState;
+  notificationHistory: NotificationHistoryItem[];
   showNotification: (
     message: string,
     type?: NotificationType,
     duration?: number,
   ) => void;
   hideNotification: () => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  clearHistory: () => void;
+  unreadCount: number;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -40,6 +53,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     type: 'info',
     isFading: false,
   });
+
+  const [notificationHistory, setNotificationHistory] = useLocalStorage<
+    NotificationHistoryItem[]
+  >(LOCAL_STORAGE_KEY, []);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,6 +73,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     clearTimers();
     setNotification({ isVisible: true, message, type, isFading: false });
+
+    // Add to history
+    const newHistoryItem: NotificationHistoryItem = {
+      id: `${Date.now()}-${Math.random()}`,
+      message,
+      type,
+      read: false,
+    };
+    setNotificationHistory((prev) => [newHistoryItem, ...prev]);
 
     // Auto-close after duration, even across navigation
     timerRef.current = setTimeout(() => {
@@ -74,6 +100,24 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     }, 500);
   };
 
+  const markAsRead = (id: string) => {
+    setNotificationHistory((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, read: true } : item)),
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotificationHistory((prev) =>
+      prev.map((item) => ({ ...item, read: true })),
+    );
+  };
+
+  const clearHistory = () => {
+    setNotificationHistory([]);
+  };
+
+  const unreadCount = notificationHistory.filter((item) => !item.read).length;
+
   // Do NOT reset state on route change, just let timer run
   useEffect(() => {
     return () => clearTimers();
@@ -81,7 +125,16 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <NotificationContext.Provider
-      value={{ notification, showNotification, hideNotification }}
+      value={{
+        notification,
+        notificationHistory,
+        showNotification,
+        hideNotification,
+        markAsRead,
+        markAllAsRead,
+        clearHistory,
+        unreadCount,
+      }}
     >
       {children}
     </NotificationContext.Provider>

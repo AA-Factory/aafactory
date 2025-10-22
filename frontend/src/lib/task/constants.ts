@@ -49,3 +49,5 @@ export const SUPPORTED_TASK_TYPES = ['video', 'audio', 'image'];
 export const DEFAULT_LANGUAGE = 'en-us';
 
 export const MIN_AUDIO_DURATION = 4;
+
+export const LOCAL_STORAGE_KEY = 'notification-history';

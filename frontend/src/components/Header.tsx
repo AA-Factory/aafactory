@@ -6,6 +6,7 @@ import { IconType } from 'react-icons';
 import Link from 'next/link';
 import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import DarkModeSwitch from './DarkModeSwitch';
+import NotificationBell from './NotificationBell';
 
 interface NavLink {
   name: string;
@@ -128,12 +129,14 @@ const HeaderNav: React.FC = () => {
                 );
               })}
 
+              <NotificationBell />
               <DarkModeSwitch />
             </div>
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <NotificationBell />
             <DarkModeSwitch />
             <button
               onClick={toggleMenu}
