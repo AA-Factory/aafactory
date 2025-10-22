@@ -6,11 +6,13 @@ import { Tooltip } from '@/components/ui/Tooltip';
 interface AvatarSelectorProps {
   selectedAvatar: Avatar | null;
   setAvatar: (avatar: Avatar | null) => void;
+  tooltip?: string;
 }
 
 export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
   selectedAvatar,
   setAvatar,
+  tooltip = '',
 }) => {
   const { data: avatars, isLoading } = useAvatars();
   return (
@@ -19,7 +21,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
         <h2 className="text-lg font-bold mb-1 dark:text-white">
           Select Avatar
         </h2>
-        <Tooltip text="Choose an avatar generation" />
+        <Tooltip text={tooltip} />
       </div>
       {isLoading ? (
         <div className="flex justify-center items-center py-8">

@@ -72,6 +72,7 @@ function GenerateImageContent() {
           setType={setType}
           types={IMAGE_TYPES}
           title="Select image type"
+          tooltip="Choose the type of image generation you want to perform"
           icon={PiFileImageBold}
         />
       ),
@@ -80,7 +81,11 @@ function GenerateImageContent() {
     {
       label: 'Select avatar',
       content: (
-        <AvatarSelector selectedAvatar={state.avatar} setAvatar={setAvatar} />
+        <AvatarSelector
+          selectedAvatar={state.avatar}
+          setAvatar={setAvatar}
+          tooltip="Choose an avatar to use for image generation"
+        />
       ),
       canNext: !!state.avatar,
     },
@@ -103,7 +108,7 @@ function GenerateImageContent() {
           alt="Generated"
           fileName={getFileName()}
           showDownload={true}
-          aspectRatio="square"
+          aspectRatio="image"
           actions={
             state.avatar && displayTask?.filePath ? (
               <MediaActionButton

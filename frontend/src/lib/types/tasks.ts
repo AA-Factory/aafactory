@@ -7,6 +7,7 @@ export interface AudioTask {
   taskType: 'audio';
   userPrompt: string;
   filePath: string;
+  fileName: string;
 }
 
 export interface VideoTask {
@@ -16,6 +17,7 @@ export interface VideoTask {
   status: CeleryTaskStatus;
   thumbnailPath?: string; // optional thumbnail path for videos
   taskType: 'video';
+  fileName?: string;
 }
 
 export interface ImageTask {
@@ -68,7 +70,7 @@ export interface VideoGenerationTaskRequest
 }
 
 // Image Generation Task
-export type ImageRatio = '1:1' | '4:5' | '16:9' | '9:16' | null;
+export type ImageRatio = '1:1' | '4:5' | '16:9' | '9:16';
 export type ImageQuality = 'low' | 'medium' | 'high' | 'ultra';
 export type ImageTaskType = 'text_to_image' | 'image_to_image_edit';
 interface ImageGenerationPayload {

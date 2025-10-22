@@ -35,6 +35,7 @@ const HeaderNav: React.FC = () => {
         { name: 'Generate Video', href: '/content_creation/generate_video' },
         { name: 'Generate Image', href: '/content_creation/generate_image' },
         { name: 'Editor', href: '/editor' },
+        { name: 'Gallery', href: '/gallery' },
       ],
     },
     // {

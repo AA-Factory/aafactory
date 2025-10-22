@@ -15,6 +15,8 @@ const taskKeys = {
   image: () => [...taskKeys.all, 'image'] as const,
   imageByAvatar: (avatarId: string, status?: string) =>
     [...taskKeys.image(), { avatarId, status }] as const,
+  allByAvatar: (avatarId: string, status?: string) =>
+    [...taskKeys.all, { avatarId, status }] as const,
 };
 
 /** -----------------
@@ -69,6 +71,18 @@ const fetchImageTasks = async (
       : data.tasks;
   }
   return [];
+};
+
+const fetchTasksByAvatar = async (
+  avatarId: string,
+  status?: string,
+): Promise<(AudioTask | VideoTask | ImageTask)[]> => {
+  const [audioTasks, videoTasks, imageTasks] = await Promise.all([
+    fetchAudioTasks(avatarId, status),
+    fetchVideoTasks(avatarId, status),
+    fetchImageTasks(avatarId, status),
+  ]);
+  return [...audioTasks, ...videoTasks, ...imageTasks];
 };
 
 const pollPendingVideoTasks = async (
@@ -137,6 +151,14 @@ const pollPendingImageTasks = async (
 /** -----------------
  * React Query Hooks
  * ----------------- */
+
+export const useAllTasks = (avatarId: string, status?: string) =>
+  useQuery({
+    queryKey: taskKeys.allByAvatar(avatarId, status),
+    queryFn: async () => fetchTasksByAvatar(avatarId, status),
+    enabled: !!avatarId,
+  });
+
 export const useAudioTasks = (avatarId: string, status?: string) =>
   useQuery({
     queryKey: taskKeys.audioByAvatar(avatarId, status),
@@ -156,7 +178,7 @@ export const useImageTasks = (avatarId: string, status?: string) =>
     queryKey: taskKeys.imageByAvatar(avatarId, status),
     queryFn: async () => fetchImageTasks(avatarId, status),
     enabled: !!avatarId,
-    staleTime: 0,
+    // staleTime: 0,
   });
 
 export const usePollPendingVideoTasks = () => {

@@ -36,7 +36,6 @@ export const ImageSection: React.FC = () => {
       const file = new File([blob], fileName, { type: blob.type });
 
       setUploadedImageFile(file);
-      showNotification('Image selected successfully', 'success');
     } catch (error) {
       showNotification('Failed to load selected image', 'error');
     }
@@ -52,7 +51,10 @@ export const ImageSection: React.FC = () => {
   }, [state.type]);
 
   const handleImageGeneration = async () => {
-    showNotification('Generating image, this may take a minute...', 'info');
+    showNotification(
+      `Generating ${state.type?.label} for ${state.avatar?.name}`,
+      'info',
+    );
 
     if (state.type?.id === 'image_to_image_edit' && !uploadedImageFile) {
       showNotification('Please upload an image file for editing.', 'error');
@@ -79,17 +81,7 @@ export const ImageSection: React.FC = () => {
       base64Image: encoded || null,
     };
 
-    generateImageMutation.mutate(payload, {
-      onSuccess: (imageResponse) => {
-        if (imageResponse.base64Image && imageResponse.imageUrl) {
-          showNotification('Image generation completed', 'success');
-        }
-        setTask(null);
-      },
-      onError: (error) => {
-        showNotification(`Image generation failed: ${error.message}`, 'error');
-      },
-    });
+    generateImageMutation.mutate(payload);
   };
 
   return (

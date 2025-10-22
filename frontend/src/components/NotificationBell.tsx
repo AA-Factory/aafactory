@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { HiBell } from 'react-icons/hi';
+import { HiBell, HiExternalLink } from 'react-icons/hi';
+import Link from 'next/link';
 import {
   useNotification,
   NotificationHistoryItem,
@@ -37,6 +38,21 @@ const NotificationBell: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
+
+  const formatTimestamp = (timestamp: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - timestamp.getTime();
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return timestamp.toLocaleDateString();
+  };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
@@ -124,7 +140,7 @@ const NotificationBell: React.FC = () => {
                         }`}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="mb-1">
+                        <div className="flex items-center justify-between mb-1">
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getNotificationColor(
                               item.type,
@@ -132,10 +148,27 @@ const NotificationBell: React.FC = () => {
                           >
                             {item.type}
                           </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatTimestamp(item.timestamp)}
+                          </span>
                         </div>
                         <p className="text-sm text-gray-900 dark:text-gray-100">
                           {item.message}
                         </p>
+                        {item.link && (
+                          <Link
+                            href={item.link}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(item.id);
+                              setIsOpen(false);
+                            }}
+                            className="mt-2 inline-flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+                          >
+                            <HiExternalLink className="h-3 w-3" />
+                            <span>View in Gallery</span>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>

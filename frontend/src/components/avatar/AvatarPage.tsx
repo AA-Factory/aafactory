@@ -124,7 +124,7 @@ export default function AvatarPage({
       setIsSubmitting(true);
 
       try {
-        showNotification('Saving avatar...', 'info');
+        showNotification('Saving avatar...', 'system');
 
         const avatarData = {
           name: data.name,
@@ -175,7 +175,7 @@ export default function AvatarPage({
   const handleSaveOnly = useCallback(
     async (formData: AvatarFormData) => {
       try {
-        showNotification('Saving avatar...', 'info');
+        showNotification('Saving avatar...', 'system');
 
         const avatarData = {
           name: formData.name,

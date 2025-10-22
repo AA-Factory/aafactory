@@ -4,10 +4,11 @@ import {
   VideoGenerationConfig,
   VideoGenerationPayload,
 } from '@/lib/types/tasks';
+import { Avatar } from '@/lib/types/avatar';
 
 // Types
 export type GenerateVideoPayload = {
-  avatarId: string; // Avatar ID
+  avatar: Avatar;
   imageSrc: string; // Avatar image source URL
   audioBase64?: string; // Optional - Base64 audio data from useGenerateAudio (not used in API)
   prompt: string;
@@ -61,7 +62,7 @@ export async function prepareVideoData(payload: GenerateVideoPayload): Promise<{
   imageBase64: string;
   audioBase64: string;
 }> {
-  if (!payload.avatarId) {
+  if (!payload.avatar?.id) {
     throw new Error('No avatar ID provided for video generation');
   }
 

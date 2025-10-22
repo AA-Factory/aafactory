@@ -9,87 +9,86 @@ import {
   CELERY_RUN_TASK,
   CELERY_TASK_STATUS,
   POLLING_CONFIG,
+  TASK_STATUS,
 } from '@/lib/celery/constants';
+import { type ImageTask, TaskType } from '@/lib/types/tasks';
+import { useNotification } from '@/contexts/NotificationContext';
+import { apiClient } from '@/lib/api-client';
+const TASK_TYPE = 'image' as TaskType;
+
+function invalidateImageTasks(queryClient: ReturnType<typeof useQueryClient>, avatarId?: string) {
+  queryClient.invalidateQueries({
+    queryKey: ['tasks', TASK_TYPE, { avatarId }],
+  });
+}
 
 export function useGenerateImage() {
   const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
+
   return useMutation({
     mutationKey: ['generateImage'],
     mutationFn: async (payload: GenerateImagePayload) => {
-      // 1. Prepare image data
       const { taskRequest } = await prepareImageData(payload);
-
-      // 2. Call CELERY_RUN_TASK
-      const response = await fetch(CELERY_RUN_TASK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskRequest),
+      const { task_id } = await apiClient.post<{ task_id: string }>(CELERY_RUN_TASK, {
+        server_name: taskRequest.server_name,
+        task_name: taskRequest.task_name,
+        payload: taskRequest.payload,
       });
 
-      if (!response.ok) throw new Error('Failed to start task');
-      const { task_id } = await response.json();
-
-      // 3. Create task in DB via /api/task
-      await fetch('/api/task', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          taskId: task_id,
-          avatarId: payload.avatar?.id || null,
-          taskType: 'image',
-          userPrompt: payload.positivePrompt,
-          status: 'PENDING',
-        }),
+      await apiClient.post<ImageTask>('/api/task', {
+        taskId: task_id,
+        avatarId: payload.avatar?.id || null,
+        taskType: TASK_TYPE,
+        userPrompt: payload.positivePrompt,
+        status: TASK_STATUS.PENDING,
       });
-      queryClient.invalidateQueries({
-        queryKey: ['tasks', 'image', { avatarId: payload.avatar?.id }],
-      });
-      // 4. Poll for completion
-      const pollStatus = async (): Promise<any> => {
-        const data = await queryClient.fetchQuery({
-          queryKey: ['imageTaskStatus', task_id],
-          queryFn: async () => {
-            const response = await fetch(`${CELERY_TASK_STATUS}${task_id}`);
-            if (!response.ok) throw new Error('Failed to fetch task status');
-            return response.json();
-          },
-          staleTime: POLLING_CONFIG['image'].STALE_TIME,
-        });
+      invalidateImageTasks(queryClient, payload.avatar?.id);
 
-        if (data.status === 'SUCCESS' && data.result) {
-          // Update DB on completion
-          await fetch(`/api/task/${task_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              base64Data: data.result,
-              status: 'SUCCESS',
-            }),
+      const config = POLLING_CONFIG[TASK_TYPE];
+      let taskData: any;
+
+      while (true) {
+        taskData = await apiClient.get(`${CELERY_TASK_STATUS}${task_id}`);
+        if (taskData.status === TASK_STATUS.SUCCESS && taskData.result) {
+          return {
+            avatar: payload.avatar,
+            ...createImageResponse(taskData.result, task_id),
+          };
+        }
+        if (taskData.status === TASK_STATUS.FAILURE) {
+          await apiClient.put(`/api/task/${task_id}`, {
+            status: TASK_STATUS.FAILURE,
+            error: taskData.error || 'No result returned from task',
           });
-          queryClient.invalidateQueries({
-            queryKey: ['tasks', 'image', { avatarId: payload.avatar?.id }],
-          });
-          return createImageResponse(data.result, task_id);
-        } else if (data.status === 'FAILURE') {
-          await fetch(`/api/task/${task_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              status: 'FAILURE',
-              error: data.error || 'No result returned from task',
-            }),
-          });
-          throw new Error(data.error || 'Image generation failed');
+          throw new Error(taskData.error || 'Image generation failed');
         }
 
-        // Still pending, wait and try again
-        await new Promise((resolve) =>
-          setTimeout(resolve, POLLING_CONFIG['image'].REFETCH_INTERVAL),
-        );
-        return pollStatus();
-      };
+        await new Promise((res) => setTimeout(res, config.REFETCH_INTERVAL));
+      }
+    },
+    onSuccess: async (data) => {
+      await apiClient.put(`/api/task/${data.taskId}`, {
+        base64Data: data.base64Image,
+        status: TASK_STATUS.SUCCESS,
+      });
 
-      return await pollStatus();
+      showNotification(
+        `Image generation for ${data.avatar?.name ?? 'Avatar'} completed`,
+        'success',
+        5000,
+        {
+          avatarId: data.avatar?.id,
+          taskId: data.taskId,
+          mediaType: TASK_TYPE,
+        },
+      );
+
+      invalidateImageTasks(queryClient, data.avatar?.id);
+    },
+    onError: (error: any) => {
+      const message = error?.message || 'Unknown error occurred';
+      showNotification(`Image generation failed: ${message}`, 'error', 5000);
     },
   });
 }

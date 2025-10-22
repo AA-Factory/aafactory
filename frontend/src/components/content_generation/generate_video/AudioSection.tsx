@@ -119,7 +119,7 @@ export const AudioSection: React.FC = () => {
   };
 
   const handleAudioGeneration = async () => {
-    showNotification('Generating audio, this may take a minute...', 'info');
+    showNotification(`Generating audio for ${state.avatar?.name}`, 'info');
 
     const payload = {
       dialog: dialog,
@@ -130,13 +130,9 @@ export const AudioSection: React.FC = () => {
       onSuccess: (audioResponse) => {
         setGeneratedAudioBase64(audioResponse.base64Audio);
         setGeneratedAudioUrl(audioResponse.audioUrl);
-        showNotification('Audio generation started', 'info');
         setSelectedAudioTask(null);
         setUploadedAudioFile(null);
         setUploadedAudioUrl(null);
-        if (audioResponse.base64Audio && audioResponse.audioUrl) {
-          showNotification('Audio generation completed', 'success');
-        }
       },
     });
   };

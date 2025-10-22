@@ -1,11 +1,9 @@
 import React from 'react';
 import { TbSparkles } from 'react-icons/tb';
-import { FiInfo } from 'react-icons/fi';
 import { Spinner } from '@/components/ui/Spinner';
 import { type ImageRatio, ImageQuality } from '@/lib/types/tasks';
 import { IMAGE_QUALITIES, IMAGE_RATIOS } from '@/lib/task/constants';
 import { Button } from '@/components/ui/Button';
-import { Tooltip } from '@/components/ui/Tooltip';
 import { TextArea } from '@/components/ui/TextArea';
 import { Label } from '@/components/ui/Label';
 
@@ -97,7 +95,7 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
               Image Ratio
             </Label>
             <select
-              name="imageRatio"
+              id="imageRatio"
               value={imageRatio}
               onChange={(e) => onImageRatioChange(e.target.value as ImageRatio)}
               className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 text-sm"
@@ -120,7 +118,7 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
             Quality
           </Label>
           <select
-            name="imageQuality"
+            id="imageQuality"
             value={imageQuality}
             onChange={(e) =>
               onImageQualityChange(e.target.value as ImageQuality)
