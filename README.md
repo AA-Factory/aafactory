@@ -7,6 +7,14 @@
 
 ---
 
+## Tutorial video
+
+[![Tutorial: AI Avatar Factory — Quick Start](https://img.youtube.com/vi/YRMNtwCiU_U/maxresdefault.jpg)](https://www.youtube.com/watch?v=YRMNtwCiU_U)
+
+Official quick-start walkthrough (10 min). Follow along to clone the repo, configure Redis (local or remote), start services with Docker Compose, and create your first AI avatar.
+
+---
+
 ## What is AI Avatar Factory?
 
 AI Avatar Factory is a platform for creating and managing AI avatars. Whether you're building virtual assistants, digital characters, or interactive AI personalities, this tool provides an easy-to-use interface with powerful video editing capabilities.
