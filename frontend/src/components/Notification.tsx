@@ -9,6 +9,7 @@ import {
   HiExclamation,
   HiX,
 } from 'react-icons/hi';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useNotification } from '@/contexts/NotificationContext';
 
 const Notification = () => {
@@ -26,6 +27,7 @@ const Notification = () => {
           text: 'text-green-800',
           icon: HiCheckCircle,
           iconColor: 'text-green-600',
+          spinning: false,
         };
       case 'error':
         return {
@@ -33,6 +35,7 @@ const Notification = () => {
           text: 'text-red-800',
           icon: HiExclamationCircle,
           iconColor: 'text-red-600',
+          spinning: false,
         };
       case 'warning':
         return {
@@ -40,6 +43,15 @@ const Notification = () => {
           text: 'text-yellow-800',
           icon: HiExclamation,
           iconColor: 'text-yellow-600',
+          spinning: false,
+        };
+      case 'system':
+        return {
+          container: 'bg-gray-50 border border-gray-200 shadow-lg',
+          text: 'text-gray-800',
+          icon: AiOutlineLoading3Quarters,
+          iconColor: 'text-gray-600',
+          spinning: true,
         };
       case 'info':
       default:
@@ -48,6 +60,7 @@ const Notification = () => {
           text: 'text-blue-800',
           icon: HiInformationCircle,
           iconColor: 'text-blue-600',
+          spinning: false,
         };
     }
   };
@@ -63,7 +76,11 @@ const Notification = () => {
     >
       <div className="flex items-start space-x-2">
         <div className="flex-shrink-0">
-          <IconComponent className={`h-4 w-4 ${styles.iconColor}`} />
+          <IconComponent
+            className={`h-4 w-4 ${styles.iconColor} ${
+              styles.spinning ? 'animate-spin' : ''
+            }`}
+          />
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-medium ${styles.text} line-clamp-2`}>

@@ -27,6 +27,12 @@ export const IMAGE_TYPES = [
   },
 ];
 
+export const GALLERY_MEDIA_TYPES = [
+  { id: 'image', label: 'Image', disabled: false, aspectRatio: 'square', viewerSize: 'md' },
+  { id: 'video', label: 'Video', disabled: false, aspectRatio: 'video', viewerSize: '2xl' },
+  { id: 'audio', label: 'Audio', disabled: false, aspectRatio: '16:9', viewerSize: 'sm' },
+];
+
 export const IMAGE_QUALITIES = [
   { label: 'low', value: 'low' },
   { label: 'medium', value: 'medium' },
@@ -49,3 +55,5 @@ export const SUPPORTED_TASK_TYPES = ['video', 'audio', 'image'];
 export const DEFAULT_LANGUAGE = 'en-us';
 
 export const MIN_AUDIO_DURATION = 4;
+
+export const LOCAL_STORAGE_KEY = 'notification-history';

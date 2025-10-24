@@ -12,7 +12,7 @@ export interface MediaViewerProps {
   downloadName?: string;
   showDownload?: boolean;
   emptyMessage?: string;
-  aspectRatio?: 'video' | 'square' | 'auto';
+  aspectRatio?: 'video' | 'image' | 'audio' | 'auto';
   actions?: React.ReactNode;
   maxWidth?: string;
 }
@@ -25,7 +25,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
   downloadName,
   showDownload = true,
   emptyMessage,
-  aspectRatio = type === 'video' ? 'video' : 'square',
+  aspectRatio = 'auto',
   actions,
   maxWidth = 'max-w-full',
 }) => {
@@ -56,8 +56,10 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
     switch (aspectRatio) {
       case 'video':
         return 'aspect-video';
-      case 'square':
+      case 'image':
         return 'aspect-square';
+      case 'audio':
+        return 'aspect-[2/.0]';
       case 'auto':
         return '';
     }
@@ -74,7 +76,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
   const renderMediaContent = () => {
     if (!src) {
       return (
-        <div className="flex flex-col items-center justify-center w-full h-full text-gray-400">
+        <div className="flex flex-col items-center justify-center w-full h-full min-h-34 text-gray-400">
           {getEmptyIcon()}
           <span className="text-lg">
             {emptyMessage || getDefaultEmptyMessage()}
@@ -84,7 +86,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
     }
 
     return (
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full p-3">
         {type === 'image' && (
           <img
             src={src}
@@ -100,12 +102,10 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
           />
         )}
         {type === 'audio' && (
-          <div className="flex items-center justify-center w-full h-full">
-            <audio src={src} controls className="w-full max-w-md" />
-          </div>
+          <audio src={src} controls className="w-full h-25 max-w-md" />
         )}
         {(showDownload || actions) && (
-          <div className="flex justify-center space-x-2 mt-2">
+          <div className="flex justify-center space-x-2 mt-5">
             {showDownload && (
               <MediaActionButton
                 href={src}

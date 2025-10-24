@@ -27,3 +27,9 @@ export const POLLING_CONFIG = {
 };
 
 export const MAX_PENDING_TASK_AGE_HOURS = 24; // Maximum age for pending tasks
+
+export const TASK_STATUS = {
+  PENDING: 'PENDING',
+  SUCCESS: 'SUCCESS',
+  FAILURE: 'FAILURE',
+};

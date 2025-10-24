@@ -11,6 +11,7 @@ interface GenerationTypeSelectorProps {
   setType: (type: GenerationType) => void;
   types: GenerationType[];
   title?: string;
+  tooltip?: string;
   icon?: React.ComponentType<{ className?: string }>;
 }
 
@@ -19,13 +20,14 @@ export const GenerationTypeSelector: React.FC<GenerationTypeSelectorProps> = ({
   setType,
   types,
   title = 'Select generation type',
+  tooltip = '',
   icon: Icon = () => <div></div>,
 }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
         <h2 className="text-lg font-bold mb-1 dark:text-white">{title}</h2>
-        <Tooltip text="Choose the type of content generation you want to perform" />
+        <Tooltip text={tooltip} />
       </div>
       <div className="grid grid-cols-1 gap-3 overflow-scroll">
         {types.map((type) => {

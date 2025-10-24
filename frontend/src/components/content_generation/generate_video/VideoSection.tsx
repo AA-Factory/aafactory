@@ -40,7 +40,7 @@ export const VideoSection: React.FC = () => {
 
   const handleVideoGeneration = async () => {
     showNotification(
-      'Generating video, video will be added to the gallery once complete.',
+      `Generating ${state.videoType.label} for ${state.avatar?.name}`,
       'info',
     );
 
@@ -67,7 +67,7 @@ export const VideoSection: React.FC = () => {
         return;
       }
       const payload = {
-        avatarId: state.avatar.id,
+        avatar: state.avatar,
         imageSrc: state.selectedImageFilePath,
         audioBase64: audioToUse,
         prompt: videoPrompt,
@@ -75,15 +75,7 @@ export const VideoSection: React.FC = () => {
         config: config,
         lowVram: lowVram,
       };
-      generateVideoMutation.mutate(payload, {
-        onSuccess: (videoResponse) => {
-          showNotification('Video generation completed!', 'success');
-          // Invalidate video tasks to refresh the list
-          queryClient.invalidateQueries({
-            queryKey: ['tasks', 'video', { avatarId: state.avatar?.id }],
-          });
-        },
-      });
+      generateVideoMutation.mutate(payload);
     } catch (error) {
       console.error('Error processing audio:', error);
       showNotification('Failed to process audio. Please try again.', 'error');

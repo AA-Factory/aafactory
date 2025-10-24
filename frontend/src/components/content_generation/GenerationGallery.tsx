@@ -1,9 +1,9 @@
 import React from 'react';
-import { VideoTask, ImageTask } from '@/lib/types/tasks';
+import { VideoTask, ImageTask, AudioTask } from '@/lib/types/tasks';
 import { Spinner } from '@/components/ui/Spinner';
-
+import { FiMusic } from 'react-icons/fi';
 // Generic task type that can be extended
-type MediaTask = VideoTask | ImageTask;
+type MediaTask = VideoTask | ImageTask | AudioTask;
 
 interface GenerationGalleryProps<T extends MediaTask = MediaTask> {
   tasks: T[];
@@ -11,7 +11,7 @@ interface GenerationGalleryProps<T extends MediaTask = MediaTask> {
   onTaskSelect: (task: T) => void;
   loading?: boolean;
   emptyMessage?: string;
-  mediaType?: 'image' | 'video';
+  mediaType?: 'image' | 'video' | 'audio';
 }
 
 export const GenerationGallery = <T extends MediaTask = MediaTask>({
@@ -27,7 +27,7 @@ export const GenerationGallery = <T extends MediaTask = MediaTask>({
     }
   };
 
-  const getMediaType = (task: T): 'image' | 'video' => {
+  const getMediaType = (task: T): 'image' | 'video' | 'audio' => {
     // Check explicit mediaType if available
     if (task.taskType) {
       return task.taskType;
@@ -38,12 +38,16 @@ export const GenerationGallery = <T extends MediaTask = MediaTask>({
       const ext = task.filePath.split('.').pop()?.toLowerCase();
       const videoExtensions = ['mp4', 'webm', 'ogg', 'mov'];
       const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const audioExtensions = ['mp3', 'wav', 'ogg', 'aac'];
 
       if (videoExtensions.includes(ext || '')) {
         return 'video';
       }
       if (imageExtensions.includes(ext || '')) {
         return 'image';
+      }
+      if (audioExtensions.includes(ext || '')) {
+        return 'audio';
       }
     }
 
@@ -63,6 +67,16 @@ export const GenerationGallery = <T extends MediaTask = MediaTask>({
             muted
             preload="metadata"
           />
+        );
+      } else if (mediaType === 'audio') {
+        return (
+          <div className="w-24 h-16 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded">
+            <FiMusic className="mr-2 text-gray-500 dark:text-gray-400" />
+            <audio className="w-full">
+              <source src={task.filePath} />
+              Your browser does not support the audio element.
+            </audio>
+          </div>
         );
       } else {
         return (

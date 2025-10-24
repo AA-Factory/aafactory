@@ -39,6 +39,7 @@ function GenerateVideoContent() {
           setType={setVideoType} // setVideoType is passed as setType
           types={VIDEO_TYPES}
           title="Select video type"
+          tooltip="Choose the type of video generation you want to perform"
           icon={PiFileVideoBold}
         />
       ),
@@ -47,7 +48,11 @@ function GenerateVideoContent() {
     {
       label: 'Select avatar',
       content: (
-        <AvatarSelector selectedAvatar={state.avatar} setAvatar={setAvatar} />
+        <AvatarSelector
+          selectedAvatar={state.avatar}
+          setAvatar={setAvatar}
+          tooltip="Choose an avatar to use for video generation"
+        />
       ),
       canNext: !!state.avatar,
     },
