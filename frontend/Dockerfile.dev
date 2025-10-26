@@ -15,9 +15,9 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 RUN chown -R nextjs:nodejs /app
 RUN mkdir -p /data/uploads && chown -R nextjs:nodejs /data/uploads
-RUN if [ -d "public/uploads" ]; then \
-      cp -r public/uploads/* /data/uploads/ 2>/dev/null || true; \
-    fi
+# RUN if [ -d "public/uploads" ]; then \
+#       cp -r public/uploads/* /data/uploads/ 2>/dev/null || true; \
+#     fi
 
 USER nextjs
 

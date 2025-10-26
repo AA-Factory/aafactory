@@ -18,6 +18,12 @@ services:
     environment:
       - CELERY_BROKER_URL=$CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.env:/.env
+      - ./docker-compose.yml:/docker-compose.yml:ro
+      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose:ro
+      - ./backend/main.py:/backend/main.py
     depends_on:
       - redis
     profiles:

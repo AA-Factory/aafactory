@@ -38,6 +38,11 @@ const HeaderNav: React.FC = () => {
         { name: 'Gallery', href: '/gallery' },
       ],
     },
+    {
+      name: 'Settings',
+      href: '/settings',
+      icon: HiMenu,
+    },
     // {
     //   name: "Real-Time",
     //   icon: HiLightningBolt,
