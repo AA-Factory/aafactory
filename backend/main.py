@@ -87,19 +87,19 @@ def restart_containers_background(compose_file: str, project_name: str, endpoint
         for service in services:
             try:
                 # Step 1: Stop the service
-                logger.info(f"Stopping {service}")
-                stop_result = subprocess.run(
-                    ['docker-compose', '-f', compose_file, '-p', project_name, 'stop', service],
+                logger.info(f"Killing {service}")
+                kill_result = subprocess.run(
+                    ['docker-compose', '-f', compose_file, '-p', project_name, 'kill', service],
                     capture_output=True,
                     text=True,
                     timeout=30,
                     env=env
                 )
-                
-                if stop_result.returncode == 0:
-                    logger.info(f"Successfully stopped {service}")
+
+                if kill_result.returncode == 0:
+                    logger.info(f"Successfully killed {service}")
                 else:
-                    logger.warning(f"Stop command for {service} returned: {stop_result.stderr}")
+                    logger.warning(f"Kill command for {service} returned: {kill_result.stderr}")
 
                 time.sleep(1)
 
@@ -192,11 +192,15 @@ def update_env(request: UpdateEnvRequest, background_tasks: BackgroundTasks) -> 
 
             logger.info(f"Using compose file: {compose_file}, project: {project_name}")
 
-            # Schedule container restart in background
-            background_tasks.add_task(restart_containers_background, compose_file, project_name , request.env_vars.get('CELERY_BROKER_URL', 'redis://redis:6379/0'))
+            # Read the updated CELERY_BROKER_URL from .env file
+            celery_broker_url = env_vars.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
 
+            # Schedule container restart in background
+            background_tasks.add_task(restart_containers_background, compose_file, project_name, celery_broker_url)
+
+            # Return immediately after scheduling restart
             return JSONResponse({
-                "message": "Environment variables updated. Services will restart in a few seconds.",
+                "message": "Environment variables updated. Services are restarting.",
                 "updated_vars": list(request.env_vars.keys())
             })
 
@@ -213,6 +217,12 @@ def update_env(request: UpdateEnvRequest, background_tasks: BackgroundTasks) -> 
             status_code=500,
             detail=f"Failed to update environment: {str(e)}"
         )
+
+
+@app.get("/health")
+def health_check() -> JSONResponse:
+    """Health check endpoint for container status verification."""
+    return JSONResponse({"status": "healthy"})
 
 
 if __name__ == "__main__":

@@ -38,10 +38,86 @@ const SettingsPage: React.FC = () => {
       localStorage.setItem(`mock_${server}`, isChecked.toString());
     };
 
+  const pollContainerHealth = async (
+    baseUrl: string,
+    maxAttempts = 30,
+  ): Promise<boolean> => {
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const response = await fetch(`${baseUrl}/health`, {
+          method: 'GET',
+        });
+        if (response.ok) {
+          return true;
+        }
+      } catch (error) {
+        // Container not ready yet, continue polling
+      }
+      // Wait 2 seconds before next attempt
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+    return false;
+  };
+
+  const pollFlowerHealth = async (maxAttempts = 30): Promise<boolean> => {
+    const flowerUrl =
+      window.location.hostname === 'localhost'
+        ? 'http://localhost:5556'
+        : 'http://aafactory-demo.xyz:5556';
+
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const response = await fetch(`${flowerUrl}/api/workers`, {
+          method: 'GET',
+        });
+        if (response.ok) {
+          return true;
+        }
+      } catch (error) {
+        // Flower not ready yet, continue polling
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+    return false;
+  };
+
+  const pollAllServices = async (): Promise<{
+    backend: boolean;
+    flower: boolean;
+  }> => {
+    const [backend, flower] = await Promise.all([
+      pollContainerHealth(process.env.NEXT_PUBLIC_CELERY_BASE_URL || ''),
+      // pollFlowerHealth(),
+    ]);
+
+    return { backend, flower };
+  };
+
   const handleSaveRedisEndpoint = async () => {
     setIsSaving(true);
     try {
       const endpoint = redisEndpoint.trim() || 'redis:6379';
+
+      // Validate endpoint format (host:port)
+      const parts = endpoint.split(':');
+      if (parts.length !== 2) {
+        showNotification(
+          'Invalid endpoint format. Use host:port (e.g., redis:6379)',
+          'error',
+        );
+        setIsSaving(false);
+        return;
+      }
+
+      const port = parseInt(parts[1], 10);
+      if (isNaN(port) || port < 0 || port > 65535) {
+        showNotification(
+          'Invalid port number. Port must be between 0 and 65535.',
+          'system',
+        );
+        setIsSaving(false);
+        return;
+      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_CELERY_BASE_URL}/update_env/`,
@@ -60,14 +136,32 @@ const SettingsPage: React.FC = () => {
       );
 
       if (response.ok) {
-        const result = await response.json();
         // Save to localStorage on success
         localStorage.setItem('redis_endpoint', endpoint);
+
         showNotification(
-          result.message ||
-            'Redis endpoint updated and services restarted successfully',
+          'Environment updated. Waiting for containers to restart...',
           'success',
         );
+
+        // Poll all services health endpoints
+        // const { backend, flower } = await pollAllServices();
+
+        // if (backend && flower) {
+        //   showNotification(
+        //     'Redis endpoint updated and all services restarted successfully',
+        //     'success',
+        //   );
+        // } else {
+        //   const failedServices = [];
+        //   if (!backend) failedServices.push('backend');
+        //   if (!flower) failedServices.push('flower/celery');
+
+        //   showNotification(
+        //     `Services are taking longer than expected to restart: ${failedServices.join(', ')}. Please check manually.`,
+        //     'error',
+        //   );
+        // }
       } else {
         throw new Error('Failed to update Redis endpoint');
       }
