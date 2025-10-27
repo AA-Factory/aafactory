@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "celery[redis]>=5.5.3",
-    "docker>=7.1.0",
     "fastapi>=0.116.1",
     "flower>=2.0.1",
     "loguru>=0.7.3",

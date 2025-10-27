@@ -24,7 +24,6 @@ interface TaskCheckResult {
 
 async function checkCeleryTaskStatus(taskId: string): Promise<any> {
   const statusUrl = `${CELERY_TASK_STATUS_SERVER}${taskId}`;
-  console.log('✌️CELERY_TASK_STATUS_SERVER --->', CELERY_TASK_STATUS_SERVER);
   const response = await fetch(statusUrl, {
     method: 'GET',
     headers: {

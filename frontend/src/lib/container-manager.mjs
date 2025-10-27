@@ -43,7 +43,7 @@ class ContainerManager {
   /**
    * Rebuild and start a container using docker-compose
    */
-  rebuildWithCompose(serviceName, composeFile = '/docker-compose.yml') {
+  rebuildWithCompose(serviceName, composeFile = './docker-compose.yml') {
     console.log(`Rebuilding service: ${serviceName}`);
     const command = `docker compose -p aafactory -f ${composeFile} up -d ${serviceName} --no-deps`;
     return this.executeCommand(command);
@@ -52,7 +52,7 @@ class ContainerManager {
   /**
    * Stop and rebuild a specific service using docker-compose
    */
-  stopAndRebuildCompose(serviceName, composeFile = '/docker-compose.yml') {
+  stopAndRebuildCompose(serviceName, composeFile = './docker-compose.yml') {
     console.log(`Stopping and rebuilding service: ${serviceName}`);
 
     // Stop the service
@@ -126,7 +126,7 @@ class ContainerManager {
   /**
    * Restart all services in a docker-compose file
    */
-  restartAllServices(composeFile = '/docker-compose.yml') {
+  restartAllServices(composeFile = './docker-compose.yml') {
     console.log('Restarting all services...');
     return this.executeCommand(`docker compose -p aafactory -f ${composeFile} restart`);
   }

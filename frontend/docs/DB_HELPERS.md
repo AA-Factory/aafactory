@@ -23,3 +23,10 @@ Or if you prefer using your browser's developer console:
 fetch('/api/dev/db?type=all', { method: 'POST' })
 .then(r => r.json())
 .then(console.log)
+
+curl -X POST http://localhost:3000/api/containers/manage \
+ -H "Content-Type: application/json" \
+ -H "Authorization: Bearer your-secret-token" \
+ -d '{"action": "rebuild-compose", "serviceName": "flower"}'
+
+curl -X POST http://aafactory-demo.xyz/api/containers/manage -H "Content-Type: application/json" -H "Authorization: Bearer your-secret-token" -d '{"action": "list"}'

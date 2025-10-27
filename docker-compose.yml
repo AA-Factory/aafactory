@@ -13,20 +13,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     command: uv run uvicorn --host 0.0.0.0 main:app
-    restart: always
     ports:
       - 8000:8000
     environment:
       - CELERY_BROKER_URL=$CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND=$CELERY_RESULT_BACKEND
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./.env:/.env
-      - ./docker-compose.yml:/docker-compose.yml:ro
-      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose:ro
-      - ./backend/main.py:/backend/main.py
     depends_on:
       - redis
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     profiles:
       - backend-local
       - local
@@ -44,6 +43,12 @@ services:
     depends_on:
       - redis
       - backend-app
+    healthcheck:
+      test: ['CMD-SHELL', 'celery inspect ping --destination celery@$$HOSTNAME']
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
     profiles:
       - backend-local
       - local
@@ -64,6 +69,12 @@ services:
       - backend-app
       - redis
       - celery-worker
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5555/healthcheck']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     profiles:
       - backend-local
       - local
