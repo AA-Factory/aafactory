@@ -29,11 +29,17 @@ RUN npm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Install wait-port to wait for MongoDB port update
+# Install wait-port, Docker CLI and docker-compose
 RUN npm install -g wait-port
+RUN apk add --no-cache docker-cli docker-compose
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create docker group with host's docker GID (typically 999 or 998)
+RUN addgroup -g 999 docker 2>/dev/null || true
+
+RUN addgroup --system --gid 1001 nodejs || true
+RUN adduser --system --uid 1001 nextjs || true
+# Add nextjs user to docker group for socket access
+RUN adduser nextjs docker || true
 
 # CRITICAL: Copy public folder BEFORE standalone
 COPY --from=builder /app/public ./public

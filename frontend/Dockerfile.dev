@@ -10,17 +10,26 @@ COPY . .
 # Install wait-port to wait for MongoDB port update
 RUN npm install -g wait-port
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Install Docker CLI and Docker Compose v2
+RUN apk add --no-cache docker-cli docker-cli-compose
+
+# Create non-root user first
+RUN addgroup --system --gid 1001 nodejs || true
+RUN adduser --system --uid 1001 nextjs || true
+
+# On macOS Docker Desktop, the socket is world-writable, so we just need the user to exist
+# Create docker group and add nextjs user to it
+RUN addgroup -g 999 docker 2>/dev/null || addgroup docker 2>/dev/null || true
+RUN adduser nextjs docker 2>/dev/null || true
 RUN chown -R nextjs:nodejs /app
 RUN mkdir -p /data/uploads && chown -R nextjs:nodejs /data/uploads
 # RUN if [ -d "public/uploads" ]; then \
 #       cp -r public/uploads/* /data/uploads/ 2>/dev/null || true; \
 #     fi
 
-USER nextjs
-
 EXPOSE 3000
+
+# Don't switch to nextjs user - stay as root for Docker socket access
+# USER nextjs
 
 CMD sh -c "wait-port mongodb:27017 && node scripts/db-setup.js && npm run dev --turbo"

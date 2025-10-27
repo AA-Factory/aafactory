@@ -129,6 +129,9 @@ services:
       - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
     volumes:
       - uploaded-files:/data/uploads
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./.env:/.env:rw
+      - ./docker-compose.yml:/docker-compose.yml:ro
     depends_on:
       - mongodb
     networks:
@@ -153,6 +156,9 @@ services:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./.env:/.env:rw
+      - ./docker-compose.yml:/docker-compose.yml:ro
     depends_on:
       - mongodb
     networks:
