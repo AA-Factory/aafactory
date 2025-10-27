@@ -14,7 +14,6 @@ export async function POST(request: { json: () => any; headers: { get: (arg0: st
   // }
 
   const manager = new ContainerManager();
-  console.log('✌️ manager --->', manager);
 
   try {
     let result;

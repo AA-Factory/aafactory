@@ -29,17 +29,18 @@ RUN npm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Install wait-port, Docker CLI and docker-compose
+# Install wait-port, Docker CLI and Docker Compose v2
 RUN npm install -g wait-port
-RUN apk add --no-cache docker-cli docker-compose
+RUN apk add --no-cache docker-cli docker-cli-compose
 
-# Create docker group with host's docker GID (typically 999 or 998)
-RUN addgroup -g 999 docker 2>/dev/null || true
-
+# Create non-root user first
 RUN addgroup --system --gid 1001 nodejs || true
 RUN adduser --system --uid 1001 nextjs || true
-# Add nextjs user to docker group for socket access
-RUN adduser nextjs docker || true
+
+# On macOS Docker Desktop, the socket is world-writable, so we just need the user to exist
+# Create docker group and add nextjs user to it
+RUN addgroup -g 999 docker 2>/dev/null || addgroup docker 2>/dev/null || true
+RUN adduser nextjs docker 2>/dev/null || true
 
 # CRITICAL: Copy public folder BEFORE standalone
 COPY --from=builder /app/public ./public
@@ -55,10 +56,10 @@ RUN mkdir -p /data/uploads && chown -R nextjs:nodejs /data/uploads
 #       cp -r public/uploads/* /data/uploads/ 2>/dev/null || true; \
 #     fi
 
-USER nextjs
-
-
 EXPOSE 3000
+
+# Don't switch to nextjs user - stay as root for Docker socket access
+# USER nextjs
 
 # Production: node server.js (standalone), Development: npm run dev
 CMD sh -c "wait-port mongodb:27017 && node scripts/db-setup.js && node server.js"
