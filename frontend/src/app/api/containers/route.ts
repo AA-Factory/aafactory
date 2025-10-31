@@ -2,15 +2,9 @@
 import { NextResponse } from 'next/server';
 import ContainerManager from '@/lib/container-manager.mjs';
 
-export async function POST(request: { json: () => any; headers: { get: (arg0: string) => any; }; }) {
+export async function POST(request: Request) {
   const body = await request.json();
   const { action, containerName, serviceName, imageName, composeFile, options } = body;
-
-  // Add authentication/authorization here!
-  const authToken = request.headers.get('authorization');
-  // if (!authToken || authToken !== `Bearer ${process.env.CONTAINER_MANAGER_SECRET}`) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
 
   const manager = new ContainerManager();
 
