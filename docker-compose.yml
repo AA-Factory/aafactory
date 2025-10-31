@@ -1,8 +1,6 @@
 services:
   redis:
     image: redis:8.2.1-alpine
-    ports:
-      - 6379:6379
     profiles:
       - backend-local
       - local
@@ -106,11 +104,13 @@ services:
     environment:
       - MONGODB_URI=$MONGODB_URI
       - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
-      - NEXT_PUBLIC_RUNPOD_ENDPOINT=$RUNPOD_ENDPOINT
       - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - ./.env:/.env:rw
+      - ./docker-compose.yml:/docker-compose.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mongodb
     networks:
