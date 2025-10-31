@@ -1,37 +1,45 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNotification } from '@/contexts/NotificationContext';
-import { ServerName } from '@/lib/types/celery';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { PiCopySimpleLight } from 'react-icons/pi';
+import { redisSettingsSchema, RedisSettingsFormData } from './schemas';
+import { parseRedisEndpoint, isMockMode, formatRedisEnvVars } from './utils';
+import {
+  BACKEND_SERVICES,
+  DEFAULT_REDIS_ENDPOINT,
+} from '@/lib/celery/constants';
+
 const SettingsPage: React.FC = () => {
-  const [servers, setServers] = useState({
-    infinite_talk: false,
-    qwen_image: false,
-    zonos: false,
-  });
   const [envVars, setEnvVars] = useState<Record<string, string>>({});
-  const [redisEndpoint, setRedisEndpoint] = useState('redis:6379');
   const [isLoadingEnv, setIsLoadingEnv] = useState(true);
   const [isSavingEnv, setIsSavingEnv] = useState(false);
   const { showNotification } = useNotification();
 
-  useEffect(() => {
-    const infiniteTalk = localStorage.getItem('mock_infinite_talk') === 'true';
-    const qwenImage = localStorage.getItem('mock_qwen_image') === 'true';
-    const zonos = localStorage.getItem('mock_zonos') === 'true';
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm<RedisSettingsFormData>({
+    resolver: zodResolver(redisSettingsSchema),
+    mode: 'onChange',
+    defaultValues: {
+      redisEndpoint: DEFAULT_REDIS_ENDPOINT,
+    },
+  });
 
-    setServers({
-      infinite_talk: infiniteTalk,
-      qwen_image: qwenImage,
-      zonos: zonos,
-    });
+  const redisEndpoint = watch('redisEndpoint');
 
-    // Load environment variables
-    loadEnvVars();
-  }, []);
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    showNotification('Copied to clipboard', 'system');
+  };
 
-  const loadEnvVars = async () => {
+  const loadEnvVars = useCallback(async () => {
     try {
       const response = await fetch('/api/env');
       if (response.ok) {
@@ -42,7 +50,7 @@ const SettingsPage: React.FC = () => {
         const brokerUrl = data.envVars.CELERY_BROKER_URL || '';
         const match = brokerUrl.match(/redis:\/\/([^\/]+)/);
         if (match) {
-          setRedisEndpoint(match[1]);
+          setValue('redisEndpoint', match[1]);
         }
       } else {
         showNotification('Failed to load environment variables', 'error');
@@ -53,25 +61,17 @@ const SettingsPage: React.FC = () => {
     } finally {
       setIsLoadingEnv(false);
     }
-  };
+  }, [showNotification, setValue]);
 
-  const handleServerChange =
-    (server: ServerName) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const isChecked = e.target.checked;
-      setServers((prev) => ({ ...prev, [server]: isChecked }));
-      localStorage.setItem(`mock_${server}`, isChecked.toString());
-    };
+  useEffect(() => {
+    loadEnvVars();
+  }, [loadEnvVars]);
 
-  const handleRedisEndpointChange = (endpoint: string) => {
-    setRedisEndpoint(endpoint);
-    // Update both CELERY_BROKER_URL and CELERY_RESULT_BACKEND
-    const redisUrl = `redis://${endpoint}/0`;
-    setEnvVars((prev) => ({
-      ...prev,
-      CELERY_BROKER_URL: redisUrl,
-      CELERY_RESULT_BACKEND: redisUrl,
-    }));
-  };
+  // Update mock_servers in localStorage when endpoint changes
+  useEffect(() => {
+    const useMockServers = isMockMode(redisEndpoint);
+    localStorage.setItem('mock_servers', useMockServers.toString());
+  }, [redisEndpoint]);
 
   const rebuildService = async (serviceName: string) => {
     const response = await fetch('/api/containers', {
@@ -87,21 +87,31 @@ const SettingsPage: React.FC = () => {
     return response.ok;
   };
 
-  const handleSaveEnvVars = async () => {
+  const onSubmit = async (data: RedisSettingsFormData) => {
     setIsSavingEnv(true);
     try {
+      // Update envVars with new Redis configuration
+      const redisUrl = `redis://${data.redisEndpoint}/0`;
+      const updatedEnvVars = {
+        ...envVars,
+        CELERY_BROKER_URL: redisUrl,
+        CELERY_RESULT_BACKEND: redisUrl,
+      };
+
       // Save environment variables
       const response = await fetch('/api/env', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ envVars }),
+        body: JSON.stringify({ envVars: updatedEnvVars }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to save environment variables');
       }
+
+      setEnvVars(updatedEnvVars);
 
       showNotification(
         'Environment variables saved. Restarting backend services...',
@@ -109,9 +119,8 @@ const SettingsPage: React.FC = () => {
       );
 
       // Rebuild backend services
-      const services = ['backend-app', 'celery-worker', 'flower'];
       const results = await Promise.all(
-        services.map((service) => rebuildService(service)),
+        BACKEND_SERVICES.map((service) => rebuildService(service)),
       );
 
       const allSucceeded = results.every((r) => r);
@@ -147,7 +156,7 @@ const SettingsPage: React.FC = () => {
           {isLoadingEnv ? (
             <p className="text-gray-600 dark:text-gray-400">Loading...</p>
           ) : (
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label
                   htmlFor="redis-endpoint"
@@ -158,31 +167,72 @@ const SettingsPage: React.FC = () => {
                 <input
                   id="redis-endpoint"
                   type="text"
-                  value={redisEndpoint}
-                  onChange={(e) => handleRedisEndpointChange(e.target.value)}
+                  {...register('redisEndpoint')}
                   placeholder="redis:6379"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   Format: host:port (e.g., redis:6379 or 123.45.67.89:6379)
                 </p>
-                {redisEndpoint !== 'redis:6379' &&
-                  (servers.infinite_talk ||
-                    servers.qwen_image ||
-                    servers.zonos) && (
-                    <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                      <p className="text-sm text-amber-800 dark:text-amber-200">
-                        <strong>⚠️ Warning:</strong> Servers set to mock won't
-                        make requests to this remote endpoint. They will return
-                        mock responses instead.
-                      </p>
+                {errors.redisEndpoint ? (
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-sm text-red-800 dark:text-red-200">
+                      <strong>✗ Invalid Format:</strong>{' '}
+                      {errors.redisEndpoint.message}
+                    </p>
+                  </div>
+                ) : isMockMode(redisEndpoint) ? (
+                  <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-200">
+                      <strong>✓ Mock Mode:</strong> Using local Redis. All
+                      servers will return mock responses.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>ℹ Remote Server Set:</strong> Using remote Redis.
+                      All servers will make real API calls.
+                    </p>
+                  </div>
+                )}
+                {!errors.redisEndpoint && parseRedisEndpoint(redisEndpoint) && (
+                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                          Environment variables for runpod child servers:
+                        </p>
+                        <code className="text-sm text-gray-800 dark:text-gray-200 font-mono">
+                          REDIS_HOST={parseRedisEndpoint(redisEndpoint)?.host}
+                          <br />
+                          REDIS_PORT={parseRedisEndpoint(redisEndpoint)?.port}
+                        </code>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const parsed = parseRedisEndpoint(redisEndpoint);
+                          if (parsed) {
+                            copyToClipboard(formatRedisEnvVars(parsed));
+                          }
+                        }}
+                        className="ml-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Copy to clipboard"
+                      >
+                        <PiCopySimpleLight
+                          size={20}
+                          className="text-gray-600 dark:text-gray-300"
+                        />
+                      </button>
                     </div>
-                  )}
+                  </div>
+                )}
               </div>
 
               <button
-                onClick={handleSaveEnvVars}
-                disabled={isSavingEnv}
+                type="submit"
+                disabled={isSavingEnv || !isValid}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSavingEnv ? 'Saving...' : 'Save Redis Configuration'}
@@ -193,55 +243,13 @@ const SettingsPage: React.FC = () => {
                   <strong>Note:</strong> Saving will update CELERY_BROKER_URL
                   and CELERY_RESULT_BACKEND, then automatically restart
                   backend-app, celery-worker, and flower containers.
+                  {isMockMode(redisEndpoint)
+                    ? ' Mock servers will be enabled.'
+                    : ' Mock servers will be disabled.'}
                 </p>
               </div>
-            </div>
+            </form>
           )}
-        </div>
-
-        {/* Mock Servers */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100 flex items-center space-x-2">
-            <span> Mock Servers</span>
-            <Tooltip text="Enable mock servers to return simulated responses instead of making real API calls." />
-          </h2>
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={servers.infinite_talk}
-                onChange={handleServerChange('infinite_talk')}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                infinite_talk
-              </span>
-            </label>
-
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={servers.qwen_image}
-                onChange={handleServerChange('qwen_image')}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                qwen_image
-              </span>
-            </label>
-
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={servers.zonos}
-                onChange={handleServerChange('zonos')}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                zonos
-              </span>
-            </label>
-          </div>
         </div>
       </div>
     </div>

@@ -59,7 +59,7 @@ function createTaskRequest(
   audioBase64: string,
 ): AudioGenerationTaskRequest {
   const language = payload.language || DEFAULT_LANGUAGE;
-  const isMock = typeof window !== 'undefined' && localStorage.getItem('mock_zonos') === 'true';
+  const isMock = typeof window !== 'undefined' && localStorage.getItem('mock_servers') === 'true';
 
   return {
     server_name: isMock ? 'mock' : 'zonos',

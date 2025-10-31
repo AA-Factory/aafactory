@@ -28,7 +28,7 @@ function createTaskRequest(
   imageBase64: string,
   audioBase64: string,
 ): VideoGenerationTaskRequest {
-  const isMock = typeof window !== 'undefined' && localStorage.getItem('mock_infinite_talk') === 'true';
+  const isMock = typeof window !== 'undefined' && localStorage.getItem('mock_servers') === 'true';
   return {
     server_name: isMock ? 'mock' : 'infinite_talk',
     task_name: 'prompt_image_audio_to_video',
