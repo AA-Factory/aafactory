@@ -63,10 +63,10 @@ Remote Redis enables distributed processing across multiple servers. To connect:
 
    ![Select Remote URL Screenshot](assets/select_remote_redis_url_in_running_pod.png)
 
-2. Set the Redis endpoint and start the application:
+2. Start the application and set the redis URL in the frontend settings:
 
    ```bash
-   RUNPOD_ENDPOINT=your-redis-ip:port docker-compose --profile local up
+   docker-compose --profile local up
    ```
 
 3. Share the same Redis URL with other running instances for distributed processing:
