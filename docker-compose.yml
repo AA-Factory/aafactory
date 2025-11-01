@@ -103,8 +103,11 @@ services:
       - 3000:3000
     environment:
       - MONGODB_URI=$MONGODB_URI
+      - MONGODB_DB=$MONGODB_DB
+      - BASE_UPLOAD_DIR=$BASE_UPLOAD_DIR
       - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
       - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
+      - PLAYWRIGHT_BASE_URL=http://localhost:3000
     volumes:
       - ./frontend:/app
       - /app/node_modules

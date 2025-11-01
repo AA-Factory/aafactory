@@ -1,7 +1,7 @@
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
 import fs, { existsSync } from 'fs';
-import { RESOURCE_DIRECTORIES } from './resource/constants';
+import { RESOURCE_DIRECTORIES, BASE_UPLOAD_DIR } from './resource/constants';
 
 export interface SaveFileResult {
   filePath: string;
@@ -25,6 +25,11 @@ export async function saveBase64File(
   fileType: 'audio' | 'video' | 'image',
 ): Promise<SaveFileResult> {
   try {
+    //we should throw an error if the base64 is invalid
+    if (!base64Data || typeof base64Data !== 'string' || base64Data.length === 0) {
+      throw new Error('Invalid base64 data');
+    }
+
     // Remove data URL prefix if present (e.g., "data:audio/mp3;base64,")
     const base64Content = base64Data.replace(/^data:[^;]+;base64,/, '');
 
@@ -33,7 +38,7 @@ export async function saveBase64File(
     const fileName = `${taskId}.${extension}`;
 
     // Create public directory path
-    const publicDir = path.join(process.cwd(), 'public/uploads', fileType);
+    const publicDir = path.join(process.cwd(), 'public', BASE_UPLOAD_DIR, fileType);
     const filePath = path.join(publicDir, fileName);
 
     // Ensure directory exists
@@ -44,7 +49,7 @@ export async function saveBase64File(
     await fs.promises.writeFile(filePath, buffer as any);
 
     // Return relative path for web access
-    const webPath = `/uploads/${fileType}/${fileName}`;
+    const webPath = `/${BASE_UPLOAD_DIR}/${fileType}/${fileName}`;
 
     return {
       filePath: webPath,
@@ -108,14 +113,14 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
 export async function deleteFile(filePath: string): Promise<DeleteResult> {
   try {
     // Remove leading /uploads/ if present, since we'll add public/ prefix
-    const cleanPath = filePath.startsWith('/uploads/')
-      ? filePath.substring('/uploads/'.length)
+    const cleanPath = filePath.startsWith(`/${BASE_UPLOAD_DIR}/`)
+      ? filePath.substring(`/${BASE_UPLOAD_DIR}/`.length)
       : filePath;
 
     const absolutePath = path.join(
       process.cwd(),
       'public',
-      'uploads',
+      BASE_UPLOAD_DIR,
       cleanPath,
     );
 
@@ -150,7 +155,7 @@ export async function uploadFile(
   destination = 'image',
 ): Promise<UploadResult> {
   try {
-    const uploadsDir = path.join(process.cwd(), 'public/uploads', destination);
+    const uploadsDir = path.join(process.cwd(), 'public', BASE_UPLOAD_DIR, destination);
     await mkdir(uploadsDir, { recursive: true });
 
     const timestamp = Date.now();
@@ -160,7 +165,7 @@ export async function uploadFile(
       .substring(7)}${extension}`;
 
     const filePath = path.join(uploadsDir, uniqueFileName);
-    const relativePath = `/uploads/${destination}/${uniqueFileName}`;
+    const relativePath = `/${BASE_UPLOAD_DIR}/${destination}/${uniqueFileName}`;
 
     let buffer: Buffer;
     if (blob instanceof Blob) {
@@ -198,7 +203,7 @@ export async function uploadTrainingAudio(
 }
 
 export async function cleanAllDirectories() {
-  const baseDir = path.join(process.cwd(), 'public/uploads');
+  const baseDir = path.join(process.cwd(), 'public', BASE_UPLOAD_DIR);
 
   for (const dir of RESOURCE_DIRECTORIES) {
     const dirPath = path.join(baseDir, dir);
@@ -227,6 +232,7 @@ export async function cleanAllDirectories() {
             // Continue with other files even if one fails
           }
         }
+        await ensureDirectoryExists(dirPath);
 
         console.log(`Cleaned directory: ${dirPath}`);
       } else {
@@ -239,7 +245,7 @@ export async function cleanAllDirectories() {
 }
 
 export async function cleanSpecificDirectories(directories: string[]) {
-  const baseDir = path.join(process.cwd(), 'public/uploads');
+  const baseDir = path.join(process.cwd(), 'public', BASE_UPLOAD_DIR);
 
   for (const dir of directories) {
     if (!RESOURCE_DIRECTORIES.includes(dir)) {

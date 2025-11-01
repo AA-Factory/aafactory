@@ -1,14 +1,14 @@
 export const DEFAULT_AVATAR_TRAINING_AUDIOS = {
   default: {
-    src: '/test/training_audio/rick_and_morty_voice_training.wav',
+    src: '/default/training_audio/rick_and_morty_voice_training.wav',
     filename: 'rick_and_morty_voice_training.wav',
   },
   japanese: {
-    src: '/test/training_audio/japanese_voice_training.wav',
+    src: '/default/training_audio/japanese_voice_training.wav',
     filename: 'japanese_voice_training.wav',
   },
   rick_and_morty: {
-    src: '/test/training_audio/rick_and_morty_voice_training.wav',
+    src: '/default/training_audio/rick_and_morty_voice_training.wav',
     filename: 'rick_and_morty_voice_training.wav',
   },
 };

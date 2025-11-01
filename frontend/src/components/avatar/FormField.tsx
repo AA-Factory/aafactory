@@ -4,6 +4,7 @@ import { HiChevronDown, HiExclamationCircle } from 'react-icons/hi';
 import { Label } from '@/components/ui/Label';
 
 interface FormFieldProps {
+  id: string;
   name: keyof AvatarFormData;
   label: string;
   type?: 'text' | 'textarea' | 'select';
@@ -17,6 +18,7 @@ interface FormFieldProps {
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
+  id,
   name,
   label,
   type = 'text',
@@ -44,6 +46,7 @@ export const FormField: React.FC<FormFieldProps> = ({
 
       {type === 'textarea' ? (
         <textarea
+          id={id}
           {...register(name)}
           rows={rows}
           placeholder={placeholder}
@@ -52,6 +55,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       ) : type === 'select' && options ? (
         <div className="relative">
           <select
+            id={id}
             {...register(name)}
             className={`${baseClasses} appearance-none cursor-pointer ${errorClasses}`}
           >
@@ -67,6 +71,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       ) : (
         <input
           type="text"
+          id={id}
           {...register(name)}
           placeholder={placeholder}
           className={`${baseClasses} placeholder-gray-500 dark:placeholder-gray-400 ${errorClasses}`}
