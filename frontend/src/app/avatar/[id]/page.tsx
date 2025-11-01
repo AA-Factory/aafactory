@@ -1,24 +1,26 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, use } from 'react'; // ✅ Import 'use' hook
 import AvatarPage from '@/components/avatar/AvatarPage';
-import { useRouter } from 'next/navigation'; // NOT 'next/router'
+import { useRouter } from 'next/navigation';
 
 interface AvatarEditProps {
-  params: {
+  params: Promise<{
+    // ✅ params is a Promise
     id: string;
-  };
+  }>;
 }
 
 const AvatarEdit: React.FC<AvatarEditProps> = ({ params }) => {
-  const avatarId = params.id;
+  const { id: avatarId } = use(params); // ✅ Use 'use()' to unwrap the Promise
   const router = useRouter();
+
   useEffect(() => {
     // Redirect to avatars page if no ID provided
     if (!avatarId) {
       router.push('/avatars');
     }
-  }, [avatarId]);
+  }, [avatarId, router]);
 
   if (!avatarId) {
     return (

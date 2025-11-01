@@ -9,15 +9,15 @@ import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 const MONGODB_DB = process.env.MONGODB_DB || 'aafactory_db';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     resource: string;
     id: string;
-  };
+  }>;
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { resource, id } = params;
+    const { resource, id } = await params;
 
     // Validate resource type
     if (!Object.keys(RESOURCE_CONFIG).includes(resource)) {

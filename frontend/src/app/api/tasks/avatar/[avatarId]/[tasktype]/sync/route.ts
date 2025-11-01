@@ -20,11 +20,12 @@ interface TaskCheckResult {
   error?: string;
 }
 
-interface SyncParams {
-  params: {
+
+type SyncParams = {
+  params: Promise<{
     tasktype: string;
     avatarId: string;
-  };
+  }>;
 }
 
 function isValidTaskType(taskType: string): taskType is TaskType {
@@ -96,7 +97,7 @@ async function updateTaskBasedOnStatus(
 }
 
 export async function POST(request: Request, { params }: SyncParams) {
-  const { tasktype, avatarId } = params;
+  const { tasktype, avatarId } = await params;
 
   try {
     // Validate task type
