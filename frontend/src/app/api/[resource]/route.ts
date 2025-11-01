@@ -5,7 +5,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getCollection } from '@/lib/database';
-import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
+import { RESOURCE_CONFIG, ResourceType, BASE_UPLOAD_DIR } from '@/lib/resource/constants';
 
 type RouteParams = {
   params: Promise<{
@@ -127,7 +127,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Create full upload directory path
     const uploadDir = path.join(
       process.cwd(),
-      'public/uploads',
+      'public',
+      BASE_UPLOAD_DIR,
       config.uploadDir,
     );
 
@@ -143,8 +144,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const fileInfo = {
       filename: uniqueFilename,
 
-      path: `uploads/${config.uploadDir}/${uniqueFilename}`,
-      url: `uploads/${config.uploadDir}/${uniqueFilename}`,
+      path: `${BASE_UPLOAD_DIR}/${config.uploadDir}/${uniqueFilename}`,
+      url: `${BASE_UPLOAD_DIR}/${config.uploadDir}/${uniqueFilename}`,
       type: file.type,
       size: file.size,
       resourceType: resourceType,

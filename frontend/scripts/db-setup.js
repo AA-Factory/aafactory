@@ -3,7 +3,7 @@ const { MongoClient } = require('mongodb');
 const { collections } = require('../schemas'); // ← THE IMPORT
 
 const uri = process.env.MONGODB_URI;
-const dbName = 'aafactory_db';
+const dbName = process.env.MONGODB_DB || 'aafactory_db';
 
 if (!uri) {
   console.error('❌ MONGODB_URI is not set');

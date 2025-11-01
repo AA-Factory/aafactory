@@ -28,7 +28,9 @@ export type GenerateImagePayload = {
 function createTaskRequest(
   payload: GenerateImagePayload,
 ): ImageGenerationTaskRequest {
-  const isMock = typeof window !== 'undefined' && localStorage.getItem('mock_servers') === 'true';
+  const isMock = typeof window !== 'undefined'
+    ? localStorage.getItem('mock_servers') !== 'false'
+    : true;
   return {
     server_name: isMock ? 'mock' : 'qwen_image',
     task_name: payload.taskName || 'text_to_image',

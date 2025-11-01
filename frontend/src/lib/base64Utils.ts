@@ -1,8 +1,5 @@
-/**
- * Base64 encoding/decoding utilities for audio and file processing
- */
-
-// Custom Error Classes
+import { v4 as uuidv4 } from 'uuid';
+import { b } from 'vitest/dist/chunks/suite.d.BJWk38HB';
 class Base64Error extends Error {
   constructor(
     message: string,
@@ -39,6 +36,58 @@ function cleanBase64(base64String: string): string {
 
   return cleaned;
 }
+
+/**
+ * Check if string contains only valid base64 characters (before cleaning)
+ * Valid: A-Z, a-z, 0-9, +, /, =, and common formatting (whitespace, newlines, data URIs)
+ */
+function hasValidBase64Characters(str: string): boolean {
+  // Remove common formatting that we can clean
+  const withoutDataUri = str.replace(/^data:[^;]+;base64,/, '');
+  const withoutWhitespace = withoutDataUri.replace(/[\s\n\r]/g, '');
+
+  // Now check if remaining characters are valid base64 alphabet
+  const base64Regex = /^[A-Za-z0-9+/=]*$/;
+  return base64Regex.test(withoutWhitespace);
+}
+
+/**
+ * Extract base64 string from various input formats
+ */
+function extractBase64String(input: unknown): string {
+  // Already a string
+  if (typeof input === 'string') {
+    return input;
+  }
+
+  // Not an object or is null
+  if (typeof input !== 'object' || input === null) {
+    throw new DecodingError(
+      `Invalid base64 input type: expected string or object, got ${typeof input}`
+    );
+  }
+
+  // Try common property names where base64 might be stored
+  const obj = input as Record<string, any>;
+  const possibleKeys = ['message', 'data', 'base64', 'content', 'value'];
+
+  for (const key of possibleKeys) {
+    if (key in obj && typeof obj[key] === 'string') {
+      return obj[key];
+    }
+  }
+
+  // If we have a single string property, use that
+  const keys = Object.keys(obj);
+  if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+    return obj[keys[0]];
+  }
+
+  throw new DecodingError(
+    `Could not extract base64 string from object. Expected properties: ${possibleKeys.join(', ')}`
+  );
+}
+
 
 /**
  * Validates if a string is a valid base64 format
@@ -97,9 +146,9 @@ export async function fileToBase64(file: File): Promise<string> {
 
         // Extract base64 data (remove data:mime;base64, prefix)
         const base64Data = result.split(',')[1];
-        if (!base64Data) {
-          throw new EncodingError('Invalid file data format');
-        }
+        // if (!base64Data) {
+        //   throw new EncodingError('Invalid file data format');
+        // }
 
         resolve(base64Data);
       } catch (error) {
@@ -249,10 +298,25 @@ export function createMediaResponse(
   customMimeType?: string,
 ): { base64: string; url: string; filename: string; taskId: string } {
   try {
-    // Handle case where base64Data might be wrapped in an object
-    const cleanData =
-      typeof base64Data === 'string' ? base64Data : (base64Data as any).message;
 
+    const extractedData = extractBase64String(base64Data);
+
+    // STEP 2: Check if it contains valid base64 characters
+    if (!hasValidBase64Characters(extractedData)) {
+      throw new DecodingError(
+        'Invalid base64 data: Contains invalid characters that cannot be cleaned'
+      );
+    }
+
+    // STEP 3: Clean the data (removes whitespace, data URIs, fixes padding)
+    const cleanDataFinal = cleanBase64(extractedData);
+
+    // STEP 4: Validate the cleaned result
+    if (!isValidBase64(cleanDataFinal)) {
+      throw new DecodingError(
+        'Invalid base64 data: Data could not be properly formatted'
+      );
+    }
     // Determine MIME type and file extension
     let mimeType: string;
     let extension: string;
@@ -280,11 +344,11 @@ export function createMediaResponse(
       }
     }
 
-    const url = base64ToObjectUrl(cleanData, mimeType);
-    const filename = `generated_${mediaType}_${Date.now()}.${extension}`;
+    const url = base64ToObjectUrl(cleanDataFinal, mimeType);
+    const filename = `generated_${mediaType}_${uuidv4()}.${extension}`;
 
     return {
-      base64: cleanData,
+      base64: cleanDataFinal,
       url,
       filename,
       taskId: taskId,

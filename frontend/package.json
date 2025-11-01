@@ -8,7 +8,19 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:unit": "vitest",
+    "test:unit:watch": "vitest --watch",
+    "test:hooks": "vitest run -c vitest.config.hooks.ts",
+    "test:hooks:watch": "vitest watch -c vitest.config.hooks.ts",
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed --project=chromium",
+    "test:e2e:debug": "playwright test --debug --project=chromium",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:codegen": "playwright codegen http://localhost:3000",
+    "db:seed": "node scripts/seed-db.js",
+    "db:seed:clear": "node scripts/seed-db.js --clear"
   },
   "browser": {
     "fs": false,
@@ -18,14 +30,16 @@
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.6",
     "@ffmpeg/util": "^0.12.1",
+    "@happy-dom/jest-environment": "^20.0.10",
     "@hookform/resolvers": "^5.2.1",
     "@tailwindcss/postcss": "^4.1.10",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-query-devtools": "^5.83.0",
+    "@testing-library/react": "^16.3.0",
     "@types/fabric": "^5.3.3",
-    "@types/node": "20.4.0",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
+    "@vitejs/plugin-react": "^5.1.0",
     "animejs": "^3.2.1",
     "clsx": "^2.1.1",
     "eslint-config-next": "^15.5.6",
@@ -48,7 +62,9 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/animejs": "^3.1.7",
+    "@types/node": "^24.9.2",
     "@types/react-color": "^3.0.6",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
@@ -58,6 +74,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-unused-imports": "^4.2.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "vitest": "^4.0.6"
   }
 }

@@ -50,6 +50,7 @@ export function useGenerateImage() {
 
       while (true) {
         taskData = await apiClient.get(`${CELERY_TASK_STATUS}${task_id}`);
+
         if (taskData.status === TASK_STATUS.SUCCESS && taskData.result) {
           return {
             avatar: payload.avatar,
