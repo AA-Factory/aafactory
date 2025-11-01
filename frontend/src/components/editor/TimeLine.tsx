@@ -2,7 +2,7 @@
 import React from 'react';
 import { SeekPlayer } from './timeline-related/SeekPlayer';
 import { StoreContext } from '@/store';
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { TimeFrameView } from './timeline-related/TimeFrameView';
 
 export const TimeLine = observer(() => {

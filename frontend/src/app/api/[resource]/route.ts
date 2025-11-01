@@ -7,15 +7,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { getCollection } from '@/lib/database';
 import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
 
-interface RouteParams {
-  params: {
+type RouteParams = {
+  params: Promise<{
     resource: string;
-  };
-}
+  }>;
+};
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { resource } = params;
+    const { resource } = await params;
 
     if (!Object.keys(RESOURCE_CONFIG).includes(resource)) {
       return NextResponse.json(
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   let filePath: string | null = null;
 
   try {
-    const { resource } = params;
+    const { resource } = await params;
 
     // Validate resource type
     if (!Object.keys(RESOURCE_CONFIG).includes(resource)) {

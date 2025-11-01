@@ -2,7 +2,7 @@
 import React from 'react';
 import { EditorElement } from '@/lib/types/editor';
 import { StoreContext } from '@/store';
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { MdOutlineTextFields, MdMovie } from 'react-icons/md';
 
 export type ElementProps = {
