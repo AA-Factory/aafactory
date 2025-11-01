@@ -2,7 +2,7 @@
 import React from 'react';
 import { StoreContext } from '@/store';
 import { formatTimeToMinSec } from '@/utils';
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { MdAdd } from 'react-icons/md';
 import { ResourceData } from '@/lib/types/resource';
 

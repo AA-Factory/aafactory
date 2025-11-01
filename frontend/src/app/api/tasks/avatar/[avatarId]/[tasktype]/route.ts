@@ -12,10 +12,10 @@ function isValidTaskType(taskType: string): taskType is TaskType {
 // GET - Get tasks by avatar ID and task type
 export async function GET(
   req: NextRequest,
-  { params }: { params: { tasktype: string; avatarId: string } },
+  { params }: { params: Promise<{ tasktype: string; avatarId: string }> },
 ) {
   try {
-    const { tasktype, avatarId } = params;
+    const { tasktype, avatarId } = await params;
 
     // Validate task type
     if (!isValidTaskType(tasktype)) {
