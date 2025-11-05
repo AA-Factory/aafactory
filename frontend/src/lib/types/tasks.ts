@@ -69,7 +69,7 @@ export interface AnimationGenerationPayload {
   video_bytes: string;
 }
 
-export type VideoGenerationServerName = 'mock' | 'infinite_talk' | 'animate';
+export type VideoGenerationServerName = 'mock' | 'infinite_talk' | 'wan_animate';
 
 type BaseTalkingHeadRequest = {
   server_name: 'mock' | 'infinite_talk';
@@ -77,8 +77,8 @@ type BaseTalkingHeadRequest = {
 } & CeleryTaskRequest<VideoGenerationPayload>;
 
 type AnimationRequest = {
-  server_name: 'mock' | 'animate';
-  task_name: 'tasks.animate';
+  server_name: 'mock' | 'wan_animate';
+  task_name: 'image_and_video_to_video';
 } & CeleryTaskRequest<AnimationGenerationPayload>;
 
 export type VideoGenerationTaskRequest = BaseTalkingHeadRequest | AnimationRequest;

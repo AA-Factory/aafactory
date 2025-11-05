@@ -27,8 +27,8 @@ function createTaskRequest(
     ? localStorage.getItem('mock_servers') !== 'false'
     : true;
   return {
-    server_name: isMock ? 'mock' : 'animate',
-    task_name: 'tasks.animate',
+    server_name: isMock ? 'mock' : 'wan_animate',
+    task_name: 'image_and_video_to_video',
     payload: {
       image_bytes: imageBase64,
       video_bytes: videoBase64,
