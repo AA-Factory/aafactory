@@ -30,6 +30,10 @@ function GenerateVideoContent() {
   } = useVideoGeneration();
   const videoSrc = state.generatedVideoUrl || state.selectedVideoTask?.filePath;
 
+  // Determine steps based on video type
+  const isTalkingHead = state.videoType.id === 'talking_head';
+  const isImageToAnimated = state.videoType.id === 'image_to_animated';
+
   const steps = [
     {
       label: 'Select video type',
@@ -64,13 +68,18 @@ function GenerateVideoContent() {
         state.selectedImageFileName !== 'placeholder-avatar.png',
       reason: 'Ensure image is selected and not the placeholder.',
     },
+    // Only include audio step for talking_head
+    ...(isTalkingHead
+      ? [
+          {
+            label: 'Generate audio',
+            content: <AudioSection />,
+            canNext: state.audioReady,
+          },
+        ]
+      : []),
     {
-      label: 'Generate audio',
-      content: <AudioSection />,
-      canNext: state.audioReady,
-    },
-    {
-      label: 'Generate video',
+      label: isImageToAnimated ? 'Generate animation' : 'Generate video',
       content: <VideoSection />,
       canNext: false,
     },

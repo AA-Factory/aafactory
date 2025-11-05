@@ -10,7 +10,7 @@ export type CeleryTaskStatus =
   | 'FAILURE'
   | 'RETRY';
 
-export type ServerName = 'mock' | 'infinite_talk' | 'zonos' | 'qwen_image';
+export type ServerName = 'mock' | 'infinite_talk' | 'zonos' | 'qwen_image' | 'animate';
 
 // Generic Celery Task Request
 export interface CeleryTaskRequest<T = Record<string, any>> {
