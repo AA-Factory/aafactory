@@ -42,12 +42,12 @@ def text_to_image(positive_prompt: str, negative_prompt: str, image_ratio: str, 
 def image_to_image_edit(image_bytes: str, positive_prompt: str, negative_prompt: str, image_quality: str) -> str:
     with open("mock_responses.json", "r", encoding="utf-8") as f:
         responses = json.load(f)  # Parse JSON into a Python dict
-    sleep(120)
+    sleep(60)
     return responses["image_to_image_edit"]
 
 @app.task(name="image_and_video_to_video", queue="mock")
 def image_and_video_to_video(image_bytes: str, video_bytes: str) -> str:
     with open("mock_responses.json", "r", encoding="utf-8") as f:
         responses = json.load(f)  # Parse JSON into a Python dict
-    sleep(120)
+    sleep(60)
     return responses["image_and_video_to_video"]
