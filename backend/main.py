@@ -21,8 +21,8 @@ app.add_middleware(
 
 
 class TaskRequest(BaseModel):
-    server_name: Literal["infinite_talk", "zonos", "qwen_image", "kandinsky", "mock"]
-    task_name: Literal["prompt_image_audio_to_video", "custom_voice_to_audio", "text_to_image", "image_to_image_edit", "kandinsky_text_to_video"]
+    server_name: Literal["infinite_talk", "zonos", "qwen_image", "kandinsky", "wan_animate", "mock"]
+    task_name: Literal["prompt_image_audio_to_video", "custom_voice_to_audio", "text_to_image", "image_to_image_edit", "kandinsky_text_to_video", "image_and_video_to_video"]
     payload: Dict[str, Any]
 
 
