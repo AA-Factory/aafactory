@@ -59,9 +59,11 @@ function createTaskRequest(
   audioBase64: string,
 ): AudioGenerationTaskRequest {
   const language = payload.language || DEFAULT_LANGUAGE;
-
+  const isMock = typeof window !== 'undefined'
+    ? localStorage.getItem('mock_servers') !== 'false'
+    : true;
   return {
-    server_name: !process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT ? 'mock' : 'zonos',
+    server_name: isMock ? 'mock' : 'zonos',
     task_name: 'custom_voice_to_audio',
     payload: {
       prompt: payload.dialog,
@@ -109,7 +111,7 @@ export async function prepareAudioData(
   // Encode audio
   const { base64: audioBase64 } = await encodeMediaFile(
     trainingAudio,
-    '/test/training_audio/',
+    '/default/training_audio/',
   );
 
   // Create task request

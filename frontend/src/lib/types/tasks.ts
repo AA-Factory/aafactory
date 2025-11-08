@@ -62,12 +62,26 @@ export interface VideoGenerationPayload {
   config?: VideoGenerationConfig;
   low_vram?: boolean;
 }
-export type VideoGenerationServerName = 'mock' | 'infinite_talk';
-export interface VideoGenerationTaskRequest
-  extends CeleryTaskRequest<VideoGenerationPayload> {
-  server_name: VideoGenerationServerName;
-  task_name: 'prompt_image_audio_to_video';
+
+// Animation Generation Payload (for wan_animate)
+export interface AnimationGenerationPayload {
+  image_bytes: string;
+  video_bytes: string;
 }
+
+export type VideoGenerationServerName = 'mock' | 'infinite_talk' | 'wan_animate';
+
+type BaseTalkingHeadRequest = {
+  server_name: 'mock' | 'infinite_talk';
+  task_name: 'prompt_image_audio_to_video';
+} & CeleryTaskRequest<VideoGenerationPayload>;
+
+type AnimationRequest = {
+  server_name: 'mock' | 'wan_animate';
+  task_name: 'image_and_video_to_video';
+} & CeleryTaskRequest<AnimationGenerationPayload>;
+
+export type VideoGenerationTaskRequest = BaseTalkingHeadRequest | AnimationRequest;
 
 // Image Generation Task
 export type ImageRatio = '1:1' | '4:5' | '16:9' | '9:16';

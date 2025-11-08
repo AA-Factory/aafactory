@@ -1,6 +1,6 @@
 import { getCollection } from './database';
 import { saveBase64File, SaveFileResult } from './fileUtils';
-import { RESOURCE_CONFIG, ResourceType } from '@/lib/resource/constants';
+import { RESOURCE_CONFIG, ResourceType, BASE_UPLOAD_DIR } from '@/lib/resource/constants';
 import { safeDbOperation } from '@/lib/dbOperations';
 import { AudioTask, TaskDocument, TaskType } from '@/lib/types/tasks';
 import { CeleryTaskStatus } from '@/lib/types/celery';
@@ -89,8 +89,8 @@ export async function createResource(
     const config = RESOURCE_CONFIG[resourceType];
     const fileInfo = {
       filename: `${taskId}.${fileResult.fileType}`,
-      path: `/uploads/${resourceType}/${taskId}.${fileResult.fileType}`,
-      url: `/uploads/${resourceType}/${taskId}.${fileResult.fileType}`,
+      path: `/${BASE_UPLOAD_DIR}/${resourceType}/${taskId}.${fileResult.fileType}`,
+      url: `/${BASE_UPLOAD_DIR}/${resourceType}/${taskId}.${fileResult.fileType}`,
       type: fileResult.fileType,
       size: 1251304, // Placeholder size, replace with actual if available
       resourceType: resourceType,

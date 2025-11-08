@@ -8,6 +8,7 @@ import {
   HiInformationCircle,
   HiExclamation,
   HiX,
+  HiOutlineDesktopComputer,
 } from 'react-icons/hi';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -49,9 +50,9 @@ const Notification = () => {
         return {
           container: 'bg-gray-50 border border-gray-200 shadow-lg',
           text: 'text-gray-800',
-          icon: AiOutlineLoading3Quarters,
+          icon: HiOutlineDesktopComputer,
           iconColor: 'text-gray-600',
-          spinning: true,
+          spinning: false,
         };
       case 'info':
       default:

@@ -10,10 +10,10 @@ import {
 // PUT - Update task status or with file
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { taskId: string } },
+  { params }: { params: Promise<{ taskId: string }> },
 ) {
   try {
-    const { taskId } = params;
+    const { taskId } = await params;
     const body = await req.json();
 
     if (body.base64Data) {
@@ -59,7 +59,7 @@ export async function GET(
   { params }: { params: { taskId: string } },
 ) {
   try {
-    const { taskId } = params;
+    const { taskId } = await params;
     const task = await getTask(taskId);
 
     if (!task) {
@@ -81,10 +81,10 @@ export async function GET(
 // DELETE - Delete task
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { taskId: string } },
+  { params }: { params: Promise<{ taskId: string }> },
 ) {
   try {
-    const { taskId } = params;
+    const { taskId } = await params;
     await deleteTask(taskId);
     return NextResponse.json({
       success: true,

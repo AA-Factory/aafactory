@@ -9,6 +9,9 @@ frontend/node_modules/
 
 # testing
 /coverage
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright/.cache/
 
 # next.js
 /.next/
@@ -28,17 +31,19 @@ yarn-error.log*
 
 # local env files
 .env*.local
-
+!.env.test
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-public/uploads/
+frontend/public/uploads/
+frontend/public/test/
 .vscode/settings.json
 backend/data/comfyui/output
 frontend/.next
-frontend/public
+# frontend/public
 */__pycache__/*
 frontend/uploads
+test-results/

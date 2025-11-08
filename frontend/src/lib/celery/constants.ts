@@ -33,3 +33,7 @@ export const TASK_STATUS = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE',
 };
+
+export const BACKEND_SERVICES = ['backend-app', 'celery-worker', 'flower'] as const;
+
+export const DEFAULT_REDIS_ENDPOINT = 'redis:6379';

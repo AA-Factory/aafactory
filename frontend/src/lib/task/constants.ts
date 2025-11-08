@@ -6,6 +6,7 @@ export const TASK_ENDPOINTS = {
 
 export const VIDEO_TYPES = [
   { id: 'talking_head', label: 'Conversational Video', disabled: false },
+  { id: 'image_to_animated', label: 'Image to Animated Video', disabled: false },
   { id: 'first_last', label: 'First Last Frame', disabled: true },
   { id: 'text_to_video', label: 'Text to Video', disabled: true },
 ];

@@ -63,10 +63,10 @@ Remote Redis enables distributed processing across multiple servers. To connect:
 
    ![Select Remote URL Screenshot](assets/select_remote_redis_url_in_running_pod.png)
 
-2. Set the Redis endpoint and start the application:
+2. Start the application and set the redis URL in the frontend settings:
 
    ```bash
-   RUNPOD_ENDPOINT=your-redis-ip:port docker-compose --profile local up
+   docker-compose --profile local up
    ```
 
 3. Share the same Redis URL with other running instances for distributed processing:
@@ -196,6 +196,90 @@ docker-compose ps
 docker-compose down -v
 docker system prune -a
 ```
+
+---
+
+## Testing
+
+AI Avatar Factory includes comprehensive testing capabilities for unit tests, React hooks, and end-to-end tests.
+
+### Running Tests
+
+**1. Start the application in test mode:**
+
+```bash
+docker-compose --profile local --env-file .env.test up
+```
+
+This starts all services using the test environment configuration.
+
+**2. Run tests:**
+
+Once the application is running, you can execute different test suites:
+
+#### Unit Tests
+
+```bash
+# Run unit tests once
+npm run test:unit
+
+# Run unit tests in watch mode (auto-rerun on changes)
+npm run test:unit:watch
+```
+
+#### React Hooks Tests
+
+```bash
+# Run hook tests once
+npm run test:hooks
+
+# Run hook tests in watch mode
+npm run test:hooks:watch
+```
+
+#### End-to-End Tests
+
+```bash
+# Run E2E tests (headless Chrome)
+npm run test:e2e
+
+# Run E2E tests with UI mode (interactive)
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode (visible browser)
+npm run test:e2e:headed
+
+# Debug E2E tests (step through with Playwright Inspector)
+npm run test:e2e:debug
+
+# View test report from last run
+npm run test:e2e:report
+
+# Generate E2E tests interactively
+npm run test:e2e:codegen
+```
+
+#### Database Seeding
+
+```bash
+# Seed the database with test data
+npm run db:seed
+```
+
+### Test Configuration Files
+
+- **vitest.config.ts** - Unit test configuration
+- **vitest.config.hooks.ts** - React hooks test configuration
+- **playwright.config.ts** - E2E test configuration
+- **.env.test** - Test environment variables
+
+### Testing Best Practices
+
+1. **Always use test environment**: Run tests with `.env.test` to avoid affecting production data
+2. **Seed before E2E tests**: Run `npm run db:seed` before E2E tests to ensure consistent test data
+3. **Watch mode for development**: Use watch mode during active development for instant feedback
+4. **UI mode for debugging**: Use `test:e2e:ui` to visually inspect and debug E2E test failures
+5. **Generate tests**: Use `test:e2e:codegen` to record user interactions and generate test code
 
 ---
 

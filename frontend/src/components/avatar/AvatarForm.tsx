@@ -221,6 +221,7 @@ export const AvatarForm = forwardRef<AvatarFormRef, AvatarFormProps>(
           {avatarFields.map((field) => (
             <FormField
               key={field.name}
+              id={field.name}
               name={field.name}
               label={field.label}
               type={field.type}

@@ -10,6 +10,8 @@ COPY . .
 # Install wait-port to wait for MongoDB port update
 RUN npm install -g wait-port
 
+RUN apk add --no-cache docker-cli docker-cli-compose
+
 EXPOSE 3000
 
 CMD sh -c "wait-port mongodb:27017 && node scripts/db-setup.js && npm run dev"

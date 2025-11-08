@@ -50,3 +50,5 @@ export const RESOURCE_ENDPOINTS = {
 } as const;
 
 export const RESOURCE_DIRECTORIES = ['video', 'audio', 'image'];
+
+export const BASE_UPLOAD_DIR = process.env.BASE_UPLOAD_DIR || 'test/uploads';
