@@ -39,6 +39,7 @@ export const TextToImageTab: React.FC<TextToImageTabProps> = ({
       onImageGeneration={onImageGeneration}
       isGenerating={isGenerating}
       showImageRatio={true}
+      readyToGenerate={positivePrompt.trim().length > 0}
     />
   );
 };

@@ -85,6 +85,16 @@ const fetchTasksByAvatar = async (
   return [...audioTasks, ...videoTasks, ...imageTasks];
 };
 
+const fetchTaskById = async (taskId: string): Promise<
+  AudioTask | VideoTask | ImageTask | null
+> => {
+  const response = await fetch(`/api/task/${taskId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch task: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.task || null;
+}
 const pollPendingVideoTasks = async (
   avatarId: string,
 ): Promise<{ updatedCount: number }> => {
@@ -151,6 +161,12 @@ const pollPendingImageTasks = async (
 /** -----------------
  * React Query Hooks
  * ----------------- */
+export const useTaskById = (taskId: string) =>
+  useQuery({
+    queryKey: ['task', taskId],
+    queryFn: async () => fetchTaskById(taskId),
+    enabled: !!taskId,
+  });
 
 export const useAllTasks = (avatarId: string, status?: string) =>
   useQuery({

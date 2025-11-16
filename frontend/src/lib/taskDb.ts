@@ -8,7 +8,12 @@ interface CreateTaskParams {
   taskId: string;
   avatarId: string;
   taskType: TaskType;
-  userPrompt?: string;
+  taskName: string;
+  metadata?: any;
+  imagePrompt?: string;
+  videoPrompt?: string;
+  audioPrompt?: string;
+  audioTask?: AudioTask;
 }
 
 export async function createTask(
@@ -16,14 +21,65 @@ export async function createTask(
 ): Promise<TaskDocument> {
   try {
     const collection = await getCollection<TaskDocument>('tasks');
+    let imageUploadResult: SaveFileResult | undefined;
+    if (params?.imagePrompt) {
+      imageUploadResult = await saveBase64File(
+        params.imagePrompt as string,
+        `image_bytes_task_${params.taskId}`,
+        'image'
+      );
+    }
+    let videoUploadResult: SaveFileResult | undefined;
+    if (params?.videoPrompt) {
+      videoUploadResult = await saveBase64File(
+        params.videoPrompt as string,
+        `video_bytes_task_${params.taskId}`,
+        'video'
+      );
+    }
+
+    let audioUploadResult: SaveFileResult | undefined;
+    if (params?.audioPrompt) {
+      audioUploadResult = await saveBase64File(
+        params.audioPrompt as string,
+        `audio_bytes_task_${params.taskId}`,
+        'audio'
+      );
+    }
+
     const taskDoc: TaskDocument = {
       taskId: params.taskId,
       avatarId: params.avatarId,
       status: 'PENDING',
       taskType: params.taskType,
+      taskName: params.taskName,
       createdAt: new Date(),
       updatedAt: new Date(),
-      userPrompt: params.userPrompt,
+      //imageprompt should be added to metadata.taskinfo if present
+      metadata: {
+        ...params.metadata,
+        imagePrompt: imageUploadResult
+          ? {
+            fileName: imageUploadResult.fileName,
+            fileType: imageUploadResult.fileType,
+            filePath: imageUploadResult.filePath,
+          }
+          : undefined,
+        videoPrompt: videoUploadResult
+          ? {
+            fileName: videoUploadResult.fileName,
+            fileType: videoUploadResult.fileType,
+            filePath: videoUploadResult.filePath,
+          }
+          : undefined,
+        audioPrompt: audioUploadResult
+          ? {
+            fileName: audioUploadResult.fileName,
+            fileType: audioUploadResult.fileType,
+            filePath: audioUploadResult.filePath,
+          }
+          : undefined,
+      },
     };
     const result = await safeDbOperation(
       'insertAvatar',
@@ -128,20 +184,29 @@ export async function updateTaskWithFile(
       task.taskType.toLowerCase() as 'audio' | 'video' | 'image',
     );
 
+    // Preserve existing metadata and merge with new resultData
+    const updatedMetadata = {
+      ...task.metadata,
+      taskInfo: {
+        ...task.metadata?.taskInfo,
+        finishTime: new Date().toISOString(),
+      },
+      resultData: {
+        fileName: fileResult.fileName,
+        fileType: fileResult.fileType,
+      },
+    };
+
     // Update task with file path
     await collection.updateOne(
       { taskId },
       {
         $set: {
           status,
+          taskName: task.taskName,
           filePath: fileResult.filePath,
           updatedAt: new Date(),
-          metadata: {
-            resultData: {
-              fileName: fileResult.fileName,
-              fileType: fileResult.fileType,
-            },
-          },
+          metadata: updatedMetadata,
         },
       },
     );

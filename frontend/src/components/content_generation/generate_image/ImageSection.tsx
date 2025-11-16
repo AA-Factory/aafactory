@@ -4,17 +4,25 @@ import { ImageToImageTab } from './ImageToImageTab';
 import { useGenerateImage } from '@/hooks/use-generate-image';
 import { useNotification } from '@/contexts/NotificationContext';
 import { type ImageRatio, ImageQuality, ImageTask } from '@/lib/types/tasks';
-import { fileToBase64 } from '@/lib/base64Utils';
+
 import { useImageGeneration } from '@/contexts/ImageGenerationContext';
 import { getRandomSeed } from '@/utils/fakeData';
 export const ImageSection: React.FC = () => {
-  const [positivePrompt, setPositivePrompt] = useState(
-    getRandomSeed('image_avatar_prompt'),
-  );
   const { state, setTask, tasks } = useImageGeneration();
-  const [negativePrompt, setNegativePrompt] = useState('low quality');
-  const [imageRatio, setImageRatio] = useState<ImageRatio>('1:1');
-  const [imageQuality, setImageQuality] = useState<ImageQuality>('medium');
+  const [positivePrompt, setPositivePrompt] = useState(
+    state.selectedImageTask?.metadata?.taskInfo?.positivePrompt ||
+      getRandomSeed('image_avatar_prompt'),
+  );
+  const [negativePrompt, setNegativePrompt] = useState(
+    state.selectedImageTask?.metadata?.taskInfo?.negativePrompt ||
+      'low quality',
+  );
+  const [imageRatio, setImageRatio] = useState<ImageRatio>(
+    state.selectedImageTask?.metadata?.taskInfo?.imageRatio || '1:1',
+  );
+  const [imageQuality, setImageQuality] = useState<ImageQuality>(
+    state.selectedImageTask?.metadata?.taskInfo?.imageQuality || 'medium',
+  );
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
 
   const generateImageMutation = useGenerateImage();
@@ -41,6 +49,17 @@ export const ImageSection: React.FC = () => {
     }
   };
 
+  // Update local state when selectedImageTask changes
+  React.useEffect(() => {
+    if (state.selectedImageTask?.metadata?.taskInfo) {
+      const taskInfo = state.selectedImageTask.metadata.taskInfo;
+      if (taskInfo.positivePrompt) setPositivePrompt(taskInfo.positivePrompt);
+      if (taskInfo.negativePrompt) setNegativePrompt(taskInfo.negativePrompt);
+      if (taskInfo.imageRatio) setImageRatio(taskInfo.imageRatio);
+      if (taskInfo.imageQuality) setImageQuality(taskInfo.imageQuality);
+    }
+  }, [state.selectedImageTask]);
+
   //setimageRatio based on the selected type
   React.useEffect(() => {
     if (state.type?.id === 'text_to_image') {
@@ -56,29 +75,42 @@ export const ImageSection: React.FC = () => {
       'info',
     );
 
-    if (state.type?.id === 'image_to_image_edit' && !uploadedImageFile) {
-      showNotification('Please upload an image file for editing.', 'error');
+    if (
+      state.type?.id === 'image_to_image_edit' &&
+      !uploadedImageFile &&
+      !state.selectedImageTask
+    ) {
+      showNotification(
+        'Please upload an image file for editing or select an existing image.',
+        'error',
+      );
       return;
     }
-    let encoded;
+    let promptImage;
     if (state.type?.id === 'image_to_image_edit' && uploadedImageFile) {
-      try {
-        const base64 = await fileToBase64(uploadedImageFile);
-        encoded = base64;
-      } catch (error) {
-        showNotification('Failed to process the uploaded image.', 'error');
-        return;
-      }
+      console.log('a');
+
+      promptImage = uploadedImageFile;
+    } else if (
+      state.type?.id === 'image_to_image_edit' &&
+      state.selectedImageTask
+    ) {
+      console.log('b');
+      promptImage = state.selectedImageTask.filePath;
     }
 
+    if (state.type == null) {
+      showNotification('Image generation type is not selected.', 'error');
+      return;
+    }
     const payload = {
       avatar: state.avatar,
-      taskName: state.type?.id,
+      taskName: state.type.id,
       positivePrompt: positivePrompt,
       negativePrompt: negativePrompt,
       imageRatio: imageRatio || null,
       imageQuality: imageQuality,
-      base64Image: encoded || null,
+      promptImage: promptImage || null,
     };
 
     generateImageMutation.mutate(payload);
@@ -116,6 +148,7 @@ export const ImageSection: React.FC = () => {
           isGenerating={generateImageMutation.isPending}
           imageTasks={tasks}
           onSelectExistingImage={handleSelectExistingImage}
+          selectedImageTask={state.selectedImageTask}
         />
       )}
     </div>

@@ -39,9 +39,20 @@ export function useGenerateAudio() {
         taskId: task_id,
         avatarId: avatarId,
         taskType: TASK_TYPE,
-        userPrompt: payload.dialog,
+        taskName: payload.taskName,
         status: TASK_STATUS.PENDING,
+        metadata: {
+          taskInfo: {
+            avatarName: payload.avatar?.name,
+            startTime: new Date().toISOString(),
+            finishTime: null,
+            dialog: payload.dialog,
+            audioSrc: payload.audioSource,
+          },
+        },
+        audioPrompt: taskRequest.payload.voice_bytes,
       });
+      invalidateAudioTasks(queryClient, avatarId);
       const config = POLLING_CONFIG[TASK_TYPE];
       let taskData: any;
 

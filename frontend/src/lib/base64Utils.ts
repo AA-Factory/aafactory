@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import { b } from 'vitest/dist/chunks/suite.d.BJWk38HB';
 class Base64Error extends Error {
   constructor(
     message: string,
@@ -92,7 +91,7 @@ function extractBase64String(input: unknown): string {
 /**
  * Validates if a string is a valid base64 format
  */
-function isValidBase64(str: string): boolean {
+export function isValidBase64(str: string): boolean {
   // Check if string matches base64 pattern
   const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
   return base64Pattern.test(str) && str.length % 4 === 0;

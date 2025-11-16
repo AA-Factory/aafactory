@@ -47,7 +47,8 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
         )}
         {availableAudioTasks.map((task, index) => (
           <option key={task.taskId} value={task.taskId}>
-            {index + 1}. "{task.userPrompt || 'Audio Generation'}"
+            {index + 1}. "
+            {task.metadata?.taskInfo?.dialog || 'Audio Generation'}"
           </option>
         ))}
       </select>

@@ -9,6 +9,7 @@ type AudioSource = 'avatar' | 'rick_and_morty' | 'japanese';
 export type GenerateAudioPayload = {
   dialog: string;
   avatar: Avatar | null;
+  taskName: string;
   language?: string;
   audioSource?: AudioSource;
 };

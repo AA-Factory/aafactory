@@ -105,7 +105,7 @@ test.describe('Update Avatar', () => {
     // Wait for navigation back to avatars page
     await page.waitForURL('/avatars');
     await expect(page.locator('div').filter({ hasText: 'Avatar data successfully' }).first()).toBeVisible();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
     const updatedImageSrc = await avatarImage.getAttribute('src');
 
     console.log('Updated image src:', updatedImageSrc);

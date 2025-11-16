@@ -5,8 +5,8 @@ export const TASK_ENDPOINTS = {
 };
 
 export const VIDEO_TYPES = [
-  { id: 'talking_head', label: 'Conversational Video', disabled: false },
-  { id: 'image_to_animated', label: 'Image to Animated Video', disabled: false },
+  { id: 'prompt_image_audio_to_video', label: 'Generate Video', disabled: false, steps: 4 },
+  { id: 'image_and_video_to_video', label: 'Image to Animated Video', disabled: false, steps: 3 },
   { id: 'first_last', label: 'First Last Frame', disabled: true },
   { id: 'text_to_video', label: 'Text to Video', disabled: true },
 ];
@@ -20,11 +20,12 @@ export const VIDEO_CONFIG = [
 ];
 
 export const IMAGE_TYPES = [
-  { id: 'text_to_image', label: 'Text to Image', disabled: false },
+  { id: 'text_to_image', label: 'Text to Image', disabled: false, steps: 2 },
   {
     id: 'image_to_image_edit',
     label: 'Image to Image (Edit)',
     disabled: false,
+    steps: 2,
   },
 ];
 

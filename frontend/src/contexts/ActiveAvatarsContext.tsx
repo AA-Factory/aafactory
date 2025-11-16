@@ -7,6 +7,16 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
+import { Avatar } from '@/lib/types/avatar';
+import {
+  AudioTask,
+  VideoTask,
+  ImageTask,
+  TaskDocument,
+  BaseTask,
+} from '@/lib/types/tasks';
+
+export type Task = BaseTask;
 
 interface ActiveAvatarsContextType {
   activeAvatarIds: string[];
@@ -16,6 +26,10 @@ interface ActiveAvatarsContextType {
   isAvatarActive: (avatarId: string) => boolean;
   clearActiveAvatars: () => void;
   setActiveAvatars: (avatarIds: string[]) => void;
+  globalTask: Task | null;
+  setGlobalTask: (task: Task | null) => void;
+  globalAvatar: Avatar | null;
+  setGlobalAvatar: (avatar: Avatar | null) => void;
 }
 
 const ActiveAvatarsContext = createContext<
@@ -30,6 +44,8 @@ export const ActiveAvatarsProvider: React.FC<ActiveAvatarsProviderProps> = ({
   children,
 }) => {
   const [activeAvatarIds, setActiveAvatarIds] = useState<string[]>([]);
+  const [globalTask, setGlobalTask] = useState<Task | null>(null);
+  const [globalAvatar, setGlobalAvatar] = useState<Avatar | null>(null);
 
   // Load active avatars from localStorage on mount
   useEffect(() => {
@@ -100,6 +116,10 @@ export const ActiveAvatarsProvider: React.FC<ActiveAvatarsProviderProps> = ({
     isAvatarActive,
     clearActiveAvatars,
     setActiveAvatars,
+    globalTask,
+    setGlobalTask,
+    globalAvatar,
+    setGlobalAvatar,
   };
 
   return (

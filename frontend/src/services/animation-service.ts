@@ -1,14 +1,16 @@
-import { encodeMediaFile, createMediaResponse } from '@/lib/base64Utils';
+import { encodeMediaFile, createMediaResponse, fileToBase64 } from '@/lib/base64Utils';
 import {
-  type VideoGenerationTaskRequest,
+  type BaseWanAnimateRequest,
 } from '@/lib/types/tasks';
 import { Avatar } from '@/lib/types/avatar';
 
 // Types
 export type GenerateAnimationPayload = {
   avatar: Avatar;
-  imageSrc: string; // Avatar image source URL
-  videoFile: File; // Video file to upload
+  taskName: string;
+  imageFilePath: string; // Avatar image source URL
+  imageFileName: string; // Avatar image file name
+  videoPrompt: string | File; // Video prompt can be a file or a URL
 };
 
 export type GenerateAnimationResponse = {
@@ -22,7 +24,7 @@ function createTaskRequest(
   payload: GenerateAnimationPayload,
   imageBase64: string,
   videoBase64: string,
-): VideoGenerationTaskRequest {
+): BaseWanAnimateRequest {
   const isMock = typeof window !== 'undefined'
     ? localStorage.getItem('mock_servers') !== 'false'
     : true;
@@ -51,7 +53,7 @@ export function createAnimationResponse(
 
 // Main service function
 export async function prepareAnimationData(payload: GenerateAnimationPayload): Promise<{
-  taskRequest: VideoGenerationTaskRequest;
+  taskRequest: BaseWanAnimateRequest;
   imageBase64: string;
   videoBase64: string;
 }> {
@@ -59,29 +61,26 @@ export async function prepareAnimationData(payload: GenerateAnimationPayload): P
     throw new Error('No avatar ID provided for animation generation');
   }
 
-  if (!payload.imageSrc) {
-    throw new Error('Image source is missing');
+  if (!payload.imageFilePath || !payload.imageFileName) {
+    throw new Error('Image file path or name is missing');
   }
 
-  if (!payload.videoFile) {
+  if (!payload.videoPrompt) {
     throw new Error('Video file is missing');
   }
 
   // Encode avatar image
-  const { base64: imageBase64 } = await encodeMediaFile(payload.imageSrc);
-
+  const { base64: imageBase64 } = await encodeMediaFile(payload.imageFilePath);
+  let videoBase64 = '';
   // Encode video file to base64
-  const videoBase64 = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove data URL prefix if present
-      const base64 = result.includes(',') ? result.split(',')[1] : result;
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(payload.videoFile);
-  });
+  if (payload.videoPrompt instanceof File) {
+    videoBase64 = await fileToBase64(payload.videoPrompt);
+  } else if (typeof payload.videoPrompt === 'string') {
+    const { base64 } = await encodeMediaFile(payload.videoPrompt);
+    videoBase64 = base64;
+  } else {
+    throw new Error('Video file or video file path must be provided');
+  }
 
   // Create task request
   const taskRequest = createTaskRequest(payload, imageBase64, videoBase64);

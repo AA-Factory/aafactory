@@ -14,7 +14,7 @@
     "test:hooks": "vitest run -c vitest.config.hooks.ts",
     "test:hooks:watch": "vitest watch -c vitest.config.hooks.ts",
     "test:e2e": "playwright test --project=chromium",
-    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:ui": "playwright test --ui --project=chromium",
     "test:e2e:headed": "playwright test --headed --project=chromium",
     "test:e2e:debug": "playwright test --debug --project=chromium",
     "test:e2e:report": "playwright show-report",

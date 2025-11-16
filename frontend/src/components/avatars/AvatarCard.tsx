@@ -7,6 +7,7 @@ import {
   HiCamera,
   HiCheck,
   HiX,
+  HiPhotograph,
 } from 'react-icons/hi';
 import { Avatar } from '@/lib/types/avatar';
 import { AVATAR_CONSTANTS } from '@/lib/avatar/constants';
@@ -204,6 +205,13 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         >
           <HiCamera className="w-4 h-4" />
           Create Image
+        </Link>
+        <Link
+          href={`/gallery?avatarId=${avatar.id}`}
+          className="mt-3 w-full py-1 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
+        >
+          <HiPhotograph className="w-4 h-4" />
+          Open Gallery
         </Link>
         {/* Toggle Active Avatar Button */}
         {/* <button

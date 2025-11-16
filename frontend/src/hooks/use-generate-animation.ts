@@ -40,8 +40,17 @@ export function useGenerateAnimation() {
         taskId: task_id,
         avatarId: avatarId,
         taskType: TASK_TYPE,
-        userPrompt: 'Animation generation',
+        taskName: payload.taskName,
         status: TASK_STATUS.PENDING,
+        metadata: {
+          taskInfo: {
+            avatarName: payload.avatar?.name,
+            startTime: new Date().toISOString(),
+            finishTime: null
+          },
+        },
+        imagePrompt: taskRequest.payload.image_bytes,
+        videoPrompt: taskRequest.payload.video_bytes,
       });
 
       invalidateVideoTasks(queryClient, payload.avatar?.id);

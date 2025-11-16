@@ -1,16 +1,16 @@
 import React from 'react';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
-import { TalkingHeadInputs } from './TalkingHeadInputs';
-import { AnimationInputs } from './AnimationInputs';
+import { PromptImageAudioToVideoSection } from './PromptImageAudioToVideoSection';
+import { ImageAndVideoToVideoSection } from './ImageAndVideoToVideoSection';
 
 export const VideoSection: React.FC = () => {
   const { state } = useVideoGeneration();
 
   // Conditionally render based on video type
-  if (state.videoType.id === 'talking_head') {
-    return <TalkingHeadInputs />;
-  } else if (state.videoType.id === 'image_to_animated') {
-    return <AnimationInputs />;
+  if (state.videoType.id === 'prompt_image_audio_to_video') {
+    return <PromptImageAudioToVideoSection />;
+  } else if (state.videoType.id === 'image_and_video_to_video') {
+    return <ImageAndVideoToVideoSection />;
   }
 
   // Default fallback

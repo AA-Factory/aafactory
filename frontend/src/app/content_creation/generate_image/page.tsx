@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { PiFileImageBold } from 'react-icons/pi';
 import { AvatarSelector } from '@/components/content_generation/AvatarSelector';
 import { GenerationTypeSelector } from '@/components/content_generation/GenerationTypeSelector';
@@ -12,12 +13,13 @@ import {
   ImageGenerationProvider,
   useImageGeneration,
 } from '@/contexts/ImageGenerationContext';
-import { useUpdateAvatar } from '@/hooks/use-avatars';
+import { useUpdateAvatar, useAvatars } from '@/hooks/use-avatars';
 import { useNotification } from '@/contexts/NotificationContext';
-
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 import { IMAGE_TYPES } from '@/lib/task/constants';
 
 function GenerateImageContent() {
+  const searchParams = useSearchParams();
   const {
     state,
     setStep,
@@ -27,12 +29,45 @@ function GenerateImageContent() {
     tasks,
     loadingImageTasks,
   } = useImageGeneration();
+  // const { data: avatars } = useAvatars();
   const updateAvatarMutation = useUpdateAvatar();
   const { showNotification } = useNotification();
+  const { globalTask, globalAvatar } = useActiveAvatars();
+  //create filtered tasks where the taskname should match the state.type.id
+  const filteredTasks = tasks.filter((task) => task.taskName === state.type.id);
+  // Initialize state from URL params
+  useEffect(() => {
+    const step = searchParams.get('step');
+    const avatarId = searchParams.get('avatarId');
+    const type = searchParams.get('type');
+    const taskId = searchParams.get('taskId');
+    if (globalAvatar && avatarId === globalAvatar.id) {
+      setAvatar(globalAvatar);
+    }
+    if (globalTask && taskId === globalTask.taskId) {
+      setTask(globalTask);
+    }
+    if (step) {
+      const imageType = IMAGE_TYPES.find((t) => t.id === globalTask?.taskName);
+      if (imageType) {
+        const stepCount = imageType.steps || 0;
+        setStep(Math.min(stepCount, parseInt(step, 10)));
+      } else {
+        setStep(parseInt(step, 10));
+      }
+    }
+
+    if (type && IMAGE_TYPES.some((t) => t.id === type)) {
+      const selectedType = IMAGE_TYPES.find((t) => t.id === type);
+      if (selectedType) {
+        setType(selectedType);
+      }
+    }
+  }, [searchParams, globalAvatar, globalTask, setStep, setType, setAvatar]);
 
   const displayTask = state.selectedImageTask?.filePath
     ? state.selectedImageTask
-    : tasks[0];
+    : filteredTasks[0];
 
   const getFileName = () => {
     if (!displayTask?.filePath) return 'No image selected';
@@ -101,6 +136,7 @@ function GenerateImageContent() {
       steps={steps}
       currentStep={state.step}
       onStepChange={setStep}
+      task={displayTask}
       viewerComponent={
         <MediaViewer
           type="image"
@@ -131,7 +167,7 @@ function GenerateImageContent() {
       }
       galleryComponent={
         <GenerationGallery
-          tasks={tasks}
+          tasks={filteredTasks}
           selectedTask={state.selectedImageTask}
           onTaskSelect={setTask}
           loading={loadingImageTasks}
