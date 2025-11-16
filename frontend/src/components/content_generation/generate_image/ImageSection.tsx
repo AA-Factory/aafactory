@@ -88,14 +88,11 @@ export const ImageSection: React.FC = () => {
     }
     let promptImage;
     if (state.type?.id === 'image_to_image_edit' && uploadedImageFile) {
-      console.log('a');
-
       promptImage = uploadedImageFile;
     } else if (
       state.type?.id === 'image_to_image_edit' &&
       state.selectedImageTask
     ) {
-      console.log('b');
       promptImage = state.selectedImageTask.filePath;
     }
 

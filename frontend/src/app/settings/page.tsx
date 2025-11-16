@@ -4,27 +4,41 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNotification } from '@/contexts/NotificationContext';
-import { PiCopySimpleLight } from 'react-icons/pi';
-import { redisSettingsSchema, RedisSettingsFormData } from './schemas';
-import { parseRedisEndpoint, isMockMode, formatRedisEnvVars } from './utils';
+import {
+  redisSettingsSchema,
+  RedisSettingsFormData,
+  runpodSettingsSchema,
+  RunpodSettingsFormData,
+} from './schemas';
+import { isMockMode } from './utils';
 import {
   BACKEND_SERVICES,
   DEFAULT_REDIS_ENDPOINT,
 } from '@/lib/celery/constants';
-
+import {
+  useRunpodTemplates,
+  useRunpodPods,
+  useDeployPod,
+  useDeletePod,
+} from '@/hooks/use-runpod';
+import { RedisConfiguration } from '@/components/settings/RedisConfiguration';
+import { RunpodConfiguration } from '@/components/settings/RunpodConfiguration';
 const SettingsPage: React.FC = () => {
   const [envVars, setEnvVars] = useState<Record<string, string>>({});
   const [isLoadingEnv, setIsLoadingEnv] = useState(true);
   const [isSavingEnv, setIsSavingEnv] = useState(false);
+  const [deployedRedisEndpoint, setDeployedRedisEndpoint] = useState<
+    string | null
+  >(null);
+  const [includeEnvVars, setIncludeEnvVars] = useState<Map<string, boolean>>(
+    new Map(),
+  );
+  const [deployingTemplateId, setDeployingTemplateId] = useState<string | null>(
+    null,
+  );
   const { showNotification } = useNotification();
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm<RedisSettingsFormData>({
+  const redisForm = useForm<RedisSettingsFormData>({
     resolver: zodResolver(redisSettingsSchema),
     mode: 'onChange',
     defaultValues: {
@@ -32,12 +46,34 @@ const SettingsPage: React.FC = () => {
     },
   });
 
-  const redisEndpoint = watch('redisEndpoint');
+  const runpodForm = useForm<RunpodSettingsFormData>({
+    resolver: zodResolver(runpodSettingsSchema),
+    mode: 'onChange',
+  });
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    showNotification('Copied to clipboard', 'system');
-  };
+  const redisEndpoint = redisForm.watch('redisEndpoint');
+  const runpodApiKey = runpodForm.watch('runpodApiKey');
+
+  // RunPod hooks
+  const {
+    data: templates = [],
+    isFetching: isLoadingTemplates,
+    refetch: refetchTemplates,
+  } = useRunpodTemplates(!!runpodApiKey);
+
+  const {
+    data: pods = [],
+    isFetching: isLoadingPods,
+    refetch: refetchPods,
+  } = useRunpodPods(!!runpodApiKey);
+
+  const { mutate: deployPod } = useDeployPod();
+  const { mutate: deletePod } = useDeletePod();
+
+  // const copyToClipboard = (text: string) => {
+  //   navigator.clipboard.writeText(text);
+  //   showNotification('Copied to clipboard', 'system');
+  // };
 
   const loadEnvVars = useCallback(async () => {
     try {
@@ -50,7 +86,12 @@ const SettingsPage: React.FC = () => {
         const brokerUrl = data.envVars.CELERY_BROKER_URL || '';
         const match = brokerUrl.match(/redis:\/\/([^\/]+)/);
         if (match) {
-          setValue('redisEndpoint', match[1]);
+          redisForm.setValue('redisEndpoint', match[1]);
+        }
+
+        // Extract RunPod API key
+        if (data.envVars.RUNPOD_API_KEY) {
+          runpodForm.setValue('runpodApiKey', data.envVars.RUNPOD_API_KEY);
         }
       } else {
         showNotification('Failed to load environment variables', 'error');
@@ -61,16 +102,101 @@ const SettingsPage: React.FC = () => {
     } finally {
       setIsLoadingEnv(false);
     }
-  }, [showNotification, setValue]);
+  }, [showNotification, redisForm, runpodForm]);
+
+  const deployTemplate = (
+    templateId: string,
+    templateName: string,
+    env: Record<string, string>,
+  ) => {
+    // get gpuTypeIds and  minVCPUPerGPU from env if present and pass to deployPod
+    const gpuTypeIds = env['gpuTypeIds'] as unknown as string[];
+    //ensure minVCPUPerGPU is a number
+    const minVCPUPerGPU = Number(env['minVCPUPerGPU']) || undefined;
+
+    if (!runpodApiKey) {
+      showNotification('Please set RunPod API key first', 'error');
+      return;
+    }
+
+    const shouldIncludeEnv = includeEnvVars.get(templateId) || false;
+    setDeployingTemplateId(templateId);
+
+    deployPod(
+      {
+        templateId,
+        gpuTypeIds,
+        minVCPUPerGPU,
+        podName: `${templateName}-${Date.now()}`,
+        redisEndpoint:
+          shouldIncludeEnv && deployedRedisEndpoint
+            ? deployedRedisEndpoint
+            : undefined,
+      },
+      {
+        onSuccess: (data) => {
+          setDeployingTemplateId(null);
+          showNotification(
+            `Pod ${data.id} deployed successfully${data.redisEndpoint ? `. Redis endpoint: ${data.redisEndpoint}` : ''}`,
+            'success',
+          );
+
+          // If this deployment returned a Redis endpoint, save it for future deployments
+          if (data.redisEndpoint) {
+            setDeployedRedisEndpoint(data.redisEndpoint);
+          }
+        },
+        onError: (error) => {
+          setDeployingTemplateId(null);
+          showNotification(`Failed to deploy pod: ${error.message}`, 'error');
+        },
+      },
+    );
+  };
+
+  const handleToggleEnvVars = (templateId: string, checked: boolean) => {
+    const newMap = new Map(includeEnvVars);
+    newMap.set(templateId, checked);
+    setIncludeEnvVars(newMap);
+  };
+
+  const handleDeletePod = (podId: string) => {
+    if (!runpodApiKey) {
+      showNotification('Please set RunPod API key first', 'error');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this pod?')) {
+      return;
+    }
+
+    deletePod(podId, {
+      onSuccess: () => {
+        showNotification('Pod deleted successfully', 'success');
+      },
+      onError: (error) => {
+        showNotification(`Failed to delete pod: ${error.message}`, 'error');
+      },
+    });
+  };
 
   useEffect(() => {
     loadEnvVars();
-  }, []);
+  }, [loadEnvVars]);
 
   // Update mock_servers in localStorage when endpoint changes
   useEffect(() => {
     const useMockServers = isMockMode(redisEndpoint);
     localStorage.setItem('mock_servers', useMockServers.toString());
+  }, [redisEndpoint]);
+
+  // Update deployedRedisEndpoint when Redis endpoint changes (if not local)
+  useEffect(() => {
+    if (redisEndpoint && redisEndpoint !== 'redis:6379') {
+      setDeployedRedisEndpoint(redisEndpoint);
+    } else {
+      setDeployedRedisEndpoint(null);
+    }
   }, [redisEndpoint]);
 
   const rebuildService = async (serviceName: string) => {
@@ -87,7 +213,7 @@ const SettingsPage: React.FC = () => {
     return response.ok;
   };
 
-  const onSubmit = async (data: RedisSettingsFormData) => {
+  const onSubmitRedis = async (data: RedisSettingsFormData) => {
     setIsSavingEnv(true);
     try {
       // Update envVars with new Redis configuration
@@ -143,113 +269,73 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+  const onSubmitRunpod = async (data: RunpodSettingsFormData) => {
+    setIsSavingEnv(true);
+    try {
+      const updatedEnvVars = {
+        ...envVars,
+        ...(data.runpodApiKey && { RUNPOD_API_KEY: data.runpodApiKey }),
+      };
+
+      // Save environment variables
+      const response = await fetch('/api/env', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ envVars: updatedEnvVars }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save environment variables');
+      }
+
+      setEnvVars(updatedEnvVars);
+
+      showNotification(
+        'RunPod API key saved. Please redeploy frontend-app service to apply changes.',
+        'system',
+      );
+    } catch (error) {
+      console.error('Failed to save RunPod API key:', error);
+      showNotification('Failed to save RunPod API key', 'error');
+    } finally {
+      setIsSavingEnv(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/95 dark:to-indigo-900/20">
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold dark:text-gray-100">Settings</h1>
+      <div className="max-w-7xl mx-auto p-6">
+        <h1 className="text-3xl font-bold dark:text-gray-100 mb-6">Settings</h1>
 
-        {/* Redis Configuration */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Redis Configuration
-          </h2>
-          {isLoadingEnv ? (
-            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="redis-endpoint"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Redis Endpoint
-                </label>
-                <input
-                  id="redis-endpoint"
-                  type="text"
-                  {...register('redisEndpoint')}
-                  placeholder="redis:6379"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                />
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Format: host:port (e.g., redis:6379 or 123.45.67.89:6379)
-                </p>
-                {errors.redisEndpoint ? (
-                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p className="text-sm text-red-800 dark:text-red-200">
-                      <strong>✗ Invalid Format:</strong>{' '}
-                      {errors.redisEndpoint.message}
-                    </p>
-                  </div>
-                ) : isMockMode(redisEndpoint) ? (
-                  <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <p className="text-sm text-green-800 dark:text-green-200">
-                      <strong>✓ Mock Mode:</strong> Using local Redis. All
-                      servers will return mock responses.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                      <strong>ℹ Remote Server Set:</strong> Using remote Redis.
-                      All servers will make real API calls.
-                    </p>
-                  </div>
-                )}
-                {!errors.redisEndpoint && parseRedisEndpoint(redisEndpoint) && (
-                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                          Environment variables for runpod child servers:
-                        </p>
-                        <code className="text-sm text-gray-800 dark:text-gray-200 font-mono">
-                          REDIS_HOST={parseRedisEndpoint(redisEndpoint)?.host}
-                          <br />
-                          REDIS_PORT={parseRedisEndpoint(redisEndpoint)?.port}
-                        </code>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const parsed = parseRedisEndpoint(redisEndpoint);
-                          if (parsed) {
-                            copyToClipboard(formatRedisEnvVars(parsed));
-                          }
-                        }}
-                        className="ml-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-                        title="Copy to clipboard"
-                      >
-                        <PiCopySimpleLight
-                          size={20}
-                          className="text-gray-600 dark:text-gray-300"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RedisConfiguration
+            form={redisForm}
+            isLoadingEnv={isLoadingEnv}
+            isSavingEnv={isSavingEnv}
+            onSubmit={onSubmitRedis}
+          />
 
-              <button
-                type="submit"
-                disabled={isSavingEnv || !isValid}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSavingEnv ? 'Saving...' : 'Save Redis Configuration'}
-              </button>
-
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Note:</strong> Saving will update CELERY_BROKER_URL
-                  and CELERY_RESULT_BACKEND, then automatically restart
-                  backend-app, celery-worker, and flower containers.
-                  {isMockMode(redisEndpoint)
-                    ? ' Mock servers will be enabled.'
-                    : ' Mock servers will be disabled.'}
-                </p>
-              </div>
-            </form>
-          )}
+          <RunpodConfiguration
+            form={runpodForm}
+            isLoadingEnv={isLoadingEnv}
+            isSavingEnv={isSavingEnv}
+            runpodApiKey={runpodApiKey}
+            templates={templates}
+            isLoadingTemplates={isLoadingTemplates}
+            pods={pods}
+            isLoadingPods={isLoadingPods}
+            deployingTemplateId={deployingTemplateId}
+            deployedRedisEndpoint={deployedRedisEndpoint}
+            includeEnvVars={includeEnvVars}
+            onSubmitApiKey={onSubmitRunpod}
+            onRefreshTemplates={() => refetchTemplates()}
+            onRefreshPods={() => refetchPods()}
+            onDeploy={deployTemplate}
+            onDeletePod={handleDeletePod}
+            onToggleEnvVars={handleToggleEnvVars}
+          />
         </div>
       </div>
     </div>

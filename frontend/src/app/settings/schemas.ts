@@ -15,4 +15,9 @@ export const redisSettingsSchema = z.object({
     ),
 });
 
+export const runpodSettingsSchema = z.object({
+  runpodApiKey: z.string().optional(),
+});
+
 export type RedisSettingsFormData = z.infer<typeof redisSettingsSchema>;
+export type RunpodSettingsFormData = z.infer<typeof runpodSettingsSchema>;

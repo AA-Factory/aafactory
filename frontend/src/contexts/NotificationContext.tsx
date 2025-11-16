@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { usePathname } from 'next/navigation';
 import { LOCAL_STORAGE_KEY } from '@/lib/task/constants';
-import { createGalleryUrl } from '@/lib/utils/galleryUrl';
+import { createGalleryUrl } from '@/lib/galleryUrl';
 type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'system';
 
 interface NotificationState {

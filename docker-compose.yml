@@ -108,6 +108,7 @@ services:
       - NEXT_PUBLIC_CELERY_BASE_URL=$NEXT_PUBLIC_CELERY_BASE_URL
       - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
       - PLAYWRIGHT_BASE_URL=http://localhost:3000
+      - RUNPOD_API_KEY=$RUNPOD_API_KEY
     volumes:
       - ./frontend:/app
       - /app/node_modules
