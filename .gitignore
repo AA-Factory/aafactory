@@ -47,3 +47,4 @@ frontend/.next
 */__pycache__/*
 frontend/uploads
 test-results/
+.env
