@@ -5,7 +5,6 @@ import { useGenerateVideo } from '@/hooks/use-generate-video';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { useVideoTasks } from '@/lib/api/tasks';
-import { fileToBase64, encodeMediaFile } from '@/lib/base64Utils';
 import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import { TextArea } from '@/components/ui/TextArea';
@@ -14,8 +13,7 @@ import { type VideoGenerationConfig } from '@/lib/types/tasks';
 import { VIDEO_CONFIG } from '@/lib/task/constants';
 import { getRandomSeed } from '@/utils/fakeData';
 
-export const TalkingHeadInputs: React.FC = () => {
-  const queryClient = useQueryClient();
+export const PromptImageAudioToVideoSection: React.FC = () => {
   const { state } = useVideoGeneration();
 
   const generateVideoMutation = useGenerateVideo();
@@ -44,14 +42,13 @@ export const TalkingHeadInputs: React.FC = () => {
       'info',
     );
 
-    let audioToUse = state.generatedAudioBase64;
+    let audioToUse = state.generatedAudioBase64 as string | File | null;
 
     try {
       if (state.uploadedAudioFile && !audioToUse) {
-        audioToUse = await fileToBase64(state.uploadedAudioFile);
+        audioToUse = state.uploadedAudioFile;
       } else if (state.selectedAudioTask && !audioToUse) {
-        const result = await encodeMediaFile(state.selectedAudioTask.filePath);
-        audioToUse = result.base64;
+        audioToUse = state.selectedAudioTask.filePath;
       }
 
       if (!audioToUse) {
@@ -62,16 +59,20 @@ export const TalkingHeadInputs: React.FC = () => {
         showNotification('No avatar selected for video generation.', 'error');
         return;
       }
-      if (!state.selectedImageFilePath) {
+      if (!state.selectedImageFilePath || !state.selectedImageFileName) {
         showNotification('No image selected for video generation.', 'error');
         return;
       }
       const payload = {
         avatar: state.avatar,
-        imageSrc: state.selectedImageFilePath,
-        audioBase64: audioToUse,
+        taskName: state.videoType.id as 'prompt_image_audio_to_video',
+        imageFilePath: state.selectedImageFilePath,
+        imageFileName: state.selectedImageFileName,
+        audioPrompt: audioToUse,
         prompt: videoPrompt,
-        dialog: state.dialog,
+        dialog:
+          state.selectedAudioTask?.metadata?.taskInfo?.dialog || state.dialog,
+        audioTask: state.selectedAudioTask,
         config: config,
         lowVram: lowVram,
       };

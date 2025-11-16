@@ -65,7 +65,11 @@ export const AvatarImageSelector: React.FC = () => {
 
           {/* Generated image tasks */}
           {imageTasks
-            ?.filter((task) => task.filePath !== avatarCurrentImage?.filePath)
+            ?.filter(
+              (task) =>
+                task.filePath !== avatarCurrentImage?.filePath &&
+                task.status === 'SUCCESS',
+            )
             .map((task) => (
               <button
                 key={task.taskId}

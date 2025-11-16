@@ -1,8 +1,10 @@
 import React from 'react';
+import Link from 'next/link';
 
 export interface MediaActionButtonProps {
   onClick?: () => void;
   href?: string;
+  link?: string;
   download?: string;
   children: React.ReactNode;
   className?: string;
@@ -13,6 +15,7 @@ export interface MediaActionButtonProps {
 export const MediaActionButton: React.FC<MediaActionButtonProps> = ({
   onClick,
   href,
+  link,
   download,
   children,
   className = '',
@@ -39,6 +42,18 @@ export const MediaActionButton: React.FC<MediaActionButtonProps> = ({
       <a href={href} download={download} className={combinedClasses}>
         {children}
       </a>
+    );
+  }
+
+  if (link) {
+    return (
+      <Link
+        href={link}
+        className={combinedClasses}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </Link>
     );
   }
 

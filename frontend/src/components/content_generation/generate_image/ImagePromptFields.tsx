@@ -19,6 +19,7 @@ interface ImagePromptFieldsProps {
   onImageGeneration: () => void;
   isGenerating: boolean;
   showImageRatio?: boolean;
+  readyToGenerate: boolean;
 }
 
 export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
@@ -33,6 +34,7 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
   onImageGeneration,
   isGenerating,
   showImageRatio = true,
+  readyToGenerate,
 }) => {
   return (
     <div className="space-y-4">
@@ -141,7 +143,7 @@ export const ImagePromptFields: React.FC<ImagePromptFieldsProps> = ({
           variant="primary"
           size="sm"
           fullWidth
-          disabled={isGenerating || !positivePrompt.trim()}
+          disabled={isGenerating || !positivePrompt.trim() || !readyToGenerate}
         >
           {isGenerating ? (
             <>

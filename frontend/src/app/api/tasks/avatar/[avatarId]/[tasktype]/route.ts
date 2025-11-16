@@ -50,12 +50,13 @@ export async function GET(
       tasks: filteredTasks.map((task) => ({
         avatarId: task.avatarId,
         taskType: task.taskType,
+        taskName: task.taskName,
         status: task.status,
         taskId: task.taskId,
-        userPrompt: task.userPrompt,
         filePath: task.filePath,
         createdAt: task.createdAt,
         fileName: task.metadata?.resultData?.fileName,
+        metadata: task.metadata,
       })),
     });
   } catch (error) {

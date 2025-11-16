@@ -4,7 +4,7 @@ import { createTask } from '@/lib/taskDb';
 // POST - Create new task
 export async function POST(req: NextRequest) {
   try {
-    const { taskId, avatarId, taskType, userPrompt } = await req.json();
+    const { taskId, avatarId, taskType, taskName, metadata, imagePrompt, videoPrompt, audioPrompt, audioTask } = await req.json();
 
     if (!taskId || !avatarId || !taskType) {
       return NextResponse.json(
@@ -17,7 +17,12 @@ export async function POST(req: NextRequest) {
       taskId,
       avatarId,
       taskType,
-      userPrompt,
+      taskName,
+      metadata,
+      imagePrompt,
+      videoPrompt,
+      audioPrompt,
+      audioTask,
     });
 
     return NextResponse.json({ success: true, task });

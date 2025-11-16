@@ -70,7 +70,9 @@ export const AudioSection: React.FC = () => {
       );
       if (contextTask) {
         setSelectedAudioTask(contextTask);
-        setDialog(contextTask.userPrompt || getRandomSeed('dialog'));
+        setDialog(
+          contextTask.metadata?.taskInfo?.dialog || getRandomSeed('dialog'),
+        );
       }
       setIsInitialized(true);
     } else if (!isInitialized && memoizedAudioTasks.length > 0) {
@@ -115,6 +117,7 @@ export const AudioSection: React.FC = () => {
       setSelectedAudioTask(null);
       setGeneratedAudioUrl(null);
       setGeneratedAudioBase64(null);
+      setDialog('** Uploaded Audio **');
     }
   };
 
@@ -122,8 +125,9 @@ export const AudioSection: React.FC = () => {
     showNotification(`Generating audio for ${state.avatar?.name}`, 'info');
 
     const payload = {
-      dialog: dialog,
       avatar: state.avatar,
+      taskName: state.videoType.id,
+      dialog: dialog,
       audioSource: selectedAudioSource,
     };
     generateAudioMutation.mutate(payload, {

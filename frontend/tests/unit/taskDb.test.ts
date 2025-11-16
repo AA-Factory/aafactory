@@ -43,7 +43,12 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
-        userPrompt: 'Generate audio',
+        taskName: 'Audio Task',
+        metadata: {
+          taskInfo: {
+            dialog: 'Generate audio',
+          },
+        },
       };
 
       const result = await createTask(params);
@@ -53,7 +58,7 @@ describe('TaskDb', () => {
       expect(result.avatarId).toBe(testAvatarId);
       expect(result.status).toBe('PENDING');
       expect(result.taskType).toBe('audio');
-      expect(result.userPrompt).toBe('Generate audio');
+      expect(result.metadata?.taskInfo?.dialog).toBe('Generate audio');
       expect(result._id).toBeDefined();
       expect(result.createdAt).toBeInstanceOf(Date);
       expect(result.updatedAt).toBeInstanceOf(Date);
@@ -74,12 +79,14 @@ describe('TaskDb', () => {
         taskId: 'task-1',
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task 1',
       });
 
       await createTask({
         taskId: 'task-2',
         avatarId: testAvatarId,
         taskType: 'video' as TaskType,
+        taskName: 'Video Task 2',
       });
 
       const collection = await getCollection<TaskDocument>('tasks');
@@ -90,19 +97,6 @@ describe('TaskDb', () => {
       expect(tasks.map(t => t.taskId)).toContain('task-2');
     });
 
-    it('should create task without userPrompt', async () => {
-      const result = await createTask({
-        taskId: 'task-no-prompt',
-        avatarId: testAvatarId,
-        taskType: 'image' as TaskType,
-      });
-
-      expect(result.userPrompt).toBeUndefined();
-
-      const collection = await getCollection<TaskDocument>('tasks');
-      const dbTask = await collection.findOne({ taskId: 'task-no-prompt' });
-      expect(dbTask?.userPrompt).toBeNull();
-    });
   });
 
   describe('updateTaskStatus', () => {
@@ -111,6 +105,7 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
     });
 
@@ -161,6 +156,7 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
     });
 
@@ -192,6 +188,7 @@ describe('TaskDb', () => {
         taskId: 'video-task',
         avatarId: testAvatarId,
         taskType: 'video' as TaskType,
+        taskName: 'Video Task 2',
       });
 
       const fileResult: SaveFileResult = {
@@ -218,6 +215,7 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
     });
 
@@ -248,6 +246,7 @@ describe('TaskDb', () => {
         taskId: 'image-task',
         avatarId: testAvatarId,
         taskType: 'image' as TaskType,
+        taskName: 'Image Task',
       });
 
       // 1x1 transparent PNG
@@ -269,7 +268,12 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
-        userPrompt: 'Test prompt',
+        metadata: {
+          taskInfo: {
+            dialog: 'Test dialog',
+          },
+        },
+        taskName: 'Audio Task',
       });
 
       const task = await getTask(testTaskId);
@@ -277,7 +281,7 @@ describe('TaskDb', () => {
       expect(task).toBeTruthy();
       expect(task?.taskId).toBe(testTaskId);
       expect(task?.avatarId).toBe(testAvatarId);
-      expect(task?.userPrompt).toBe('Test prompt');
+      expect(task?.metadata?.taskInfo?.dialog).toBe('Test dialog');
     });
 
     it('should return null for non-existent task', async () => {
@@ -292,6 +296,7 @@ describe('TaskDb', () => {
         taskId: 'task-1',
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task 1',
       });
 
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -300,6 +305,7 @@ describe('TaskDb', () => {
         taskId: 'task-2',
         avatarId: testAvatarId,
         taskType: 'video' as TaskType,
+        taskName: 'Video Task 2',
       });
 
       await updateTaskStatus('task-1', 'SUCCESS');
@@ -308,6 +314,7 @@ describe('TaskDb', () => {
         taskId: 'task-3',
         avatarId: 'other-avatar',
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
     });
 
@@ -358,6 +365,7 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
 
       const collection = await getCollection<TaskDocument>('tasks');
@@ -375,6 +383,7 @@ describe('TaskDb', () => {
         taskId: testTaskId,
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
 
       const base64Data = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0U=';
@@ -405,6 +414,7 @@ describe('TaskDb', () => {
         avatarId: testAvatarId,
         status: 'PENDING',
         taskType: 'audio',
+        taskName: 'Audio Task',
         createdAt: oldDate,
         updatedAt: oldDate,
       });
@@ -414,6 +424,7 @@ describe('TaskDb', () => {
         taskId: 'recent-task',
         avatarId: testAvatarId,
         taskType: 'audio' as TaskType,
+        taskName: 'Audio Task',
       });
 
       const deletedCount = await deleteOldPendingTasks(testAvatarId, undefined, 24);
@@ -435,6 +446,7 @@ describe('TaskDb', () => {
           avatarId: testAvatarId,
           status: 'PENDING',
           taskType: 'audio',
+          taskName: 'Audio Task',
           createdAt: oldDate,
           updatedAt: oldDate,
         },
@@ -443,6 +455,7 @@ describe('TaskDb', () => {
           avatarId: testAvatarId,
           status: 'SUCCESS',
           taskType: 'audio',
+          taskName: 'Audio Task',
           createdAt: oldDate,
           updatedAt: oldDate,
         },
@@ -467,6 +480,7 @@ describe('TaskDb', () => {
           avatarId: testAvatarId,
           status: 'PENDING',
           taskType: 'audio',
+          taskName: 'Audio Task',
           createdAt: oldDate,
           updatedAt: oldDate,
         },
@@ -475,6 +489,7 @@ describe('TaskDb', () => {
           avatarId: testAvatarId,
           status: 'PENDING',
           taskType: 'video',
+          taskName: 'Video Task',
           createdAt: oldDate,
           updatedAt: oldDate,
         },

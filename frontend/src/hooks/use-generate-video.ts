@@ -40,8 +40,22 @@ export function useGenerateVideo() {
         taskId: task_id,
         avatarId: avatarId,
         taskType: TASK_TYPE,
-        userPrompt: payload.prompt,
+        taskName: payload.taskName,
         status: TASK_STATUS.PENDING,
+        metadata: {
+          taskInfo: {
+            avatarName: payload.avatar?.name,
+            startTime: new Date().toISOString(),
+            finishTime: null,
+            videoPrompt: payload.prompt,
+            dialog: payload.dialog,
+            videoConfig: payload.config,
+            lowVram: payload.lowVram,
+          },
+        },
+        imagePrompt: taskRequest.payload.image_bytes,
+        audioPrompt: taskRequest.payload.audio_bytes,
+        audioTask: payload.audioTask,
       });
 
       invalidateVideoTasks(queryClient, payload.avatar?.id);

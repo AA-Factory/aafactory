@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Avatar } from '@/lib/types/avatar';
 import { AudioTask, VideoTask, ImageTask } from '@/lib/types/tasks';
 import { useAudioTasks, useVideoTasks, useImageTasks } from '@/lib/api/tasks';
+import { useActiveAvatars } from './ActiveAvatarsContext';
 
 type Task = AudioTask | VideoTask | ImageTask;
 
@@ -68,6 +69,9 @@ export const MediaGalleryProvider: React.FC<{
     error: imageTasksError,
   } = useImageTasks(state.avatar?.id || '', 'SUCCESS');
 
+  const { setGlobalTask, setGlobalAvatar } = useActiveAvatars();
+  useActiveAvatars();
+
   // Determine which tasks to show based on media type
   const tasks = (() => {
     if (!state.type || !state.avatar) return [];
@@ -117,6 +121,7 @@ export const MediaGalleryProvider: React.FC<{
   })();
 
   const setAvatar = useCallback((avatar: Avatar | null) => {
+    setGlobalAvatar(avatar);
     setState((prev) => ({ ...prev, avatar, selectedTask: null }));
   }, []);
 
@@ -125,6 +130,7 @@ export const MediaGalleryProvider: React.FC<{
   }, []);
 
   const setTask = useCallback((task: Task | null) => {
+    setGlobalTask(task);
     setState((prev) => ({ ...prev, selectedTask: task }));
   }, []);
 

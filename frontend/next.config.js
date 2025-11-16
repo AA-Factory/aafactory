@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  //hide devtools 
+  devIndicators: false,
+
   webpack: (config) => {
     config.externals.push({
       sharp: 'commonjs sharp',

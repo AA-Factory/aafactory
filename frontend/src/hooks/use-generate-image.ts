@@ -14,6 +14,7 @@ import {
 import { type ImageTask, TaskType } from '@/lib/types/tasks';
 import { useNotification } from '@/contexts/NotificationContext';
 import { apiClient } from '@/lib/api-client';
+
 const TASK_TYPE = 'image' as TaskType;
 
 function invalidateImageTasks(queryClient: ReturnType<typeof useQueryClient>, avatarId?: string) {
@@ -40,8 +41,20 @@ export function useGenerateImage() {
         taskId: task_id,
         avatarId: payload.avatar?.id || null,
         taskType: TASK_TYPE,
-        userPrompt: payload.positivePrompt,
+        taskName: payload.taskName,
         status: TASK_STATUS.PENDING,
+        metadata: {
+          taskInfo: {
+            avatarName: payload.avatar?.name,
+            startTime: new Date().toISOString(),
+            finishTime: null,
+            positivePrompt: payload.positivePrompt,
+            negativePrompt: payload.negativePrompt,
+            imageRatio: payload.imageRatio,
+            imageQuality: payload.imageQuality,
+          },
+        },
+        imagePrompt: taskRequest.payload.image_bytes,
       });
       invalidateImageTasks(queryClient, payload.avatar?.id);
 

@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { VIDEO_TYPES } from '@/lib/task/constants';
 import { PiFileVideoBold } from 'react-icons/pi';
 // Import components
@@ -17,22 +18,84 @@ import {
   VideoGenerationProvider,
   useVideoGeneration,
 } from '@/contexts/VideoGenerationContext';
+import { useActiveAvatars } from '@/contexts/ActiveAvatarsContext';
 
 function GenerateVideoContent() {
+  const searchParams = useSearchParams();
   const {
     state,
     setStep,
     setAvatar,
     setVideoType,
+    setAudioData,
+    setImage,
     videoTasks,
     loadingVideoTasks,
     selectVideoTask,
   } = useVideoGeneration();
-  const videoSrc = state.generatedVideoUrl || state.selectedVideoTask?.filePath;
+  const { globalTask, globalAvatar } = useActiveAvatars();
+
+  const filteredTasks = videoTasks.filter(
+    (task) => task.taskName === state.videoType.id,
+  );
+  useEffect(() => {
+    const step = searchParams.get('step');
+    const avatarId = searchParams.get('avatarId');
+    const type = searchParams.get('type');
+    const taskId = searchParams.get('taskId');
+    if (globalAvatar && avatarId === globalAvatar.id) {
+      setAvatar(globalAvatar);
+    }
+    if (globalTask && taskId === globalTask.taskId) {
+      selectVideoTask(globalTask);
+      setImage(
+        globalTask?.metadata?.imagePrompt?.filePath || '',
+        globalTask?.metadata?.imagePrompt?.fileName || '',
+      );
+
+      if (globalTask?.metadata?.audioTask) {
+        setAudioData({
+          selectedAudioTask: globalTask?.metadata?.audioTask || null,
+          generatedAudioBase64: null,
+          uploadedAudioFile: null,
+          dialog: globalTask?.metadata?.taskInfo?.dialog || '',
+          audioReady: true,
+        });
+      }
+    }
+    if (step) {
+      const videoType = VIDEO_TYPES.find((t) => t.id === globalTask?.taskName);
+      if (videoType) {
+        const stepCount = videoType.steps || 0;
+        setStep(Math.min(stepCount, parseInt(step, 10)));
+      } else {
+        setStep(parseInt(step, 10));
+      }
+    }
+
+    if (type && VIDEO_TYPES.some((t) => t.id === type)) {
+      const selectedType = VIDEO_TYPES.find((t) => t.id === type);
+      if (selectedType) {
+        setVideoType(selectedType);
+      }
+    }
+  }, [
+    searchParams,
+    globalAvatar,
+    globalTask,
+    setStep,
+    setVideoType,
+    setAvatar,
+  ]);
+
+  const displayTask = state.selectedVideoTask?.filePath
+    ? state.selectedVideoTask
+    : filteredTasks[0];
 
   // Determine steps based on video type
-  const isTalkingHead = state.videoType.id === 'talking_head';
-  const isImageToAnimated = state.videoType.id === 'image_to_animated';
+  const isImageAudioToVideo =
+    state.videoType.id === 'prompt_image_audio_to_video';
+  const isImageToAnimated = state.videoType.id === 'image_and_video_to_video';
 
   const steps = [
     {
@@ -69,7 +132,7 @@ function GenerateVideoContent() {
       reason: 'Ensure image is selected and not the placeholder.',
     },
     // Only include audio step for talking_head
-    ...(isTalkingHead
+    ...(isImageAudioToVideo
       ? [
           {
             label: 'Generate audio',
@@ -90,10 +153,11 @@ function GenerateVideoContent() {
       steps={steps}
       currentStep={state.step}
       onStepChange={setStep}
+      task={state.selectedVideoTask}
       viewerComponent={
         <MediaViewer
           type="video"
-          src={videoSrc}
+          src={displayTask?.filePath}
           alt="Generated video"
           showDownload={true}
           aspectRatio="video"
@@ -102,7 +166,7 @@ function GenerateVideoContent() {
       }
       galleryComponent={
         <GenerationGallery
-          tasks={videoTasks}
+          tasks={filteredTasks}
           selectedTask={state.selectedVideoTask}
           onTaskSelect={selectVideoTask}
           loading={loadingVideoTasks}
