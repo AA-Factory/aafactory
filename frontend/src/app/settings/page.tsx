@@ -182,7 +182,7 @@ const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     loadEnvVars();
-  }, [loadEnvVars]);
+  }, []);
 
   // Update mock_servers in localStorage when endpoint changes
   useEffect(() => {

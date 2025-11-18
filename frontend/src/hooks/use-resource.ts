@@ -43,7 +43,7 @@ export const useResourceAPI = (
         );
         showNotification(
           `Loaded ${resources.length} ${resourceType}s`,
-          'success',
+          'system',
         );
         return resources;
       } else {

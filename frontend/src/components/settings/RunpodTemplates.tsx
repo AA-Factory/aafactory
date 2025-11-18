@@ -66,7 +66,7 @@ export function RunpodTemplates({
 
       {!isCollapsed && (
         <>
-          {deployedRedisEndpoint && (
+          {/* {deployedRedisEndpoint && (
             <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-sm text-green-800 dark:text-green-200">
                 <strong>Redis Endpoint:</strong> {deployedRedisEndpoint}
@@ -75,7 +75,7 @@ export function RunpodTemplates({
                 This endpoint will be used for all future deployments
               </p>
             </div>
-          )}
+          )} */}
 
           {templates.length > 0 && (
             <div className="space-y-3 overflow-scroll max-h-96">
@@ -106,10 +106,12 @@ export function RunpodTemplates({
                           const envRecord: Record<string, string | number> = {};
 
                           // Add selected GPU type and vCPU from dropdowns (or use defaults)
-                          const selectedGpu = selectedGpuTypes.get(template.id) ||
+                          const selectedGpu =
+                            selectedGpuTypes.get(template.id) ||
                             config.defaultGpuTypeId ||
                             config.gpuTypeIds[0];
-                          const selectedVCPU = selectedVCPUs.get(template.id) ||
+                          const selectedVCPU =
+                            selectedVCPUs.get(template.id) ||
                             config.defaultVCPU ||
                             config.vCPUOptions[0];
 
@@ -210,7 +212,7 @@ export function RunpodTemplates({
                           htmlFor={`env-${template.id}`}
                           className="text-sm text-gray-600 dark:text-gray-400"
                         >
-                          Use redis configuration
+                          Use {deployedRedisEndpoint} as Redis endpoint
                         </label>
                       </div>
                     )}
