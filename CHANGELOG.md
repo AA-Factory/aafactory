@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for qwen_image, kandinsky and wan_animate models.
+- Added settings page to frontend to configure redis endpoint.
+
 ### Changed
 
 ### Fixed
