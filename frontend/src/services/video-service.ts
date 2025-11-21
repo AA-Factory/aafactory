@@ -3,6 +3,8 @@ import {
   type VideoGenerationTaskRequest,
   VideoGenerationConfig,
   VideoGenerationPayload,
+  VideoAspectRatio,
+  TextToVideoPayload,
 } from '@/lib/types/tasks';
 import { Avatar } from '@/lib/types/avatar';
 
@@ -87,4 +89,42 @@ export async function prepareVideoData(payload: GenerateVideoPayload): Promise<{
   const taskRequest = createTaskRequest(payload, imageBase64, rawAudioBase64);
 
   return { taskRequest, imageBase64, audioBase64: rawAudioBase64 };
+}
+
+// Text to Video Types and Functions
+export type GenerateTextToVideoPayload = {
+  prompt: string;
+  aspectRatio: VideoAspectRatio;
+};
+
+function createTextToVideoTaskRequest(
+  payload: GenerateTextToVideoPayload,
+): VideoGenerationTaskRequest {
+  const isMock = typeof window !== 'undefined'
+    ? localStorage.getItem('mock_servers') !== 'false'
+    : true;
+  return {
+    server_name: isMock ? 'mock' : 'kandinsky',
+    task_name: 'kandinsky_text_to_video',
+    payload: {
+      prompt: payload.prompt,
+      video_aspect_ratio: payload.aspectRatio,
+    },
+  };
+}
+
+export async function prepareTextToVideoData(payload: GenerateTextToVideoPayload): Promise<{
+  taskRequest: VideoGenerationTaskRequest;
+}> {
+  if (!payload.prompt?.trim()) {
+    throw new Error('No prompt text provided');
+  }
+
+  if (!payload.aspectRatio) {
+    throw new Error('No aspect ratio provided');
+  }
+
+  const taskRequest = createTextToVideoTaskRequest(payload);
+
+  return { taskRequest };
 }
