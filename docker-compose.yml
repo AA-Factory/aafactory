@@ -41,7 +41,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: uv run celery -A celery_worker flower --port=5555
+    command: uv run celery -A celery_worker.app flower --url_prefix=flower --port=5555
     ports:
       - 5556:5555
     environment:
@@ -114,6 +114,7 @@ services:
       - ./.env:/.env:rw
       - ./docker-compose.yml:/docker-compose.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./backend:/backend:ro
     depends_on:
       - mongodb
     networks:
