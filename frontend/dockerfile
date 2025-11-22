@@ -2,16 +2,20 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json package-lock.json ./
 RUN npm install
 
-COPY . .
-
+COPY src ./src
+COPY scripts ./scripts
+COPY schemas ./schemas
+COPY public ./public
+COPY next.config.js .
+COPY tsconfig.json .
+COPY postcss.config.js .
+  
 # Install wait-port to wait for MongoDB port update
 RUN npm install -g wait-port
 
 RUN apk add --no-cache docker-cli docker-cli-compose
-
-EXPOSE 3000
 
 CMD sh -c "wait-port mongodb:27017 && node scripts/db-setup.js && npm run dev"

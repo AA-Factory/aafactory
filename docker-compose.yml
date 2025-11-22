@@ -109,8 +109,8 @@ services:
       - NEXT_PUBLIC_CELERY_BASE_URL_SERVER=$NEXT_PUBLIC_CELERY_BASE_URL_SERVER
       - PLAYWRIGHT_BASE_URL=http://localhost:3000
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
       - ./.env:/.env:rw
       - ./docker-compose.yml:/docker-compose.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock
