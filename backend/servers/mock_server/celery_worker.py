@@ -51,3 +51,10 @@ def image_and_video_to_video(image_bytes: str, video_bytes: str) -> str:
         responses = json.load(f)  # Parse JSON into a Python dict
     sleep(120)
     return responses["image_and_video_to_video"]
+
+@app.task(name="kandinsky_text_to_video", queue="mock")
+def kandinsky_text_to_video(prompt: str, video_aspect_ratio: str) -> str:
+    with open("mock_responses.json", "r", encoding="utf-8") as f:
+        responses = json.load(f)  # Parse JSON into a Python dict
+    sleep(120)
+    return responses["kandinsky_text_to_video"]
