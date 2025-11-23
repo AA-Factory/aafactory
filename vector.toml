@@ -1,0 +1,17 @@
+[sources.docker_logs]
+type = "docker_logs"
+
+[transforms.enrich_logs]
+type = "remap"
+inputs = ["docker_logs"]
+source = '''
+.service = get(.label, ["com.docker.compose.service"]) ?? .container_name
+'''
+
+[sinks.better_stack]
+type = "http"
+inputs = ["enrich_logs"]
+uri = "https://s1601596.eu-nbg-2.betterstackdata.com"
+encoding.codec = "json"
+auth.strategy = "bearer"
+auth.token = "${LOGTAIL_SOURCE_TOKEN}"

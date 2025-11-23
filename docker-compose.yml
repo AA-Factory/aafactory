@@ -123,6 +123,21 @@ services:
       - frontend
       - local
 
+  vector:
+    image: timberio/vector:0.34.1-alpine
+    container_name: vector
+    command: ["--config", "/etc/vector/vector.toml"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./vector.toml:/etc/vector/vector.toml:ro
+    environment:
+      - LOGTAIL_SOURCE_TOKEN=${LOGTAIL_SOURCE_TOKEN}
+    networks:
+      - app-network
+    profiles:
+      - frontend
+      - local
+
 volumes:
   mongodb_data:
 
