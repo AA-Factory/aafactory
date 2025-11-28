@@ -114,6 +114,8 @@ services:
       - ./.env:/.env:rw
       - ./docker-compose.yml:/docker-compose.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - .env
     depends_on:
       - mongodb
     networks:
