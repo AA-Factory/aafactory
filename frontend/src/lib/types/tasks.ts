@@ -69,7 +69,14 @@ export interface AnimationGenerationPayload {
   video_bytes: string;
 }
 
-export type VideoGenerationServerName = 'mock' | 'infinite_talk' | 'wan_animate';
+// Text to Video Generation Payload
+export type VideoAspectRatio = '1:1' | '2:3' | '3:2';
+export interface TextToVideoPayload {
+  prompt: string;
+  aspect_ratio: VideoAspectRatio;
+}
+
+export type VideoGenerationServerName = 'mock' | 'infinite_talk' | 'wan_animate' | 'kandinsky';
 
 type BaseTalkingHeadRequest = {
   server_name: 'mock' | 'infinite_talk';
@@ -81,7 +88,12 @@ type AnimationRequest = {
   task_name: 'image_and_video_to_video';
 } & CeleryTaskRequest<AnimationGenerationPayload>;
 
-export type VideoGenerationTaskRequest = BaseTalkingHeadRequest | AnimationRequest;
+type TextToVideoRequest = {
+  server_name: 'mock' | 'kandinsky';
+  task_name: 'text_to_video';
+} & CeleryTaskRequest<TextToVideoPayload>;
+
+export type VideoGenerationTaskRequest = BaseTalkingHeadRequest | AnimationRequest | TextToVideoRequest;
 
 // Image Generation Task
 export type ImageRatio = '1:1' | '4:5' | '16:9' | '9:16';

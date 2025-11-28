@@ -2,7 +2,7 @@ import React from 'react';
 import { useVideoGeneration } from '@/contexts/VideoGenerationContext';
 import { TalkingHeadInputs } from './TalkingHeadInputs';
 import { AnimationInputs } from './AnimationInputs';
-
+import { TextToVideoInputs } from './TextToVideoInputs';
 export const VideoSection: React.FC = () => {
   const { state } = useVideoGeneration();
 
@@ -11,6 +11,8 @@ export const VideoSection: React.FC = () => {
     return <TalkingHeadInputs />;
   } else if (state.videoType.id === 'image_to_animated') {
     return <AnimationInputs />;
+  } else if (state.videoType.id === 'text_to_video') {
+    return <TextToVideoInputs />;
   }
 
   // Default fallback

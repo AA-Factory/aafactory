@@ -2,8 +2,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   prepareVideoData,
+  prepareTextToVideoData,
   createVideoResponse,
   type GenerateVideoPayload,
+  type GenerateTextToVideoPayload,
 } from '@/services/video-service';
 import {
   CELERY_RUN_TASK,
@@ -16,6 +18,8 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { apiClient } from '@/lib/api-client';
 const TASK_TYPE = 'video' as TaskType;
 
+export type GenerateVideoInput = GenerateVideoPayload | GenerateTextToVideoPayload;
+
 function invalidateVideoTasks(queryClient: ReturnType<typeof useQueryClient>, avatarId?: string) {
   queryClient.invalidateQueries({
     queryKey: ['tasks', TASK_TYPE, { avatarId }],
@@ -27,9 +31,16 @@ export function useGenerateVideo() {
   const { showNotification } = useNotification();
   return useMutation({
     mutationKey: ['generateVideo'],
-    mutationFn: async (payload: GenerateVideoPayload) => {
-      const { taskRequest } = await prepareVideoData(payload);
-      const avatarId = payload.avatar?.id || '';
+    mutationFn: async (payload: GenerateVideoInput) => {
+      // Determine if this is a text-to-video or image/audio-to-video request
+      const isTextToVideo = 'textToVideo' in payload && payload.textToVideo;
+
+      const { taskRequest } = isTextToVideo
+        ? await prepareTextToVideoData(payload as GenerateTextToVideoPayload)
+        : await prepareVideoData(payload as GenerateVideoPayload);
+
+      const avatarId = 'avatar' in payload ? payload.avatar?.id || '' : '';
+
       const { task_id } = await apiClient.post<{ task_id: string }>(CELERY_RUN_TASK, {
         server_name: taskRequest.server_name,
         task_name: taskRequest.task_name,
@@ -44,7 +55,7 @@ export function useGenerateVideo() {
         status: TASK_STATUS.PENDING,
       });
 
-      invalidateVideoTasks(queryClient, payload.avatar?.id);
+      invalidateVideoTasks(queryClient, avatarId || undefined);
 
       const config = POLLING_CONFIG[TASK_TYPE];
       let taskData: any;
@@ -53,7 +64,7 @@ export function useGenerateVideo() {
         taskData = await apiClient.get(`${CELERY_TASK_STATUS}${task_id}`);
         if (taskData.status === TASK_STATUS.SUCCESS && taskData.result) {
           return {
-            avatar: payload.avatar,
+            avatar: 'avatar' in payload ? payload.avatar : undefined,
             ...createVideoResponse(taskData.result, task_id),
           };
         }
@@ -62,7 +73,7 @@ export function useGenerateVideo() {
             status: TASK_STATUS.FAILURE,
             error: taskData.error || 'No result returned from task',
           });
-          throw new Error(taskData.error || 'Image generation failed');
+          throw new Error(taskData.error || 'Video generation failed');
         }
 
         await new Promise((res) => setTimeout(res, config.REFETCH_INTERVAL));
@@ -73,7 +84,10 @@ export function useGenerateVideo() {
         base64Data: data.base64Video,
         status: 'SUCCESS',
       });
-      showNotification(`Video generation for ${data.avatar?.name} completed`, 'success', 5000, {
+      const notificationMessage = data.avatar
+        ? `Video generation for ${data.avatar.name} completed`
+        : 'Text-to-video generation completed';
+      showNotification(notificationMessage, 'success', 5000, {
         avatarId: data.avatar?.id,
         taskId: data.taskId,
         mediaType: 'video',
