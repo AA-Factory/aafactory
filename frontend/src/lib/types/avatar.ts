@@ -1,7 +1,8 @@
 // types/avatar.ts
 import type { FieldError, FieldValues, Path, UseFormRegister } from 'react-hook-form';
 import { z } from 'zod';
-
+import { ACCEPTED_AUDIO_TYPES, ACCEPTED_IMAGE_TYPES } from '../avatar/constants';
+import { MAX_AUDIO_UPLOAD_SIZE, MAX_IMAGE_UPLOAD_SIZE } from '../task/constants';
 // File validation types
 export interface FileConstraints {
   maxSize: number;
@@ -66,12 +67,12 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
     ? z
       .instanceof(File, { message: 'Please select an image file' })
       .refine(
-        (file) => file.size <= 5 * 1024 * 1024,
-        'File size must be less than 5MB',
+        (file) => file.size <= MAX_IMAGE_UPLOAD_SIZE,
+        'File size must be less than 10MB',
       )
       .refine(
         (file) =>
-          ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+          ACCEPTED_IMAGE_TYPES.includes(
             file.type,
           ),
         'File must be a JPEG, PNG, or WebP image',
@@ -80,8 +81,8 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
     : z
       .instanceof(File, { message: 'Please select an image file' })
       .refine(
-        (file) => file.size <= 5 * 1024 * 1024,
-        'File size must be less than 5MB',
+        (file) => file.size <= MAX_IMAGE_UPLOAD_SIZE,
+        'File size must be less than 10MB',
       )
       .refine(
         (file) =>
@@ -118,13 +119,15 @@ export const createAvatarFormSchema = (isEdit: boolean) => {
     trainingAudio: z
       .instanceof(File, { message: 'Please select an audio file' })
       .refine(
-        (file) => file.size <= 10 * 1024 * 1024,
-        'File size must be less than 10MB',
+        (file) => file.size <= MAX_AUDIO_UPLOAD_SIZE,
+        'File size must be less than 15MB',
       )
       .refine(
         (file) =>
-          ['audio/mpeg', 'audio/wav', 'audio/x-wav'].includes(file.type),
-        'File must be an MP3 or WAV audio',
+          [
+            ...ACCEPTED_AUDIO_TYPES,
+          ].includes(file.type),
+        'File must be MP3, WAV, M4A, OGG, or OPUS audio',
       )
       .optional(),
   });

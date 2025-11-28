@@ -57,4 +57,10 @@ export const DEFAULT_LANGUAGE = 'en-us';
 
 export const MIN_AUDIO_DURATION = 4;
 
+export const MAX_AUDIO_DURATION = 120;
+
+export const MAX_IMAGE_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
+
+export const MAX_AUDIO_UPLOAD_SIZE = 15 * 1024 * 1024; // 15MB
+
 export const LOCAL_STORAGE_KEY = 'notification-history';
