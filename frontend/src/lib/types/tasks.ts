@@ -73,7 +73,7 @@ export interface AnimationGenerationPayload {
 export type VideoAspectRatio = '1:1' | '2:3' | '3:2';
 export interface TextToVideoPayload {
   prompt: string;
-  aspect_ratio: VideoAspectRatio;
+  video_aspect_ratio: VideoAspectRatio;
 }
 
 export type VideoGenerationServerName = 'mock' | 'infinite_talk' | 'wan_animate' | 'kandinsky';
@@ -90,7 +90,7 @@ type AnimationRequest = {
 
 type TextToVideoRequest = {
   server_name: 'mock' | 'kandinsky';
-  task_name: 'text_to_video';
+  task_name: 'kandinsky_text_to_video';
 } & CeleryTaskRequest<TextToVideoPayload>;
 
 export type VideoGenerationTaskRequest = BaseTalkingHeadRequest | AnimationRequest | TextToVideoRequest;

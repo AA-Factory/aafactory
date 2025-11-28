@@ -33,6 +33,7 @@ function GenerateVideoContent() {
   // Determine steps based on video type
   const isTalkingHead = state.videoType.id === 'talking_head';
   const isImageToAnimated = state.videoType.id === 'image_to_animated';
+  const isTextToVideo = state.videoType.id === 'text_to_video';
 
   const steps = [
     {
@@ -60,14 +61,19 @@ function GenerateVideoContent() {
       ),
       canNext: !!state.avatar,
     },
-    {
-      label: 'Select Image',
-      content: <AvatarImageSelector />,
-      canNext:
-        !!state.selectedImageFilePath &&
-        state.selectedImageFileName !== 'placeholder-avatar.png',
-      reason: 'Ensure image is selected and not the placeholder.',
-    },
+    // Only include image selection step for talking_head and image_to_animated
+    ...(isTalkingHead || isImageToAnimated
+      ? [
+          {
+            label: 'Select Image',
+            content: <AvatarImageSelector />,
+            canNext:
+              !!state.selectedImageFilePath &&
+              state.selectedImageFileName !== 'placeholder-avatar.png',
+            reason: 'Ensure image is selected and not the placeholder.',
+          },
+        ]
+      : []),
     // Only include audio step for talking_head
     ...(isTalkingHead
       ? [
