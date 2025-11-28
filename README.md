@@ -45,35 +45,39 @@ git clone <repository-url>
 cd aafactory
 ```
 
-**2. Configure Redis (Important)**
+**2. Setup the environment variables**
 
-You can use either local or remote Redis:
+Copy the `.env.default` file to `.env` and modify as needed:
 
-**Option A: Local Redis (Development)**
+```bash
+cp .env.default .env
+```
+
+**3. Start the application**
 
 ```bash
 docker-compose --profile local up
 ```
 
-**Option B: Remote Redis (Recommended for Production)**
+**4. Configure Redis (Important)**
 
+The application supports both local(default) and remote Redis configurations.
 Remote Redis enables distributed processing across multiple servers. To connect:
 
-1. Get your Redis URL from your remote server (e.g., RunPod dashboard):
+1. Get your Redis Endpoint from your remote server (e.g., RunPod dashboard):
 
    ![Select Remote URL Screenshot](assets/select_remote_redis_url_in_running_pod.png)
 
-2. Start the application and set the redis URL in the frontend settings:
+2. Open the Frontend in your browser at http://localhost:3000 and navigate to the Settings
+   page to update the Redis Endpoint.
 
-   ```bash
-   docker-compose --profile local up
-   ```
+   ![Settings Page Screenshot](assets/settings_page_update_redis_url.png)
 
-3. Share the same Redis URL with other running instances for distributed processing:
+3. Share the same Redis Endpoint with other running instances for distributed processing:
 
    ![Share URL Screenshot](assets/share_redis_url_to_remote_instances.png)
 
-**3. Access the application**
+### Accessing the Application
 
 Once running, access these services:
 
@@ -217,6 +221,8 @@ This starts all services using the test environment configuration.
 
 Once the application is running, you can execute different test suites:
 
+(currently the tests must be run on the host machine with Node.js installed from the frontend directory)
+
 #### Unit Tests
 
 ```bash
@@ -259,20 +265,6 @@ npm run test:e2e:report
 npm run test:e2e:codegen
 ```
 
-#### Database Seeding
-
-```bash
-# Seed the database with test data
-npm run db:seed
-```
-
-### Test Configuration Files
-
-- **vitest.config.ts** - Unit test configuration
-- **vitest.config.hooks.ts** - React hooks test configuration
-- **playwright.config.ts** - E2E test configuration
-- **.env.test** - Test environment variables
-
 ### Testing Best Practices
 
 1. **Always use test environment**: Run tests with `.env.test` to avoid affecting production data
@@ -290,16 +282,6 @@ npm run db:seed
 - **Database**: MongoDB
 - **Queue**: Celery with Redis
 - **Deployment**: Docker Compose
-
-### Project Structure
-
-```
-aafactory/
-├── frontend/          # Next.js application
-├── backend/           # FastAPI server
-├── docker-compose.yml # Service orchestration
-└── README.md         # This file
-```
 
 ---
 
