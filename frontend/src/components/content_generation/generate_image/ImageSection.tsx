@@ -112,7 +112,6 @@ export const ImageSection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Tab Content */}
       {state.type?.id === 'text_to_image' ? (
         <TextToImageTab
           positivePrompt={positivePrompt}
