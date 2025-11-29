@@ -29,3 +29,19 @@ export const CATEGORY_OPTIONS = [
   { value: 'cartoon', label: 'Cartoon' },
   { value: 'fantasy', label: 'Fantasy' },
 ];
+
+export const ACCEPTED_AUDIO_TYPES = [
+  'audio/mpeg',  // MP3
+  'audio/wav',   // WAV
+  'audio/m4a',   // M4A
+  'audio/ogg',   // OGG
+  'audio/opus',  // OPUS
+  'audio/ogg; codecs=opus' // OPUS in OGG container
+];
+
+export const ACCEPTED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+];

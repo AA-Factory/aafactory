@@ -7,6 +7,11 @@ import { type ImageRatio, ImageQuality, ImageTask } from '@/lib/types/tasks';
 import { fileToBase64 } from '@/lib/base64Utils';
 import { useImageGeneration } from '@/contexts/ImageGenerationContext';
 import { getRandomSeed } from '@/utils/fakeData';
+import { ACCEPTED_IMAGE_TYPES } from '@/lib/avatar/constants';
+import {
+  MAX_AUDIO_UPLOAD_SIZE,
+  MAX_IMAGE_UPLOAD_SIZE,
+} from '@/lib/task/constants';
 export const ImageSection: React.FC = () => {
   const [positivePrompt, setPositivePrompt] = useState(
     getRandomSeed('image_avatar_prompt'),
@@ -21,7 +26,28 @@ export const ImageSection: React.FC = () => {
   const { showNotification } = useNotification();
 
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ACCEPTED_IMAGE_TYPES;
+    if (!allowedTypes.includes(file.type)) {
+      showNotification(
+        'Invalid file type. Please upload JPEG, PNG, or WEBP.',
+        'error',
+      );
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file size (10MB = 10 * 1024 * 1024 bytes)
+    const maxSize = MAX_IMAGE_UPLOAD_SIZE;
+    if (file.size > maxSize) {
+      showNotification('File too large. Maximum size is 10MB.', 'error');
+      e.target.value = '';
+      return;
+    }
+
     setUploadedImageFile(file);
   };
 
@@ -86,7 +112,6 @@ export const ImageSection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Tab Content */}
       {state.type?.id === 'text_to_image' ? (
         <TextToImageTab
           positivePrompt={positivePrompt}

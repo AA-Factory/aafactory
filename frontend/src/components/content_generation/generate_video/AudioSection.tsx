@@ -10,6 +10,8 @@ import { useAudioTasks } from '@/lib/api/tasks';
 import { AudioTask } from '@/lib/types/tasks';
 import { getRandomSeed } from '@/utils/fakeData';
 import { MIN_AUDIO_DURATION } from '@/lib/task/constants';
+import { ACCEPTED_AUDIO_TYPES } from '@/lib/avatar/constants';
+import { MAX_AUDIO_UPLOAD_SIZE } from '@/lib/task/constants';
 
 export const AudioSection: React.FC = () => {
   const { state, setAudioData } = useVideoGeneration();
@@ -106,6 +108,22 @@ export const AudioSection: React.FC = () => {
 
   const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
+    if (!file) return;
+    const allowedTypes = ACCEPTED_AUDIO_TYPES;
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Please upload MP3, WAV, M4A, or OGG.');
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    // Validate file size (15MB = 15 * 1024 * 1024 bytes)
+    const maxSize = MAX_AUDIO_UPLOAD_SIZE;
+    if (file.size > maxSize) {
+      alert('File too large. Maximum size is 15MB.');
+      e.target.value = ''; // Reset input
+      return;
+    }
+
     const url = file ? URL.createObjectURL(file) : null;
     setUploadedAudioFile(file);
     setUploadedAudioUrl(url);

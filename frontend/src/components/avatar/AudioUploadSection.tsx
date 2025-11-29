@@ -126,7 +126,7 @@ export const AudioUploadSection: React.FC<AudioUploadSectionProps> = ({
               )}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              MP3, WAV, M4A, OGG up to 50MB
+              MP3, WAV, M4A, OGG, OPUS formats accepted. Max size 50MB.
             </p>
           </div>
         )}
